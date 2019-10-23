@@ -7,8 +7,8 @@
     <ProjectGuid>{2BB2AF62-3E5F-498F-AF1C-AFE45F412D90}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RSB_Lib</RootNamespace>
-    <AssemblyName>RSB Lib</AssemblyName>
+    <RootNamespace>SMC.Utilities.RSG</RootNamespace>
+    <AssemblyName>SMC.Utilities.RSG</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -41,7 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="Generator.cs" />
+    <Compile Include="LiteralToken.cs" />
+    <Compile Include="ModifierType.cs" />
+    <Compile Include="Tokenizer.cs" />
+    <Compile Include="TokenType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
