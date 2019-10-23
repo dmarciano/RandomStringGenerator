@@ -5,7 +5,7 @@ namespace SMC.Utilities.RSG
     /// <summary>
     /// Specifies a specific literal token type.
     /// </summary>
-    public enum LiteralToken
+    public enum LiteralType
     {
         /// <summary>
         /// The hypen "-" literal.

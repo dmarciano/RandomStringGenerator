@@ -10,7 +10,7 @@ namespace SMC.Utilities.RSG
     {
         #region Variables
         private Tokenizer _tokenizer;
-        private object _tokenizedPattern;
+        private List<Token> _tokenizedPattern;
         #endregion
 
         #region Properties

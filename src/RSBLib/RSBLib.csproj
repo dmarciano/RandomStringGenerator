@@ -43,8 +43,9 @@
   <ItemGroup>
     <Compile Include="Exceptions.cs" />
     <Compile Include="Generator.cs" />
-    <Compile Include="LiteralToken.cs" />
+    <Compile Include="LiteralType.cs" />
     <Compile Include="ModifierType.cs" />
+    <Compile Include="Token.cs" />
     <Compile Include="Tokenizer.cs" />
     <Compile Include="TokenType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

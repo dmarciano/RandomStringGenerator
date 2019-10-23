@@ -5,9 +5,9 @@ namespace SMC.Utilities.RSG
 {
     internal class Tokenizer
     {
-        public object TokenizedPattern { get; set; }
+        public List<Token> TokenizedPattern { get; set; }
 
-        internal (bool valid, string parseError) Tokenize(string patter)
+        internal (bool valid, string parseError) Tokenize(string pattern)
         {
 
             return (true, string.Empty);
