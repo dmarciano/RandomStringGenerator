@@ -52,7 +52,7 @@ Literals are characters that can appear anywhere in the string, as many times as
 - **_** - Outputs a single underscore
 - **\\** - Outputs a single backspace
 - **/** - Outputs a single forward slash
-- **" "** - Outputs a single blank space.  The double quotes should **not** be used and are only used here to show the blank space.
+- **" "** - Outputs a single blank space.  The double quotes should **not** be used and are only used here to show the blank space.  **Cannot** be the first or last item in a pattern (i.e. to leading or trailing whitespace).
 - **[ ]** - Outputs the text within the brackets without any processing.  For example [45] would output "45"
 
 Modifiers are **not** valid on any literals.
