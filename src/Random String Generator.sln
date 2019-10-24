@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSGLib.Tests", "RSGLib.Tests\RSGLib.Tests.csproj", "{82760C6B-8ED2-4ADB-A971-D10DBD184AE5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSBLib.Benchmarks", "RSBLib.Benchmarks\RSBLib.Benchmarks.csproj", "{2F57574E-9A39-4BBA-B14C-EE763C6AC156}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{82760C6B-8ED2-4ADB-A971-D10DBD184AE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82760C6B-8ED2-4ADB-A971-D10DBD184AE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82760C6B-8ED2-4ADB-A971-D10DBD184AE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F57574E-9A39-4BBA-B14C-EE763C6AC156}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F57574E-9A39-4BBA-B14C-EE763C6AC156}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F57574E-9A39-4BBA-B14C-EE763C6AC156}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F57574E-9A39-4BBA-B14C-EE763C6AC156}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
