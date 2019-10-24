@@ -102,6 +102,8 @@ namespace SMC.Utilities.RSG
         /// </summary>
         /// <returns>The randomly generated string.</returns>
         /// <exception cref="InvalidPatternException">No valid pattern set.</exception>
+        /// <exception cref="InvalidModifierException">An unknown modifier was found in the pattern.</exception>
+        /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
         public override string ToString()
         {
             return GetString();
@@ -112,6 +114,8 @@ namespace SMC.Utilities.RSG
         /// </summary>
         /// <returns>The randomly generated string.</returns>
         /// <exception cref="InvalidPatternException">No valid pattern set.</exception>
+        /// <exception cref="InvalidModifierException">An unknown modifier was found in the pattern.</exception>
+        /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
         public string GetString()
         {
             return CreateRandomString();
@@ -123,6 +127,8 @@ namespace SMC.Utilities.RSG
         /// <param name="count">The number of random strings to create</param>
         /// <returns>a list of <paramref name="count"/> random strings.</returns>
         /// <exception cref="InvalidPatternException">No valid pattern set.</exception>
+        /// <exception cref="InvalidModifierException">An unknown modifier was found in the pattern.</exception>
+        /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
         public IEnumerable<string> GetStrings(int count)
         {
             for (var i = 0; i < count; i++)
@@ -131,7 +137,7 @@ namespace SMC.Utilities.RSG
 
         private string CreateRandomString()
         {
-            if (null == _tokenizedPattern && _tokenizedPattern.Count> 0)
+            if (null == _tokenizedPattern && _tokenizedPattern.Count > 0)
                 throw new InvalidPatternException("A valid pattern must be set before attempting to generate a random string.");
 
             var sb = new StringBuilder();
@@ -165,7 +171,11 @@ namespace SMC.Utilities.RSG
                         }
                         break;
                     case TokenType.NUMBER:
-                        characters = NUMBERS;
+                        if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                            characters = NUMBERS_EXCEPT_0;
+                        else
+                            characters = NUMBERS;
+
                         break;
                     case TokenType.NUMBER_EXCEPT_ZERO:
                         characters = NUMBERS_EXCEPT_0;
@@ -177,7 +187,7 @@ namespace SMC.Utilities.RSG
                         characters = GetLettersNumbers(token);
                         break;
                     case TokenType.LETTER_SYMBOL:
-                         characters = GetLettersSymbols(token);
+                        characters = GetLettersSymbols(token);
                         break;
                     case TokenType.NUMBER_SYMBOL:
                         characters = GetNumbersSymbols(token);
@@ -193,7 +203,7 @@ namespace SMC.Utilities.RSG
                         break;
                 }
 
-                if(token.Type != TokenType.LITERAL)
+                if (token.Type != TokenType.LITERAL)
                 {
                     for (var count = 0; count < repeat; count++)
                     {
@@ -244,18 +254,18 @@ namespace SMC.Utilities.RSG
 
         private char[] GetLettersSymbols(Token token)
         {
-                if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
-                {
+            if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+            {
                 return UPPER_LETTERS_SYMBOLS;
-                }
-                else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
-                {
+            }
+            else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+            {
                 return LOWER_LETTERS_SYMBOLS;
-                }
-                else
-                {
+            }
+            else
+            {
                 return LETTERS_SYMBOLS;
-                }
+            }
         }
 
         private char[] GetNumbersSymbols(Token token)

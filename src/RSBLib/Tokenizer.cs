@@ -55,6 +55,10 @@ namespace SMC.Utilities.RSG
                 if (pos != pattern.Length - 1)
                 {
                     if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(ref token, pattern);
+                }
+
+                if (pos != pattern.Length - 1)
+                {
                     if (char.Equals(pattern[pos + 1], '(')) HandleCount(ref token, pattern);
                 }
                 tokenizedList.Add(token);
@@ -93,7 +97,59 @@ namespace SMC.Utilities.RSG
 
         private void HandleModifier(ref Token token, string pattern)
         {
+            pos++;
+            var modifier = pattern[pos];
+            var EOS = false;
 
+            if(token.Type == TokenType.SYMBOL)
+                throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.  Symbol tokens cannot have any modifiers.");
+
+            do
+            {
+                switch (modifier)
+                {
+                    case '^':
+                        if (token.Type == TokenType.NUMBER || token.Type == TokenType.NUMBER_EXCEPT_ZERO || token.Type == TokenType.NUMBER_SYMBOL)
+                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+
+                        if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+                        token.Modifier = token.Modifier | ModifierType.UPPERCASE;
+                        break;
+                    case '!':
+                        if (token.Type == TokenType.NUMBER || token.Type == TokenType.NUMBER_EXCEPT_ZERO || token.Type == TokenType.SYMBOL || token.Type == TokenType.NUMBER_SYMBOL)
+                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+
+                        if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+                        token.Modifier = token.Modifier | ModifierType.LOWERCASE;
+                        break;
+                    case '~':
+                        if (token.Type == TokenType.LETTER || token.Type == TokenType.SYMBOL || token.Type == TokenType.LETTER_SYMBOL)
+                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+
+                        if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+                        token.Modifier = token.Modifier | ModifierType.EXCLUDE_ZERO;
+                        break;
+                }
+
+                if (pos != pattern.Length - 1)
+                {
+                    if (!MODIFIERS.Contains(pattern[pos + 1]))
+                        EOS = true;
+                    else
+                        pos++;
+                }
+                else
+                {
+                    EOS = true;
+                }
+
+            } while (!EOS);
         }
 
         private void HandleCount(ref Token token, string pattern)

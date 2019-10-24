@@ -8,6 +8,7 @@ namespace RSGLib.Tests
     public class InvalidPatternTests
     {
         [TestMethod]
+        [TestCategory("Invalid Pattern")]
         [ExpectedException(typeof(NoPatternException))]
         public void ConstructorWhitespaceStringTest()
         {
@@ -15,6 +16,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
+        [TestCategory("Invalid Pattern")]
         [ExpectedException(typeof(NoPatternException))]
         public void NullStringTest()
         {
@@ -24,6 +26,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
+        [TestCategory("Invalid Pattern")]
         [ExpectedException(typeof(NoPatternException))]
         public void EmptyStringTest()
         {
@@ -33,6 +36,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
+        [TestCategory("Invalid Pattern")]
         [ExpectedException(typeof(NoPatternException))]
         public void WhitespaceStringTest()
         {
@@ -42,6 +46,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
+        [TestCategory("Invalid Pattern")]
         [ExpectedException(typeof(InvalidPatternException))]
         public void ZeroRepeatTest()
         {
@@ -50,5 +55,6 @@ namespace RSGLib.Tests
 
         //Too many commas detected
         //No closing count parenthesis
+        //Duplicate modifiers
     }
 }

@@ -91,6 +91,11 @@ Below are valid patterns with a description and an example of a possible output:
   - Order-012-PAb-1234
   - Order-3210-PAA-2589
   - Order-4567-Pbb-9999
+- **0(3)[-]0(2)[-]0(4)** - Generate a social security number
+- **[(]90(2)[) ]90(2)[-]0(4)** - Generate a phone number in the format of (xxx) xxx-xxxx where the first number of the area code and exchange code can only be 1 - 9.
+
+In the **RSGLib.Tests** project, there is a category of unit tests called *Real-World Patterns* that those how to generate various real-world pattern (e.g. social security number, various types of credit card numbers, etc.)
+along with a regular expression to confirm that the generated string is valid.
    
 ### Invalid Patterns
 Below are invalid patterns with a description of *why* it is invalid:

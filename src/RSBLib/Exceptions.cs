@@ -27,4 +27,27 @@ namespace SMC.Utilities.RSG
         public InvalidPatternException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
+    [Serializable]
+    public class InvalidModifierException : Exception
+    {
+        public InvalidModifierException() { }
+
+        public InvalidModifierException(string message) : base(message) { }
+
+        public InvalidModifierException(string message, Exception innerException) : base(message, innerException) { }
+
+        public InvalidModifierException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class DuplicateModifierException : Exception
+    {
+        public DuplicateModifierException() { }
+
+        public DuplicateModifierException(string message) : base(message) { }
+
+        public DuplicateModifierException(string message, Exception innerException) : base(message, innerException) { }
+
+        public DuplicateModifierException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
 }
