@@ -105,12 +105,12 @@ Below are invalid patterns with a description of *why* it is invalid:
 - **a(2,** or **a(2,3%** - No closing parenthesis
 - **a(2,3,4)** - Invalid format/too many commas
 
-
 ## Future Plans
 - Currently there is plan for the next release to include a token, or modifier, to indicate that certain letters and/or numbers should be *not* be generated.
-This would make it possible for users to specify, for example, that they don't want the letter 'l' (lowercase L) or '1' (one) output for specific tokens.
+This would make it possible for users to specify, for example, that they don't want the letter 'l' (lowercase L) or '1' (one) output for specific tokens or anywhere in the generated string.
 - The ```Generator``` class currently uses a built-in random number generator for creating the output string.  The RNG is built upon the .NET Framework ```RNGCryptoServiceProvider``` class.  There are plans
 to allow users to specify their own class to generate random numbers as long as the custom class implements the ```IRandom``` interface (specified in the RSG library).
+- A method of specifying a range, or set, of numbers/character to use for generating the string.
 
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.

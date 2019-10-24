@@ -71,7 +71,7 @@ namespace RSGLib.Tests
             var output = generator.GetString();
 
             Assert.IsTrue(output.Length == 1);
-            Assert.IsTrue(char.IsSymbol(output[0]));
+            Assert.IsTrue(char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
         }
 
         [TestMethod]
@@ -102,6 +102,46 @@ namespace RSGLib.Tests
             var output = generator.GetString();
 
             Assert.AreEqual(output, "[ab]", false);
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void LetterNumberTest()
+        {
+            var generator = new Generator(".");
+            var output = generator.GetString();
+
+            Assert.IsTrue(char.IsLetterOrDigit(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void LetterSymbolTest()
+        {
+            var generator = new Generator("+");
+            var output = generator.GetString();
+
+            Assert.IsTrue(char.IsLetter(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void NumberSymbolTest()
+        {
+            var generator = new Generator("%");
+            var output = generator.GetString();
+
+            Assert.IsTrue(char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void LetterNumberSymbolTest()
+        {
+            var generator = new Generator("%");
+            var output = generator.GetString();
+
+            Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
         }
 
         [TestMethod]
