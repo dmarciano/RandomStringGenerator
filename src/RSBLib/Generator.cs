@@ -83,14 +83,13 @@ namespace SMC.Utilities.RSG
         /// <exception cref="InvalidPatternException">Pattern is not valid.</exception>
         public void SetPattern(string pattern)
         {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
             if (string.IsNullOrWhiteSpace(pattern))
                 throw new NoPatternException();
 
-            var (valid, parseError) = _tokenizer.Tokenize(pattern);
-            if (!valid)
-                throw new InvalidPatternException(parseError);
-
-            _tokenizedPattern = _tokenizer.TokenizedPattern;
+            var valid = _tokenizer.Tokenize(pattern);
+            if (valid)
+                _tokenizedPattern = _tokenizer.TokenizedPattern;
 
             //TODO: Allow users to specify random number generator.
             _rng = new RandomGenerator();
@@ -106,6 +105,7 @@ namespace SMC.Utilities.RSG
         /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
         public override string ToString()
         {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
             return GetString();
         }
 
@@ -118,6 +118,7 @@ namespace SMC.Utilities.RSG
         /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
         public string GetString()
         {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
             return CreateRandomString();
         }
 
@@ -131,13 +132,14 @@ namespace SMC.Utilities.RSG
         /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
         public IEnumerable<string> GetStrings(int count)
         {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
             for (var i = 0; i < count; i++)
                 yield return CreateRandomString();
         }
 
         private string CreateRandomString()
         {
-            if (null == _tokenizedPattern && _tokenizedPattern.Count > 0)
+            if (null == _tokenizedPattern || _tokenizedPattern.Count < 1)
                 throw new InvalidPatternException("A valid pattern must be set before attempting to generate a random string.");
 
             var sb = new StringBuilder();
@@ -327,7 +329,7 @@ namespace SMC.Utilities.RSG
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    _tokenizer = null;
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
@@ -349,7 +351,7 @@ namespace SMC.Utilities.RSG
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
             // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+            //GC.SuppressFinalize(this);
         }
         #endregion
     }

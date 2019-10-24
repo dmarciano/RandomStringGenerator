@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace SMC.Utilities.RSG
 {
+    [ExcludeFromCodeCoverage]
     [Serializable]
     public class NoPatternException : Exception
     {
@@ -15,6 +17,7 @@ namespace SMC.Utilities.RSG
         public NoPatternException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
+    [ExcludeFromCodeCoverage]
     [Serializable]
     public class InvalidPatternException : Exception
     {
@@ -27,6 +30,7 @@ namespace SMC.Utilities.RSG
         public InvalidPatternException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
+    [ExcludeFromCodeCoverage]
     [Serializable]
     public class InvalidModifierException : Exception
     {
@@ -39,6 +43,7 @@ namespace SMC.Utilities.RSG
         public InvalidModifierException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
+    [ExcludeFromCodeCoverage]
     [Serializable]
     public class DuplicateModifierException : Exception
     {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMC.Utilities.RSG;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace RSGLib.Tests
@@ -238,7 +239,7 @@ namespace RSGLib.Tests
             var generator = new Generator("a(1,5)");
             var output = generator.GetString();
 
-            Assert.IsTrue(output.Length >= 1 && output.Length<=5);
+            Assert.IsTrue(output.Length >= 1 && output.Length <= 5);
             foreach (var c in output.ToCharArray())
             {
                 Assert.IsTrue(char.IsLetter(c));
@@ -252,7 +253,7 @@ namespace RSGLib.Tests
             var generator = new Generator("a(0,2)");
             var output = generator.GetString();
 
-            Assert.IsTrue(output.Length >= 0 && output.Length<= 2);
+            Assert.IsTrue(output.Length >= 0 && output.Length <= 2);
             foreach (var c in output.ToCharArray())
             {
                 Assert.IsTrue(char.IsLetter(c));
@@ -297,6 +298,18 @@ namespace RSGLib.Tests
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
             Assert.IsTrue(char.IsLower(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Modifiers")]
+        public void NumberSymbolExceptZeroTest()
+        {
+            var generator = new Generator("%~");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
+            Assert.AreNotEqual(Convert.ToInt32(output[0]), 0);
         }
 
         [TestMethod]
@@ -592,7 +605,7 @@ namespace RSGLib.Tests
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
             //MC card numbers can also start with values between 2221 through 2720 but will still be 16 characters long
-            for(var start = 2221; start <= 2720; start++)
+            for (var start = 2221; start <= 2720; start++)
             {
                 generator.SetPattern($"[{start.ToString()}]0(12)");
                 cardNumber = generator.GetString();
@@ -675,12 +688,125 @@ namespace RSGLib.Tests
         [TestCategory("Real-World Patterns")]
         public void PhoneNumberTest()
         {
-           
-            var regex = new Regex("^[\\(]{0,1}([0-9]){3}[\\)]{0,1}[ ]?([^0-1]){1}([0-9]){2}[ ]?[-]?[ ]?([0-9]){4}[ ]*((x){0,1}([0-9]){1,5}){0,1}$");
-            var generator = new Generator("[(]90(2)[) ]90(2)[-]0(4)");
-            var postalCode = generator.GetString();
 
-            Assert.IsTrue(regex.IsMatch(postalCode));
+            var regex = new Regex("^((\\(\\d{3}\\) ?)|(\\d{3}-))?\\d{3}-\\d{4}$");
+            var generator = new Generator("[(]90(2)[) ]90(2)[-]0(4)");
+            var phoneNumber = generator.GetString();
+
+            Assert.IsTrue(regex.IsMatch(phoneNumber));
+        }
+        #endregion
+
+        #region Other
+        [TestMethod]
+        [TestCategory("Other")]
+        public void PatternPropertyTest()
+        {
+            var pattern = "a(2,3)";
+            var generator = new Generator(pattern);
+
+            Assert.AreEqual(pattern, generator.Pattern, false);
+        }
+
+        [TestMethod]
+        [TestCategory("Other")]
+        public void IEnumerableTest()
+        {
+            var count = 10;
+            var generator = new Generator(".");
+            IEnumerable<string> outputs = generator.GetStrings(count);
+
+            var counted = 0;
+            foreach (var output in outputs)
+            {
+                counted++;
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
+            }
+
+            Assert.AreEqual(counted, count);
+        }
+
+        [TestMethod]
+        [TestCategory("Other")]
+        public void ToStringTest()
+        {
+            var pattern = "a";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Other")]
+        public void UsingTest()
+        {
+            using (var generator = new Generator("a"))
+            {
+                var output = generator.ToString();
+
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Other")]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void DisposeTest()
+        {
+            var generator = new Generator();
+            generator.Dispose();
+            generator.ToString();
+        }
+
+        [TestMethod]
+        [TestCategory("Other")]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void DisposeTest2()
+        {
+            var generator = new Generator();
+            generator.Dispose();
+            generator.GetString();
+        }
+
+        [TestMethod]
+        [TestCategory("Other")]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void DisposeTest3()
+        {
+            var generator = new Generator();
+            generator.Dispose();
+            foreach(var item in generator.GetStrings(10)) { }
+        }
+
+        [TestMethod]
+        [TestCategory("Other")]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void DisposeTest4()
+        {
+            var generator = new Generator();
+            generator.Dispose();
+            generator.SetPattern("a");
+        }
+
+        [TestMethod]
+        [TestCategory("Other")]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void UsingDisposeTest()
+        {
+            Generator generator;
+            using (generator = new Generator("a"))
+            {
+                var output = generator.ToString();
+
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]));
+            }
+
+            generator.ToString();
         }
         #endregion
 

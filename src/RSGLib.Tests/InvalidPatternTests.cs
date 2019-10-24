@@ -176,6 +176,14 @@ namespace RSGLib.Tests
         [TestMethod]
         [TestCategory("Invalid Pattern")]
         [ExpectedException(typeof(InvalidPatternException))]
+        public void TooManyCommasTest3()
+        {
+            var generator = new Generator("a(2,3,4)");
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid Pattern")]
+        [ExpectedException(typeof(InvalidPatternException))]
         public void InvalidCountTest()
         {
             var generator = new Generator("a(2-3)");
@@ -186,7 +194,7 @@ namespace RSGLib.Tests
         [ExpectedException(typeof(InvalidPatternException))]
         public void InvalidTokenTest()
         {
-            var generator = new Generator("a(2,3),");
+            var generator = new Generator("v");
         }
 
         [TestMethod]
@@ -194,7 +202,7 @@ namespace RSGLib.Tests
         [ExpectedException(typeof(InvalidPatternException))]
         public void InvalidTokenTest2()
         {
-            var generator = new Generator("a(2,3)v");
+            var generator = new Generator("a(2,3),");
         }
 
         [TestMethod]
@@ -202,11 +210,57 @@ namespace RSGLib.Tests
         [ExpectedException(typeof(InvalidPatternException))]
         public void InvalidTokenTest3()
         {
+            var generator = new Generator("a(2,3)v");
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid Pattern")]
+        [ExpectedException(typeof(InvalidPatternException))]
+        public void InvalidTokenTest4()
+        {
             var generator = new Generator("av");
         }
 
-        //Too many commas detected
-        //No closing count parenthesis
-        //Duplicate modifiers
+        [TestMethod]
+        [TestCategory("Invalid Pattern")]
+        [ExpectedException(typeof(InvalidPatternException))]
+        public void MaximumLessThanMinimumTest()
+        {
+            var generator = new Generator("a(3,2)");
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid Pattern")]
+        [ExpectedException(typeof(InvalidPatternException))]
+        public void NoClosingLiteralTest()
+        {
+            var generator = new Generator("[a");
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid Pattern")]
+        [ExpectedException(typeof(InvalidPatternException))]
+        public void NoClosingLiteralTest2()
+        {
+            var generator = new Generator("[[a]");
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid Pattern")]
+        [ExpectedException(typeof(InvalidPatternException))]
+        public void NoPatternSetTest()
+        {
+            var generator = new Generator();
+            generator.GetString();
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid Pattern")]
+        [ExpectedException(typeof(InvalidPatternException))]
+        public void InvalidPatternSetTest()
+        {
+            var generator = new Generator();
+            generator.SetPattern("v");
+        }
     }
 }

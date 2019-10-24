@@ -52,6 +52,7 @@ namespace SMC.Utilities.RSG
     /// an optional (enabled by default) random buffer which provides a significant speed boost as
     /// it greatly reduces the amount of calls into unmanaged land.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class RandomGenerator : Random, IRandom, IDisposable
     {
         private RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();

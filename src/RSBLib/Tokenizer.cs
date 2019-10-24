@@ -12,7 +12,7 @@ namespace SMC.Utilities.RSG
 
         private int pos;
 
-        internal (bool valid, string parseError) Tokenize(string pattern)
+        internal bool Tokenize(string pattern)
         {
             var tokenizedList = new List<Token>();
             for (pos = 0; pos < pattern.Length; pos++)
@@ -91,7 +91,7 @@ namespace SMC.Utilities.RSG
             }
 
             TokenizedPattern = tokenizedList;
-            return (true, string.Empty);
+            return true;
         }
 
 
@@ -199,9 +199,6 @@ namespace SMC.Utilities.RSG
             if (countString.Contains(","))
             {
                 var div = countString.Split(',');
-                if (div.Length != 2)
-                    throw new InvalidPatternException($"The count token starting at position {originalPosition}, ending at {pos}, is not valid.  Too many commas detected.");
-
                 if (string.IsNullOrWhiteSpace(div[0]))
                 {
                     token.MinimumCount = 0;
