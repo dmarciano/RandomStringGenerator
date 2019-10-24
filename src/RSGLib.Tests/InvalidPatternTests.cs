@@ -40,5 +40,15 @@ namespace RSGLib.Tests
             string str = " ";
             generator.SetPattern(str);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidPatternException))]
+        public void ZeroRepeatTest()
+        {
+            var generator = new Generator("a(0)");
+        }
+
+        //Too many commas detected
+        //No closing count parenthesis
     }
 }

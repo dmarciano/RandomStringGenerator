@@ -82,11 +82,23 @@ There are a couple of additional characters that are used to help define the pat
 
 ### Valid Patterns
 Below are valid patterns with a description and an example of a possible output:
-
-
-
+- **a** - Generate a single letter (either uppercase or lowercase)
+- **a(2)** - Generate two letters (either uppercase or lowercase)
+- **.(1,2)** - Generate one to two letters or numbers.  For example: *a1*, *2B*, *uV*, *45*, etc.
+- **a^(2,3)** - Generate two to three *uppercase* letters.
+- **%~(2)** - Generate two numbers or symbols *excluding* zero.
+- **[Order-]0(3,5)[-P]a(2)[-]9(4)** - Generate a string which starts with "Order-", followed by three to five numbers, followed by "-P", followed by two letters, then a hypen, and then four numbers not including 0.  Some examples include:
+  - Order-012-PAb-1234
+  - Order-3210-PAA-2589
+  - Order-4567-Pbb-9999
+   
 ### Invalid Patterns
-Below are invalid patterns with a description of *why* it is invalid
+Below are invalid patterns with a description of *why* it is invalid:
+- **a(0)** - Repeat count cannot be exactly zero
+- **a~** - Cannot apply exclude zero modifier to letter token
+- **0^** - Cannot apply uppercase modifier to number token
+- **a(2,** or **a(2,3%** - No closing parenthesis
+- **a(2,3,4)** - Invalid format/too many commas
 
 
 ## Future Plans
