@@ -43,11 +43,13 @@
   <ItemGroup>
     <Compile Include="Exceptions.cs" />
     <Compile Include="Generator.cs" />
-    <Compile Include="LiteralType.cs" />
-    <Compile Include="ModifierType.cs" />
+    <Compile Include="Interfaces\IRandom.cs" />
+    <Compile Include="Enums\LiteralType.cs" />
+    <Compile Include="Enums\ModifierType.cs" />
+    <Compile Include="RandomGenerator.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="Tokenizer.cs" />
-    <Compile Include="TokenType.cs" />
+    <Compile Include="Enums\TokenType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
