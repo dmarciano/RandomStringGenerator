@@ -318,6 +318,42 @@ namespace RSGLib.Tests
                 Assert.IsTrue(char.IsLetter(c));
             }
         }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void StringInterpolationTest()
+        {
+            var pattern = $"[{"AAA".ToString()}]@";
+            var generator = new Generator(pattern);
+            var output1 = generator.ToString();
+            var output2 = generator.ToString();
+
+            Assert.IsTrue(output1.Length == 4);
+            Assert.AreEqual(output1.Substring(0, 3), "AAA", false);
+            Assert.IsTrue(char.IsSymbol(output1[3]) || char.IsPunctuation(output1[3]));
+
+            Assert.IsTrue(output2.Length == 4);
+            Assert.AreEqual(output2.Substring(0, 3), "AAA", false);
+            Assert.IsTrue(char.IsSymbol(output2[3]) || char.IsPunctuation(output2[3]));
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void StringInterpolationRepeatTest()
+        {
+            var pattern = $"[{"AAA".ToString()}](2)@";
+            var generator = new Generator(pattern);
+            var output1 = generator.ToString();
+            var output2 = generator.ToString();
+
+            Assert.IsTrue(output1.Length == 7);
+            Assert.AreEqual(output1.Substring(0, 6), "AAAAAA", false);
+            Assert.IsTrue(char.IsSymbol(output1[6]) || char.IsPunctuation(output1[6]));
+
+            Assert.IsTrue(output2.Length == 7);
+            Assert.AreEqual(output2.Substring(0, 6), "AAAAAA", false);
+            Assert.IsTrue(char.IsSymbol(output2[6]) || char.IsPunctuation(output2[6]));
+        }
         #endregion
 
         #region Basic Patterns with Modifiers
