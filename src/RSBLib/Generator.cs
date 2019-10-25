@@ -367,6 +367,10 @@ namespace SMC.Utilities.RSG
                         {
                             globalExcept = token.ControlBlock.ExceptValues;
                         }
+                        else
+                        {
+                            HandleControlBlock(token, repeat, ref sb);
+                        }
                         break;
                 }
 
@@ -489,9 +493,22 @@ namespace SMC.Utilities.RSG
             }
         }
 
-        private void HandleControlBlock(Token token)
+        private void HandleControlBlock(Token token, int repeat, ref StringBuilder sb)
         {
-
+            //TODO: Process function block
+            if (token.ControlBlock.Lazy)
+            {
+                //If lazy, run the specified function each time.
+                for (var count = 0; count < repeat; count++)
+                {
+                    sb.Append(token.ControlBlock.Function());
+                }
+                
+            }
+            else
+            {
+                //If not lazy, just return the value property which was set during tokenization
+            }
         }
         #endregion
 

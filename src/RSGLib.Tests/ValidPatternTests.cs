@@ -752,6 +752,19 @@ namespace RSGLib.Tests
 
         [TestMethod]
         [TestCategory("Control Blocks")]
+        public void GeneralDateTimeStringRepeatTest()
+        {
+            var pattern = "{T}(2)";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            //Best way to test for two date/time string concated?
+        }
+
+        //TODO: Multiple Date/time
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
         public void DateStringTest()
         {
             var pattern = "{T:d}";

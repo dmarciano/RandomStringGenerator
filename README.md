@@ -128,14 +128,14 @@ it is necessary to call the **AssignFunction** method of the generator instance 
 
 The FCBs are evaluated using a lazy methodology.  That is, the **GetDataFromDatabase** method in the example above is not called during tokenization and is only called when the random string is actually generated.
 Because of this, using a function, like the date/time function, will use a data/time when the string is actually generated instead of when the pattern was originally loaded and parsed.  It is possible though to force
-an immediate evaluation of the FCB by including the **?f** switch in the block.
+an immediate evaluation of the FCB, *which use built-in functions* by including the **?** switch before the closing brace.
 
 For example, if every generated string should have the *same* date/time at the beginning of the string, the pattern can be written as
-**{T:d?f}**.  This will ensure that every string has the same ID.  Similarly, if data needed to be gotten from a database, and the data will never change and thus be the same for ever string, the pattern can be specified as
-**{DB?f}**.  Therefore, in the above example, **GetDataFromDatabase** will only be called once and the data gotten will be used for every string.
-> **NOTE** The force switch applies *per block*.  So if a pattern contains **{T:d?f}a{T:d?f}**, the date/time will be gotten twice; once for the first block and once for the second block.  Therefore, all the generated
+**{T:d?}**.  This will ensure that every string has the same date. 
+> **NOTE** The force switch applies *per block*.  So if a pattern contains **{T:d?}a{T:d?}**, the date/time will be gotten twice; once for the first block and once for the second block.  Therefore, all the generated
 string will have the same date/time in the first and second blocks, but the first and second blocks will be different from each other.
-> **NOTE** When saving a pattern to a file, or stream, the assigned function is ***not*** saved.  This is due to how delegates and serialization works.  Therefore, when a file is loaded, the **AssignFunction** method
+> **NOTE** The force switch *cannot* be applied to user-defined functions.  This is because the user-defined function is specified in the generator and may not even be defined in the generator when the pattern is processed
+> **NOTE** When saving a pattern to a file, or stream, a user-defined function is ***not*** saved.  This is due to how delegates and serialization works.  Therefore, when a file is loaded, the **AssignFunction** method
 will need to be called for all user-defined FCBs in the pattern, otherwise an exception will be thrown when attempting to generate a random string.
 
 ## Examples

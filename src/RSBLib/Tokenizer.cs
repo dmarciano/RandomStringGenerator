@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -63,8 +64,11 @@ namespace SMC.Utilities.RSG
                     {
                         if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(ref token, pattern);
                     }
+                }
 
-                    if (pos != pattern.Length - 1)
+                if(token.Type != TokenType.CONTROL_BLOCK || (token.Type == TokenType.CONTROL_BLOCK && token.ControlBlock.Global == false))
+                { 
+                    if (pos < pattern.Length - 1)
                     {
                         if (char.Equals(pattern[pos + 1], '(')) HandleCount(ref token, pattern);
                     }
@@ -106,12 +110,99 @@ namespace SMC.Utilities.RSG
 
         private void HandleControlBlock(ref Token token, string pattern)
         {
-            var EOS = false;
             var originalPosition = pos;
+            
+
+            //pos++;
+            //if (pos >= pattern.Length)
+            //    throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+
+            switch (pattern[pos])
+            {
+                case '-':
+                    HandleExclusionBlock(ref token, pattern, originalPosition);
+                    break;
+                default:
+                    HandleFunctionBlock(ref token, pattern, originalPosition);
+                    break;
+            }
+        }
+
+        private void HandleExclusionBlock(ref Token token, string pattern, int originalPosition)
+        {
             var openings = 1;
+            Token tempToken = null;
             var cb = new ControlBlock();
             var sb = new StringBuilder();
-            Token tempToken = null;
+
+            cb.Type = ControlBlockType.ECB;
+            if (pos == 1)
+            {
+                //This is global ECB
+                cb.Global = true;
+            }
+            else
+            {
+                //Get the previous token in the the list.  If it is not a regular token (i.e. it is a control box) throw exception
+                tempToken = tokenizedList.Last();
+                if (tempToken.ControlBlock != null && tempToken.ControlBlock.Global == true)
+                    throw new DuplicateGlobalControlBlockException($"A second global control block was found starting at position {originalPosition}.");
+
+                cb.Global = false;
+            }
+
+            if (pos + 1 >= pattern.Length)
+                throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+
+            var process = true;
+            while (process)
+            {
+                pos++;
+                if (pos >= pattern.Length)
+                    throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+
+                switch (pattern[pos])
+                {
+                    case '{':
+                        openings += 1;
+                        sb.Append(pattern[pos]);
+                        break;
+                    case '}':
+                        openings -= 1;
+                        if (openings == 0)
+                        {
+                            process = false;
+                        }
+                        else
+                        {
+                            sb.Append(pattern[pos]);
+                        }
+                        break;
+                    default:
+                        sb.Append(pattern[pos]);
+                        break;
+                }
+            }
+
+            cb.ExceptValues = sb.ToString().ToCharArray();
+            if (cb.Global)
+            {
+                token.ControlBlock = cb;
+                tokenizedList.Add(token);
+            }
+            else
+            {
+                tempToken.ControlBlock = cb;
+                tokenizedList.RemoveAt(tokenizedList.Count - 1);
+                tokenizedList.Add(tempToken);
+            }
+        }
+
+        private void HandleFunctionBlock(ref Token token, string pattern, int originalPosition)
+        {
+            var EOS = false;
+            var cb = new ControlBlock() { Type = ControlBlockType.FCB};
+            var functionName = new StringBuilder();
 
             while (!EOS)
             {
@@ -121,70 +212,27 @@ namespace SMC.Utilities.RSG
 
                 switch (pattern[pos])
                 {
-                    case '-':
-                        if (pos == 1)
-                        {
-                            //This is global ECB and is the first one
-                            cb.Type = ControlBlockType.ECB;
-                            cb.Global = true;
-                        }
-                        else
-                        {
-                            //Get the previous token in the the list.  If it is not a regular token (i.e. it is a control box) throw exception
-                            tempToken = tokenizedList.Last();
-                            if (tempToken.ControlBlock != null && tempToken.ControlBlock.Global == true)
-                                throw new DuplicateGlobalControlBlockException($"A second global control block was found starting at position {originalPosition}.");
-
-                            cb.Global = false;
-                        }
-
-                        if (pos + 1 >= pattern.Length)
+                    case 'T':
+                    case 'G':
+                        var functionCode = pattern[pos];
+                        pos++;
+                        if (pos >= pattern.Length)
                             throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
-
-                        var process = true;
-                        while(process)
+                        if (char.Equals(pattern[pos], '}'))
                         {
-                            pos++;
-                            if (pos >= pattern.Length)
-                                throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+                            cb.FunctionName = functionCode.ToString();
+                            if(char.Equals(functionCode, 'T'))
+                                cb.Function = () => DateTime.Now.ToString();
+                            else
+                                cb.Function = () => Guid.NewGuid().ToString();
 
-                            switch (pattern[pos])
-                            {
-                                case '{':
-                                    openings += 1;
-                                    sb.Append(pattern[pos]);
-                                    break;
-                                case '}':
-                                    openings -= 1;
-                                    if(openings == 0)
-                                    {
-                                        process = false;
-                                    }
-                                    else
-                                    {
-                                        sb.Append(pattern[pos]);
-                                    }
-                                    break;
-                                default:
-                                    sb.Append(pattern[pos]);
-                                    break;
-                            }                           
-                        }
-
-                        cb.ExceptValues = sb.ToString().ToCharArray();
-                        if (cb.Global)
-                        {
                             token.ControlBlock = cb;
-                            tokenizedList.Add(token);
                             EOS = true;
                         }
-                        else
-                        {
-                            tempToken.ControlBlock = cb;
-                            tokenizedList.RemoveAt(tokenizedList.Count - 1);
-                            tokenizedList.Add(tempToken);
-                            EOS = true;
-                        }
+                        break;
+                    case '}':
+                        break;
+                    default:
                         break;
                 }
             }
