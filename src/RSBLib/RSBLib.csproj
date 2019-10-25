@@ -46,8 +46,10 @@
     <Compile Include="Interfaces\IRandom.cs" />
     <Compile Include="Enums\LiteralType.cs" />
     <Compile Include="Enums\ModifierType.cs" />
-    <Compile Include="RandomGenerator.cs" />
+    <Compile Include="Random Generators\CryptoRandomGenerator.cs" />
+    <Compile Include="Random Generators\RandomGenerator.cs" />
     <Compile Include="Token.cs" />
+    <Compile Include="TokenFile.cs" />
     <Compile Include="Tokenizer.cs" />
     <Compile Include="Enums\TokenType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

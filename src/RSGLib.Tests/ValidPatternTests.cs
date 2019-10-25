@@ -2,6 +2,7 @@
 using SMC.Utilities.RSG;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace RSGLib.Tests
@@ -69,6 +70,51 @@ namespace RSGLib.Tests
         public void SingleSymbolTest()
         {
             var generator = new Generator("@");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void SingleCharacterWithCryptoTest()
+        {
+            var generator = new Generator("a", new CryptoRandomGenerator());
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void SingleNumberWithCryptoTest()
+        {
+            var generator = new Generator("0", new CryptoRandomGenerator());
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsNumber(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void SingleNumberExcludingZeroWithCryptoTest()
+        {
+            var generator = new Generator("9", new CryptoRandomGenerator());
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsNumber(output[0]));
+            Assert.IsTrue(Convert.ToInt32(output[0]) != 0);
+        }
+
+        [TestMethod]
+        [TestCategory("Basic Pattern")]
+        public void SingleSymbolWithCryptoTest()
+        {
+            var generator = new Generator("@", new CryptoRandomGenerator());
             var output = generator.GetString();
 
             Assert.IsTrue(output.Length == 1);
@@ -352,6 +398,88 @@ namespace RSGLib.Tests
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsNumber(output[0]));
             Assert.IsTrue(Convert.ToInt32(output[0]) != 0);
+        }
+        #endregion
+
+        #region Serialization Test
+        [TestMethod]
+        [TestCategory("Serialization")]
+        public void SaveLoadFileTest()
+        {
+            var pattern = "a";
+            var generator = new Generator(pattern);
+            var savedFile = generator.Save(string.Empty, string.Empty);
+
+            Assert.IsTrue(File.Exists(savedFile));
+
+            generator.Load(savedFile);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.AreEqual(generator.Pattern, pattern, false);
+        }
+
+        [TestMethod]
+        [TestCategory("Serialization")]
+        public void SaveLoadFileTest2()
+        {
+            var pattern = "a";
+            var generator1 = new Generator(pattern);
+            var savedFile = generator1.Save(string.Empty, string.Empty);
+
+            Assert.IsTrue(File.Exists(savedFile));
+
+            var generator2 = new Generator();
+            generator2.Load(savedFile);
+            var output = generator2.ToString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.AreEqual(generator2.Pattern, pattern, false);
+        }
+
+        [TestMethod]
+        [TestCategory("Serialization")]
+        public void SaveLoadStreamTest()
+        {
+            var pattern = "a";
+            var generator = new Generator(pattern);
+            using(var ms = new MemoryStream())
+            {
+                generator.Save(ms);
+
+                ms.Position = 0;
+
+                generator.Load(ms);
+            }
+
+            var output = generator.ToString();
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.AreEqual(generator.Pattern, pattern, false);
+        }
+
+        [TestMethod]
+        [TestCategory("Serialization")]
+        public void SaveLoadStreamTest2()
+        {
+            var pattern = "a";
+            var generator1 = new Generator(pattern);
+            var generator2 = new Generator();
+            using (var ms = new MemoryStream())
+            {
+                generator1.Save(ms);
+
+                ms.Position = 0;
+
+                generator2.Load(ms);
+            }
+
+            var output = generator2.ToString();
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.AreEqual(generator2.Pattern, pattern, false);
         }
         #endregion
 

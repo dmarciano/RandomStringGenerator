@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security;
 using System.Text;
 
 namespace SMC.Utilities.RSG
@@ -56,19 +60,39 @@ namespace SMC.Utilities.RSG
 
         #region Constructors
         /// <summary>
-        /// Creates a new <see cref="Tokenizer"/> class.
+        /// Creates a new <see cref="Generator"/> class.
         /// </summary>
-        public Generator() : this(string.Empty) { }
+        /// <exception cref="NoPatternException">Pattern is null, empty, or only whitespace.</exception>
+        /// <exception cref="InvalidPatternException">Pattern is not valid.</exception>
+        public Generator() : this(string.Empty, new RandomGenerator()) { }
 
         /// <summary>
-        /// Creates a new <see cref="Tokenizer"/> class.
+        /// Creates a new <see cref="Generator"/> class.
+        /// </summary>
+        /// <param name="random">The random number generator used for the string generation.</param>
+        /// <exception cref="NoPatternException">Pattern is null, empty, or only whitespace.</exception>
+        /// <exception cref="InvalidPatternException">Pattern is not valid.</exception>
+        public Generator(IRandom random) : this(string.Empty, random) { }
+
+        /// <summary>
+        /// Creates a new <see cref="Generator"/> class.
         /// </summary>
         /// <param name="pattern">The pattern string to use for the random string generation.</param>
         /// <exception cref="NoPatternException">Pattern is null, empty, or only whitespace.</exception>
         /// <exception cref="InvalidPatternException">Pattern is not valid.</exception>
-        public Generator(string pattern)
+        public Generator(string pattern) : this(pattern, new RandomGenerator()) { }
+
+        /// <summary>
+        /// Creates a new <see cref="Generator"/> class.
+        /// </summary>
+        /// <param name="pattern">The pattern string to use for the random string generation.</param>
+        /// <param name="random">The random number generator used for the string generation.</param>
+        /// <exception cref="NoPatternException">Pattern is null, empty, or only whitespace.</exception>
+        /// <exception cref="InvalidPatternException">Pattern is not valid.</exception>
+        public Generator(string pattern, IRandom random)
         {
             _tokenizer = new Tokenizer();
+            _rng = random;
             if (!string.IsNullOrEmpty(pattern))
                 SetPattern(pattern);
         }
@@ -81,6 +105,7 @@ namespace SMC.Utilities.RSG
         /// <param name="pattern">The pattern to set.</param>
         /// <exception cref="NoPatternException">Pattern is null, empty, or only whitespace.</exception>
         /// <exception cref="InvalidPatternException">Pattern is not valid.</exception>
+        /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
         public void SetPattern(string pattern)
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
@@ -91,10 +116,140 @@ namespace SMC.Utilities.RSG
             if (valid)
                 _tokenizedPattern = _tokenizer.TokenizedPattern;
 
-            //TODO: Allow users to specify random number generator.
-            _rng = new RandomGenerator();
             Pattern = pattern;
         }
+
+        /// <summary>
+        /// Saves a tokenized pattern to a file.
+        /// </summary>
+        /// <param name="filePath">The folder to save the file to.  If null or empty, the application data folder is used.</param>
+        /// <param name="fileName">The name of the file.  If null or empty, a auto-generated name is used.</param>
+        /// <param name="overwrite"><c>true</c> is the file should be overwritten if it exist, otherwise <c>false</c>.</param>
+        /// <returns>The full file path of the saved *.tok file.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SerializationException "></exception>
+        /// <exception cref="SecurityException"></exception>
+        /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
+        public string Save(string filePath, string fileName, bool overwrite = false)
+        {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
+
+            if (null == _tokenizedPattern || _tokenizedPattern.Count < 1)
+                throw new InvalidPatternException("A valid pattern must be set before attempting to generate a random string.");
+
+            if (string.IsNullOrWhiteSpace(filePath))
+                filePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            if (string.IsNullOrWhiteSpace(fileName))
+                fileName = Guid.NewGuid().ToString();
+
+            fileName += ".tok";
+            var fullFilePath = Path.Combine(filePath, fileName);
+            if (File.Exists(fullFilePath) && !overwrite)
+                throw new IOException($"The file '{fileName}' already exist in the specified folder.");
+
+            var formatter = new BinaryFormatter();
+            byte[] data;
+            using(var ms = new MemoryStream())
+            {
+                formatter.Serialize(ms, new TokenFile() { Tokens = _tokenizedPattern, Pattern = Pattern });
+                data = ms.ToArray();
+            }
+
+            using(var fs = new FileStream(fullFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                fs.Write(data, 0, data.Length);
+                fs.Flush();
+            }
+
+            return fullFilePath;
+        }
+
+        /// <summary>
+        /// Saves a tokenized pattern to a stream
+        /// </summary>
+        /// <param name="stream">The stream to save the tokenized pattern to.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SerializationException "></exception>
+        /// <exception cref="SecurityException"></exception>
+        /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
+        public void Save(Stream stream)
+        {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
+
+            if (null == _tokenizedPattern || _tokenizedPattern.Count < 1)
+                throw new InvalidPatternException("A valid pattern must be set before attempting to generate a random string.");
+            if (null == stream)
+                throw new ArgumentNullException(nameof(stream), "A stream must be provided.");
+
+            var formatter = new BinaryFormatter();
+            byte[] data;
+            using (var ms = new MemoryStream())
+            {
+                formatter.Serialize(ms, new TokenFile() { Tokens = _tokenizedPattern, Pattern = Pattern });
+                data = ms.ToArray();
+            }
+
+            stream.Write(data, 0, data.Length);
+        }
+
+        /// <summary>
+        /// Load a string generation pattern from file.
+        /// </summary>
+        /// <param name="file">The full path of the file to load.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
+        /// <exception cref="IOException"></exception>
+        /// <exception cref="SecurityException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="PathTooLongException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
+        public void Load(string file)
+        {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
+            if (string.IsNullOrWhiteSpace(file))
+                throw new ArgumentNullException(nameof(file), "A file must be specified.");
+
+            using(var stream = new FileStream(file,FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                Load(stream);
+            }
+        }
+
+        /// <summary>
+        /// Load a string generation pattern from file.
+        /// </summary>
+        /// <param name="stream">A stream for the file to load.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
+        /// <exception cref="IOException"></exception>
+        /// <exception cref="SecurityException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="PathTooLongException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
+        public void Load(Stream stream)
+        {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
+            if(null == stream)
+                throw new ArgumentNullException(nameof(stream), "A stream must be provided.");
+
+            var formatter = new BinaryFormatter();
+            using (stream)
+            {
+                var data = (TokenFile)formatter.Deserialize(stream);
+                _tokenizedPattern = data.Tokens;
+                Pattern = data.Pattern;
+            }
+        }
+
 
         /// <summary>
         /// Creates a random string based on the specified pattern.
@@ -103,6 +258,7 @@ namespace SMC.Utilities.RSG
         /// <exception cref="InvalidPatternException">No valid pattern set.</exception>
         /// <exception cref="InvalidModifierException">An unknown modifier was found in the pattern.</exception>
         /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
+        /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
         public override string ToString()
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
@@ -116,6 +272,7 @@ namespace SMC.Utilities.RSG
         /// <exception cref="InvalidPatternException">No valid pattern set.</exception>
         /// <exception cref="InvalidModifierException">An unknown modifier was found in the pattern.</exception>
         /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
+        /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
         public string GetString()
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
@@ -332,25 +489,15 @@ namespace SMC.Utilities.RSG
                     _tokenizer = null;
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
                 disposedValue = true;
             }
         }
-
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~Generator() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
 
         // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
             //GC.SuppressFinalize(this);
         }
         #endregion

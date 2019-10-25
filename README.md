@@ -1,6 +1,13 @@
 # Random String Generator (RSG)
 A library from generating random strings based on a simple pattern language.
 
+## Features
+- Quick string generation (see [Benchmarks](#benchmarks))
+- Ability to specify a random number generator to use
+  - Library comes with two built-in classes: ```RandomGenerator``` and ```CryptoRandomGenerator```
+- Able to specify anything from single character strings to very complex patterns including letters, numbers, and symbols/punctuation
+- Tokenized pattern can be saved to a **.tok** file to be quickly loaded and/or shared
+
 ## Uses
 This library is used for generating random string based on a pattern or specific requirements, such as:
 - User ID's
@@ -108,8 +115,6 @@ Below are invalid patterns with a description of *why* it is invalid:
 ## Future Plans
 - Currently there is plan for the next release to include a token, or modifier, to indicate that certain letters and/or numbers should be *not* be generated.
 This would make it possible for users to specify, for example, that they don't want the letter 'l' (lowercase L) or '1' (one) output for specific tokens or anywhere in the generated string.
-- The ```Generator``` class currently uses a built-in random number generator for creating the output string.  The RNG is built upon the .NET Framework ```RNGCryptoServiceProvider``` class.  There are plans
-to allow users to specify their own class to generate random numbers as long as the custom class implements the ```IRandom``` interface (specified in the RSG library).
 - A method of specifying a range, or set, of numbers/character to use for generating the string.
 
 ## Contributing

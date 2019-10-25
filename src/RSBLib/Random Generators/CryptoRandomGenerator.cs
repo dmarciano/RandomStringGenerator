@@ -53,7 +53,7 @@ namespace SMC.Utilities.RSG
     /// it greatly reduces the amount of calls into unmanaged land.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class RandomGenerator : Random, IRandom, IDisposable
+    public class CryptoRandomGenerator : Random, IRandom, IDisposable
     {
         private RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
 
@@ -70,27 +70,27 @@ namespace SMC.Utilities.RSG
         public bool IsRandomPoolEnabled { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RandomGenerator"/> class with.
+        /// Initializes a new instance of the <see cref="CryptoRandomGenerator"/> class with.
         /// Using this overload will enable the random buffer pool.
         /// </summary>
-        public RandomGenerator() : this(true) { }
+        public CryptoRandomGenerator() : this(true) { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RandomGenerator"/> class.
+        /// Initializes a new instance of the <see cref="CryptoRandomGenerator"/> class.
         /// This method will disregard whatever value is passed as seed and it's only implemented
         /// in order to be fully backwards compatible with <see cref="System.Random"/>.
         /// Using this overload will enable the random buffer pool.
         /// </summary>
         /// <param name="ignoredSeed">The ignored seed.</param>
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "ignoredSeed", Justification = "Cannot remove this parameter as we implement the full API of System.Random")]
-        public RandomGenerator(int ignoredSeed) : this(true) { }
+        public CryptoRandomGenerator(int ignoredSeed) : this(true) { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RandomGenerator"/> class with
+        /// Initializes a new instance of the <see cref="CryptoRandomGenerator"/> class with
         /// optional random buffer.
         /// </summary>
         /// <param name="enableRandomPool">set to <c>true</c> to enable the random pool buffer for increased performance.</param>
-        public RandomGenerator(bool enableRandomPool)
+        public CryptoRandomGenerator(bool enableRandomPool)
         {
             IsRandomPoolEnabled = enableRandomPool;
         }
