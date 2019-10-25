@@ -7,12 +7,15 @@ A library from generating random strings based on a simple pattern language.
   - Library comes with two built-in classes: ```RandomGenerator``` and ```CryptoRandomGenerator```
 - Able to specify anything from single character strings to very complex patterns including letters, numbers, and symbols/punctuation
 - Tokenized pattern can be saved to a **.tok** file to be quickly loaded and/or shared
+- Able to specify
+- Control Blocks to have granular control over tokens or to use built-in/user-defined, functions (e.g. date/time, GUID, etc.) to generate part of the string
 
 ## Uses
 This library is used for generating random string based on a pattern or specific requirements, such as:
 - User ID's
 - Passwords
 - Order/Product Numbers
+- File Names
 
 The RSG language used to the specify the pattern is relatively simply.  Although Regular Expressions can express *very* complicated patterns (e.g. using look-aheads), it makes them much more complicated.  In addition,
 regular expressions were designed more for matching strings to a pattern rather than generating a string from a pattern.  The latter is exactly what this library is designed to do and is in many ways a complement to
@@ -82,8 +85,58 @@ There are a couple of additional characters that are used to help define the pat
   - **a!(2)** - Would output any two LOWERCASE letters.
   - **\[-](3)** - Would output three hypens sequentially.
   - **\[a4](3)** - Would output "a4" three times (i.e. "a4a4a4").
+-- **{}** - Braces are used to specify a control block and can have different means depending on where it is placed and its exact format.  See [Advanced Features](#advanced-features) for more information on this token.
 
 #### NOTE Although **a(0)** seems like it would be valid based on the information above, this pattern is not valid as this would not generate any output and would simply add to the processing time.
+
+## Advanced Features
+
+### Control Block
+A control block, **{}** is a special token which is used for more granular control of tokens (called an "exclusion control block" or "ECB") or for specifying either built-in or user-defined functions 
+(called a "function control block" or "FCB".  Each is described below:
+
+#### Exclusion Control Block (ECB)
+A **{}** block can be specified at the very beginning of a pattern string to specify any letters, numbers, or symbols to leave out of any token selection.  For example, if the pattern string is *a9a*, but the letters
+'l' (lowercase L) or 'O' (uppercase letter "Oh") should not be generated for either **a** token in the pattern, a control block can be specified at the beginning of the pattern string as **{-lO}a9a**.  Such a global control 
+block can only be specified once at the beginning of the pattern.  That is writing **{-l}{-O}a9a** is invalid.
+
+However, if 'l' should only be excluded from the first letter token and 'O' should be excluded from the second letter token, a  ECB can be specified for each token individually: **a{-l}9a{-O}**.
+> **NOTE** ECBs must *always* have a hypen ('-') immediately after the opening brace ('{') to indicate that it is a ECB and not a Function Control Block (described below).
+
+#### Function Control Block (FCB)
+A control block can also be used to specify functions to either generate a string from a .NET Framework method (e.g. date/time, GUID, etc.) or by a specified user function.  Currently there are two built-in functions that
+can be used:
+- **T** - Date and time string
+- **G** - GUID
+
+Both of these accept a standard .NET formatting string by separating it with a colon (':') like this: **{T:<format_string>}**.  Some examples include:
+- **{T:d}** - This would generate a standard .NET DateTime short date string (e.g. 6/15/2009)
+- **{T:T}** - This would generate a standard .NET DateTime long time string (e.g. 1:45:30 PM)
+- **{T: MMMM dd, yyyy}** - This would generate a custom DateTime string (e.g June 10, 2011).
+- **{G:N}** - This would generate a GUID with only numbers (e.g. 00000000000000000000000000000000)
+- **{G:X}** - This would generate a GUID formatted as hexadecimals (e.g. {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}})
+- **{T:d}[ ]{T:t}** - This would gnerated a standard .NET DateTime short data string followed by a long time string (e.g. 6/15/2009 1:45:30 PM)
+
+It is also possible to call a custom Func\<TResult> method where *TResult* is a *string* type.  This also inserting data to the randomly generated string that is taken from other places.  For example, the Func\<TResult>
+may return data from a database or different data depending on the state of the application.  In order to use this kind of FCB, several things must be done:
+- Create a unique name that will be used to associate the function.  It is recommended that this is a short string and can only be letters.
+- Include the FCB in the pattern using this name
+- Call the **AssignFunction** method of the generator instance and pass in this unique name as well as the delegate for the function.
+
+For example, if the function being used was getting data from a database, it can be called **DB**.  This name is included in the FCB in the same way that the date/time and GUID functions were used, **{DB}**.  Finally,
+it is necessary to call the **AssignFunction** method of the generator instance with this name and the function **AssignFunction("DB", GetDataFromDatabase)**.
+
+The FCBs are evaluated using a lazy methodology.  That is, the **GetDataFromDatabase** method in the example above is not called during tokenization and is only called when the random string is actually generated.
+Because of this, using a function, like the date/time function, will use a data/time when the string is actually generated instead of when the pattern was originally loaded and parsed.  It is possible though to force
+an immediate evaluation of the FCB by including the **?f** switch in the block.
+
+For example, if every generated string should have the *same* date/time at the beginning of the string, the pattern can be written as
+**{T:d?f}**.  This will ensure that every string has the same ID.  Similarly, if data needed to be gotten from a database, and the data will never change and thus be the same for ever string, the pattern can be specified as
+**{DB?f}**.  Therefore, in the above example, **GetDataFromDatabase** will only be called once and the data gotten will be used for every string.
+> **NOTE** The force switch applies *per block*.  So if a pattern contains **{T:d?f}a{T:d?f}**, the date/time will be gotten twice; once for the first block and once for the second block.  Therefore, all the generated
+string will have the same date/time in the first and second blocks, but the first and second blocks will be different from each other.
+> **NOTE** When saving a pattern to a file, or stream, the assigned function is ***not*** saved.  This is due to how delegates and serialization works.  Therefore, when a file is loaded, the **AssignFunction** method
+will need to be called for all user-defined FCBs in the pattern, otherwise an exception will be thrown when attempting to generate a random string.
 
 ## Examples
 
@@ -113,8 +166,6 @@ Below are invalid patterns with a description of *why* it is invalid:
 - **a(2,3,4)** - Invalid format/too many commas
 
 ## Future Plans
-- Currently there is plan for the next release to include a token, or modifier, to indicate that certain letters and/or numbers should be *not* be generated.
-This would make it possible for users to specify, for example, that they don't want the letter 'l' (lowercase L) or '1' (one) output for specific tokens or anywhere in the generated string.
 - A method of specifying a range, or set, of numbers/character to use for generating the string.
 
 ## Contributing

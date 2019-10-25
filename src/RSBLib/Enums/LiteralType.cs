@@ -3,34 +3,17 @@
 namespace SMC.Utilities.RSG
 {
     /// <summary>
-    /// Specifies a specific literal token type.
+    /// Specifies a type of control block
     /// </summary>
-    public enum LiteralType
+    public enum ControlBlockType
     {
         /// <summary>
-        /// The hypen "-" literal.
+        /// An Exclusion Control Block (ECB).
         /// </summary>
-        [Description("-")]
-        HYPEN,
+        ECB,
         /// <summary>
-        /// The underscore "_" literal.
+        /// A Function Control Block (FCB).
         /// </summary>
-        [Description("_")]
-        UNDERSCORE,
-        /// <summary>
-        /// The backslash "\" literal.
-        /// </summary>
-        [Description("\\")]
-        BACKSLASH,
-        /// <summary>
-        /// The forward slash "/" literal
-        /// </summary>
-        [Description("/")]
-        FORWARD_SLASH,
-        /// <summary>
-        /// The whitespace " " literal.
-        /// </summary>
-        [Description(" ")]
-        WHITESPACE
+        FCB,
     }
 }

@@ -7,8 +7,9 @@ namespace SMC.Utilities.RSG
     {
         internal TokenType Type { get; set; }
         internal ModifierType Modifier { get; set; }
-        internal int MinimumCount { get; set; } = 1;
-        internal int MaximumCount { get; set; } = 1;
+        public int MinimumCount { get; set; } = 1;
+        public int MaximumCount { get; set; } = 1;
         internal string Value { get; set; }
+        internal ControlBlock ControlBlock { get; set; }
     }
 }

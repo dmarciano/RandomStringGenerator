@@ -51,6 +51,11 @@ namespace SMC.Utilities.RSG
         /// This token is for representing a character output.
         /// </summary>
         [Description("[]")]
-        LITERAL
+        LITERAL,
+        /// <summary>
+        /// This token is for representing either a Exclusion Control Block (ECB) or Function Control Block (FCB).
+        /// </summary>
+        [Description("{}")]
+        CONTROL_BLOCK
     }
 }

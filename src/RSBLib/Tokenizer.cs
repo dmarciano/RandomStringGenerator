@@ -10,11 +10,12 @@ namespace SMC.Utilities.RSG
 
         internal List<Token> TokenizedPattern { get; set; }
 
+        private List<Token> tokenizedList;
         private int pos;
 
         internal bool Tokenize(string pattern)
         {
-            var tokenizedList = new List<Token>();
+            tokenizedList = new List<Token>();
             for (pos = 0; pos < pattern.Length; pos++)
             {
                 var token = new Token();
@@ -44,6 +45,10 @@ namespace SMC.Utilities.RSG
                     case '*':
                         token.Type = TokenType.LETTER_NUMBER_SYMBOL;
                         break;
+                    case '{':
+                        token.Type = TokenType.CONTROL_BLOCK;
+                        HandleControlBlock(ref token, pattern);
+                        break;
                     case '[':
                         token.Type = TokenType.LITERAL;
                         HandleLiteral(ref token, pattern);
@@ -52,16 +57,21 @@ namespace SMC.Utilities.RSG
                         throw new InvalidPatternException($"Unknown token '{pattern[pos]}' found in Position {pos}.");
                 }
 
-                if (pos != pattern.Length - 1)
+                if (token.Type != TokenType.CONTROL_BLOCK)
                 {
-                    if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(ref token, pattern);
-                }
+                    if (pos != pattern.Length - 1)
+                    {
+                        if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(ref token, pattern);
+                    }
 
-                if (pos != pattern.Length - 1)
-                {
-                    if (char.Equals(pattern[pos + 1], '(')) HandleCount(ref token, pattern);
+                    if (pos != pattern.Length - 1)
+                    {
+                        if (char.Equals(pattern[pos + 1], '(')) HandleCount(ref token, pattern);
+                    }
+
+
+                    tokenizedList.Add(token);
                 }
-                tokenizedList.Add(token);
                 //switch (pattern[pos])
                 //{
                 //    case 'a':
@@ -94,6 +104,91 @@ namespace SMC.Utilities.RSG
             return true;
         }
 
+        private void HandleControlBlock(ref Token token, string pattern)
+        {
+            var EOS = false;
+            var originalPosition = pos;
+            var openings = 1;
+            var cb = new ControlBlock();
+            var sb = new StringBuilder();
+            Token tempToken = null;
+
+            while (!EOS)
+            {
+                pos++;
+                if (pos >= pattern.Length)
+                    throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+
+                switch (pattern[pos])
+                {
+                    case '-':
+                        if (pos == 1)
+                        {
+                            //This is global ECB and is the first one
+                            cb.Type = ControlBlockType.ECB;
+                            cb.Global = true;
+                        }
+                        else
+                        {
+                            //Get the previous token in the the list.  If it is not a regular token (i.e. it is a control box) throw exception
+                            tempToken = tokenizedList.Last();
+                            if (tempToken.ControlBlock != null && tempToken.ControlBlock.Global == true)
+                                throw new DuplicateGlobalControlBlockException($"A second global control block was found starting at position {originalPosition}.");
+
+                            cb.Global = false;
+                        }
+
+                        if (pos + 1 >= pattern.Length)
+                            throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+
+                        var process = true;
+                        while(process)
+                        {
+                            pos++;
+                            if (pos >= pattern.Length)
+                                throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+
+                            switch (pattern[pos])
+                            {
+                                case '{':
+                                    openings += 1;
+                                    sb.Append(pattern[pos]);
+                                    break;
+                                case '}':
+                                    openings -= 1;
+                                    if(openings == 0)
+                                    {
+                                        process = false;
+                                    }
+                                    else
+                                    {
+                                        sb.Append(pattern[pos]);
+                                    }
+                                    break;
+                                default:
+                                    sb.Append(pattern[pos]);
+                                    break;
+                            }                           
+                        }
+
+                        cb.ExceptValues = sb.ToString().ToCharArray();
+                        if (cb.Global)
+                        {
+                            token.ControlBlock = cb;
+                            tokenizedList.Add(token);
+                            EOS = true;
+                        }
+                        else
+                        {
+                            tempToken.ControlBlock = cb;
+                            tokenizedList.RemoveAt(tokenizedList.Count - 1);
+                            tokenizedList.Add(tempToken);
+                            EOS = true;
+                        }
+                        break;
+                }
+            }
+        }
 
         private void HandleModifier(ref Token token, string pattern)
         {
@@ -101,7 +196,7 @@ namespace SMC.Utilities.RSG
             var modifier = pattern[pos];
             var EOS = false;
 
-            if(token.Type == TokenType.SYMBOL)
+            if (token.Type == TokenType.SYMBOL)
                 throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.  Symbol tokens cannot have any modifiers.");
 
             do
@@ -179,7 +274,8 @@ namespace SMC.Utilities.RSG
                     case '8':
                     case '9':
                     case ',':
-                        if (char.Equals(pattern[pos], ',')){
+                        if (char.Equals(pattern[pos], ','))
+                        {
                             commaCount++;
                             if (commaCount > 1)
                                 throw new InvalidPatternException($"An extra comma was detected at position {pos}.");
@@ -210,13 +306,13 @@ namespace SMC.Utilities.RSG
 
                 token.MaximumCount = int.Parse(div[1]);
 
-                if(token.MinimumCount > token.MaximumCount)
+                if (token.MinimumCount > token.MaximumCount)
                     throw new InvalidPatternException($"The count token starting at position {originalPosition}, ending at {pos}, is not valid.  Maximum repeat count must be greater than minimum repeat count.");
             }
             else
             {
                 var val = int.Parse(countString);
-                if(val == 0)
+                if (val == 0)
                     throw new InvalidPatternException($"The count token starting at position {originalPosition}, ending at {pos}, is not valid.  Repeat count cannot be exactly 0.");
 
                 token.MinimumCount = int.Parse(countString);

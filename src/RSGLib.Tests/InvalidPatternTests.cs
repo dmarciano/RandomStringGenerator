@@ -262,5 +262,11 @@ namespace RSGLib.Tests
             var generator = new Generator();
             generator.SetPattern("v");
         }
+
+        //Control block on closed
+        //Control block missing formatter
+        //No function specified
+        //Unknown function
+        //Duplicate globals
     }
 }

@@ -191,6 +191,7 @@ namespace SMC.Utilities.RSG
             }
 
             stream.Write(data, 0, data.Length);
+
         }
 
         /// <summary>
@@ -302,6 +303,7 @@ namespace SMC.Utilities.RSG
             var sb = new StringBuilder();
             var repeat = 1;
             char[] characters = new char[] { };
+            char[] globalExcept = new char[] { };
             foreach (var token in _tokenizedPattern)
             {
                 if (token.MinimumCount == token.MaximumCount)
@@ -360,10 +362,21 @@ namespace SMC.Utilities.RSG
                             sb.Append(token.Value);
                         }
                         break;
+                    case TokenType.CONTROL_BLOCK:
+                        if (token.ControlBlock.Global)
+                        {
+                            globalExcept = token.ControlBlock.ExceptValues;
+                        }
+                        break;
                 }
 
-                if (token.Type != TokenType.LITERAL)
+                if (token.Type != TokenType.LITERAL && token.Type!=TokenType.CONTROL_BLOCK)
                 {
+                    characters = characters.Except(globalExcept).ToArray();
+                    if(token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Length> 0)
+                    {
+                        characters = characters.Except(token.ControlBlock.ExceptValues).ToArray();
+                    }
                     for (var count = 0; count < repeat; count++)
                     {
                         sb.Append(characters[_rng.Next(characters.Length)]);
@@ -474,6 +487,11 @@ namespace SMC.Utilities.RSG
                     return ALL_LETTERS_NUMBERS_SYMBOLS;
                 }
             }
+        }
+
+        private void HandleControlBlock(Token token)
+        {
+
         }
         #endregion
 

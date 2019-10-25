@@ -55,4 +55,17 @@ namespace SMC.Utilities.RSG
 
         public DuplicateModifierException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
+
+    [ExcludeFromCodeCoverage]
+    [Serializable]
+    public class DuplicateGlobalControlBlockException : Exception
+    {
+        public DuplicateGlobalControlBlockException() { }
+
+        public DuplicateGlobalControlBlockException(string message) : base(message) { }
+
+        public DuplicateGlobalControlBlockException(string message, Exception innerException) : base(message, innerException) { }
+
+        public DuplicateGlobalControlBlockException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
 }

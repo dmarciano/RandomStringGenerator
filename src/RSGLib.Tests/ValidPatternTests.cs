@@ -401,7 +401,7 @@ namespace RSGLib.Tests
         }
         #endregion
 
-        #region Serialization Test
+        #region Serialization
         [TestMethod]
         [TestCategory("Serialization")]
         public void SaveLoadFileTest()
@@ -445,7 +445,7 @@ namespace RSGLib.Tests
         {
             var pattern = "a";
             var generator = new Generator(pattern);
-            using(var ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
                 generator.Save(ms);
 
@@ -678,6 +678,194 @@ namespace RSGLib.Tests
         }
         #endregion
 
+        #region Control Blocks
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GlobalExclusionTest()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("{-ABCDEFGHIJKLM}a^");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!excluded.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GlobalExclusionTest2()
+        {
+            var excluded = new List<char>() { 'a', '{', '}' };
+            var generator = new Generator("{-a{}}a!");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!excluded.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void TokenExclusionTest()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("a^{-ABCDEFGHIJKLM}");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!excluded.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void TokenExclusionTest2()
+        {
+            var excluded = new List<char>() { '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~' };
+            var generator = new Generator("a^{!\"#$%&'()*+,-./:;<>?@[\\]^_`{|}~}");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!excluded.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GlobalAndTokenExclusionTest()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M','Z' };
+            var generator = new Generator("{-Z}a^{-ABCDEFGHIJKLM}");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!excluded.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GeneralDateTimeStringTest()
+        {
+            var pattern = "{T}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void DateStringTest()
+        {
+            var pattern = "{T:d}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void TimeStringTest()
+        {
+            var pattern = "{T:t}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void DateTimeStringTest()
+        {
+            var pattern = "{T:G}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void CustomDateStringTest()
+        {
+            var pattern = "{T:MMMM dd, yyyy}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void CustomTimeStringTest2()
+        {
+            var pattern = "{T:HH:mm:ss}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void CustomDateTimeStringTest2()
+        {
+            var pattern = "{T:MMM dd, yyyy HH:mm:ss zzz}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void DateTimeStringForceTest()
+        {
+            var pattern = "{T:MM/dd/yyyy HH:mm:ss.ffffff?f}";
+            var generator = new Generator(pattern);
+            var output1 = generator.ToString();
+            var output2 = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output1, out var dt1));
+            Assert.IsTrue(DateTime.TryParse(output2, out var dt2));
+            Assert.IsTrue(DateTime.Compare(dt1, dt2) == 0);
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDTest()
+        {
+            var pattern = "{G}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(Guid.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDTest2()
+        {
+            var pattern = "{G:N}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 32);
+            Assert.IsTrue(Guid.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDTest3()
+        {
+            var pattern = "{G:D}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 36);
+            Assert.IsTrue(Guid.TryParse(output, out _));
+        }
+        #endregion
+
         #region Real-World Formats
         [TestMethod]
         [TestCategory("Real-World Patterns")]
@@ -907,7 +1095,7 @@ namespace RSGLib.Tests
         {
             var generator = new Generator();
             generator.Dispose();
-            foreach(var item in generator.GetStrings(10)) { }
+            foreach (var item in generator.GetStrings(10)) { }
         }
 
         [TestMethod]
