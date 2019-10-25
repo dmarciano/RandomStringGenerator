@@ -6,7 +6,6 @@ A library from generating random strings based on a simple pattern language.
 - Ability to specify a random number generator to use
   - Library comes with two built-in classes: ```RandomGenerator``` and ```CryptoRandomGenerator```
 - Able to specify anything from single character strings to very complex patterns including letters, numbers, and symbols/punctuation
-- Tokenized pattern can be saved to a **.tok** file to be quickly loaded and/or shared
 - Able to specify
 - Control Blocks to have granular control over tokens or to use built-in/user-defined, functions (e.g. date/time, GUID, etc.) to generate part of the string
 
@@ -135,8 +134,6 @@ For example, if every generated string should have the *same* date/time at the b
 > **NOTE** The force switch applies *per block*.  So if a pattern contains **{T:d?}a{T:d?}**, the date/time will be gotten twice; once for the first block and once for the second block.  Therefore, all the generated
 string will have the same date/time in the first and second blocks, but the first and second blocks will be different from each other.
 > **NOTE** The force switch *cannot* be applied to user-defined functions.  This is because the user-defined function is specified in the generator and may not even be defined in the generator when the pattern is processed
-> **NOTE** When saving a pattern to a file, or stream, a user-defined function is ***not*** saved.  This is due to how delegates and serialization works.  Therefore, when a file is loaded, the **AssignFunction** method
-will need to be called for all user-defined FCBs in the pattern, otherwise an exception will be thrown when attempting to generate a random string.
 
 ## Examples
 

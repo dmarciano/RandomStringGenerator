@@ -58,16 +58,16 @@ namespace SMC.Utilities.RSG
                         throw new InvalidPatternException($"Unknown token '{pattern[pos]}' found in Position {pos}.");
                 }
 
-                if (token.Type != TokenType.CONTROL_BLOCK)
+                if (token.Type != TokenType.CONTROL_BLOCK || (token.Type == TokenType.CONTROL_BLOCK && token.ControlBlock != null && token.ControlBlock.Global == false))
                 {
                     if (pos != pattern.Length - 1)
                     {
                         if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(ref token, pattern);
                     }
-                }
+                    //}
 
-                if(token.Type != TokenType.CONTROL_BLOCK || (token.Type == TokenType.CONTROL_BLOCK && token.ControlBlock.Global == false))
-                { 
+                    //if(token.Type != TokenType.CONTROL_BLOCK || (token.Type == TokenType.CONTROL_BLOCK && token.ControlBlock.Global == false))
+                    //{ 
                     if (pos < pattern.Length - 1)
                     {
                         if (char.Equals(pattern[pos + 1], '(')) HandleCount(ref token, pattern);
@@ -111,21 +111,31 @@ namespace SMC.Utilities.RSG
         private void HandleControlBlock(ref Token token, string pattern)
         {
             var originalPosition = pos;
-            
+
 
             //pos++;
             //if (pos >= pattern.Length)
             //    throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
 
-            switch (pattern[pos])
+            if (char.Equals(pattern[pos + 1], '-'))
             {
-                case '-':
-                    HandleExclusionBlock(ref token, pattern, originalPosition);
-                    break;
-                default:
-                    HandleFunctionBlock(ref token, pattern, originalPosition);
-                    break;
+                pos++;
+                HandleExclusionBlock(ref token, pattern, originalPosition);
             }
+            else
+            {
+                HandleFunctionBlock(ref token, pattern, originalPosition);
+            }
+            //switch (pattern[pos])
+            //{
+
+            //    case '-':
+            //        HandleExclusionBlock(ref token, pattern, originalPosition);
+            //        break;
+            //    default:
+            //        HandleFunctionBlock(ref token, pattern, originalPosition);
+            //        break;
+            //}
         }
 
         private void HandleExclusionBlock(ref Token token, string pattern, int originalPosition)
@@ -201,8 +211,9 @@ namespace SMC.Utilities.RSG
         private void HandleFunctionBlock(ref Token token, string pattern, int originalPosition)
         {
             var EOS = false;
-            var cb = new ControlBlock() { Type = ControlBlockType.FCB};
+            var cb = new ControlBlock() { Type = ControlBlockType.FCB };
             var functionName = new StringBuilder();
+            var formatter = new StringBuilder();
 
             while (!EOS)
             {
@@ -221,7 +232,7 @@ namespace SMC.Utilities.RSG
                         if (char.Equals(pattern[pos], '}'))
                         {
                             cb.FunctionName = functionCode.ToString();
-                            if(char.Equals(functionCode, 'T'))
+                            if (char.Equals(functionCode, 'T'))
                                 cb.Function = () => DateTime.Now.ToString();
                             else
                                 cb.Function = () => Guid.NewGuid().ToString();
@@ -229,8 +240,50 @@ namespace SMC.Utilities.RSG
                             token.ControlBlock = cb;
                             EOS = true;
                         }
-                        break;
-                    case '}':
+                        else if (char.Equals(pattern[pos], ':'))
+                        {
+                            cb.FunctionName = functionCode.ToString();
+                            while (!EOS)
+                            {
+                                pos++;
+                                if (pos >= pattern.Length)
+                                    throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+                                if (char.Equals(pattern[pos], '}'))
+                                {
+                                    if (formatter.Length < 1)
+                                        throw new InvalidPatternException($"Expected function formatting string at position {pos}.");
+
+                                    EOS = true;
+                                }
+                                else
+                                {
+                                    formatter.Append(pattern[pos]);
+                                }
+                            }
+
+                            var format = formatter.ToString();
+                            if (char.Equals(functionCode, 'G'))
+                            {
+                                if (!string.Equals("N", format, StringComparison.CurrentCulture) && !string.Equals("D", format, StringComparison.CurrentCulture)
+                                    && !string.Equals("B", format, StringComparison.CurrentCulture) && !string.Equals("P", format, StringComparison.CurrentCulture)
+                                    && !string.Equals("X", format, StringComparison.CurrentCulture))
+                                {
+                                    throw new InvalidPatternException($"An unrecognized GUID format string was found.  Format string found: '{format}'.");
+                                }
+
+                                cb.Function = () => Guid.NewGuid().ToString(format);
+                            }
+                            else
+                            {
+                                cb.Function = () => DateTime.Now.ToString(format);
+                            }
+
+                            token.ControlBlock = cb;
+                        }
+                        else
+                        {
+                            throw new InvalidPatternException($"An unexpected token '{pattern[pos]}' was found at position {pos}.");
+                        }
                         break;
                     default:
                         break;

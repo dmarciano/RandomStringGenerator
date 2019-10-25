@@ -268,5 +268,6 @@ namespace RSGLib.Tests
         //No function specified
         //Unknown function
         //Duplicate globals
+        //Invalid GUID formatting string
     }
 }

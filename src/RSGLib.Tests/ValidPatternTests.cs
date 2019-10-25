@@ -401,88 +401,6 @@ namespace RSGLib.Tests
         }
         #endregion
 
-        #region Serialization
-        [TestMethod]
-        [TestCategory("Serialization")]
-        public void SaveLoadFileTest()
-        {
-            var pattern = "a";
-            var generator = new Generator(pattern);
-            var savedFile = generator.Save(string.Empty, string.Empty);
-
-            Assert.IsTrue(File.Exists(savedFile));
-
-            generator.Load(savedFile);
-            var output = generator.ToString();
-
-            Assert.IsTrue(output.Length == 1);
-            Assert.IsTrue(char.IsLetter(output[0]));
-            Assert.AreEqual(generator.Pattern, pattern, false);
-        }
-
-        [TestMethod]
-        [TestCategory("Serialization")]
-        public void SaveLoadFileTest2()
-        {
-            var pattern = "a";
-            var generator1 = new Generator(pattern);
-            var savedFile = generator1.Save(string.Empty, string.Empty);
-
-            Assert.IsTrue(File.Exists(savedFile));
-
-            var generator2 = new Generator();
-            generator2.Load(savedFile);
-            var output = generator2.ToString();
-
-            Assert.IsTrue(output.Length == 1);
-            Assert.IsTrue(char.IsLetter(output[0]));
-            Assert.AreEqual(generator2.Pattern, pattern, false);
-        }
-
-        [TestMethod]
-        [TestCategory("Serialization")]
-        public void SaveLoadStreamTest()
-        {
-            var pattern = "a";
-            var generator = new Generator(pattern);
-            using (var ms = new MemoryStream())
-            {
-                generator.Save(ms);
-
-                ms.Position = 0;
-
-                generator.Load(ms);
-            }
-
-            var output = generator.ToString();
-            Assert.IsTrue(output.Length == 1);
-            Assert.IsTrue(char.IsLetter(output[0]));
-            Assert.AreEqual(generator.Pattern, pattern, false);
-        }
-
-        [TestMethod]
-        [TestCategory("Serialization")]
-        public void SaveLoadStreamTest2()
-        {
-            var pattern = "a";
-            var generator1 = new Generator(pattern);
-            var generator2 = new Generator();
-            using (var ms = new MemoryStream())
-            {
-                generator1.Save(ms);
-
-                ms.Position = 0;
-
-                generator2.Load(ms);
-            }
-
-            var output = generator2.ToString();
-            Assert.IsTrue(output.Length == 1);
-            Assert.IsTrue(char.IsLetter(output[0]));
-            Assert.AreEqual(generator2.Pattern, pattern, false);
-        }
-        #endregion
-
         #region Advanced Patterns
         [TestMethod]
         [TestCategory("Advanced Patterns")]
@@ -720,7 +638,7 @@ namespace RSGLib.Tests
         public void TokenExclusionTest2()
         {
             var excluded = new List<char>() { '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~' };
-            var generator = new Generator("a^{!\"#$%&'()*+,-./:;<>?@[\\]^_`{|}~}");
+            var generator = new Generator("a^{-!\"#$%&'()*+,-./:;<>?@[\\]^_`{|}~}");
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
@@ -731,7 +649,7 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GlobalAndTokenExclusionTest()
         {
-            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M','Z' };
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'Z' };
             var generator = new Generator("{-Z}a^{-ABCDEFGHIJKLM}");
             foreach (var output in generator.GetStrings(500))
             {
@@ -820,6 +738,23 @@ namespace RSGLib.Tests
 
         [TestMethod]
         [TestCategory("Control Blocks")]
+        public void CustomTimeStringRepeatTest()
+        {
+            var pattern = "{T:HH:mm:ss}(2)";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 16);
+
+            var time1 = output.Substring(0, 8);
+            var time2 = output.Substring(8);
+
+            Assert.IsTrue(DateTime.TryParse(time1, out _));
+            Assert.IsTrue(DateTime.TryParse(time2, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
         public void CustomDateTimeStringTest2()
         {
             var pattern = "{T:MMM dd, yyyy HH:mm:ss zzz}";
@@ -877,6 +812,51 @@ namespace RSGLib.Tests
             Assert.IsTrue(output.Length == 36);
             Assert.IsTrue(Guid.TryParse(output, out _));
         }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDRepeatTest()
+        {
+            var pattern = "{G}(2)";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            var guid1 = output.Substring(0, 36);
+            var guid2 = output.Substring(36);
+
+            Assert.IsTrue(Guid.TryParse(guid1, out _));
+            Assert.IsTrue(Guid.TryParse(guid2, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDForceTest()
+        {
+            var pattern = "{G?f}";
+            var generator = new Generator(pattern);
+            var guid1 = generator.ToString();
+            var guid2 = generator.ToString();
+
+            Assert.IsTrue(Guid.TryParse(guid1, out _));
+            Assert.IsTrue(Guid.TryParse(guid2, out _));
+            Assert.AreEqual(guid1, guid2);
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDForceTest2()
+        {
+            var pattern = "{G:D?f}";
+            var generator = new Generator(pattern);
+            var guid1 = generator.ToString();
+            var guid2 = generator.ToString();
+
+            Assert.IsTrue(Guid.TryParse(guid1, out _));
+            Assert.IsTrue(Guid.TryParse(guid2, out _));
+            Assert.AreEqual(guid1, guid2);
+        }
+
+        //TODO: Control blocks with other characters
         #endregion
 
         #region Real-World Formats
