@@ -112,11 +112,6 @@ namespace SMC.Utilities.RSG
         {
             var originalPosition = pos;
 
-
-            //pos++;
-            //if (pos >= pattern.Length)
-            //    throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
-
             if (char.Equals(pattern[pos + 1], '-'))
             {
                 pos++;
@@ -126,16 +121,6 @@ namespace SMC.Utilities.RSG
             {
                 HandleFunctionBlock(ref token, pattern, originalPosition);
             }
-            //switch (pattern[pos])
-            //{
-
-            //    case '-':
-            //        HandleExclusionBlock(ref token, pattern, originalPosition);
-            //        break;
-            //    default:
-            //        HandleFunctionBlock(ref token, pattern, originalPosition);
-            //        break;
-            //}
         }
 
         private void HandleExclusionBlock(ref Token token, string pattern, int originalPosition)
@@ -211,9 +196,11 @@ namespace SMC.Utilities.RSG
         private void HandleFunctionBlock(ref Token token, string pattern, int originalPosition)
         {
             var EOS = false;
+            var force = false;
             var cb = new ControlBlock() { Type = ControlBlockType.FCB };
             var functionName = new StringBuilder();
-            var formatter = new StringBuilder();
+            var formatter = new StringBuilder(string.Empty);
+            char functionCode='x';
 
             while (!EOS)
             {
@@ -225,20 +212,30 @@ namespace SMC.Utilities.RSG
                 {
                     case 'T':
                     case 'G':
-                        var functionCode = pattern[pos];
+                        functionCode = pattern[pos];
                         pos++;
                         if (pos >= pattern.Length)
                             throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
                         if (char.Equals(pattern[pos], '}'))
                         {
-                            cb.FunctionName = functionCode.ToString();
-                            if (char.Equals(functionCode, 'T'))
-                                cb.Function = () => DateTime.Now.ToString();
-                            else
-                                cb.Function = () => Guid.NewGuid().ToString();
-
-                            token.ControlBlock = cb;
                             EOS = true;
+                            //cb.FunctionName = functionCode.ToString();
+                            //if (char.Equals(functionCode, 'T'))
+                            //    cb.Function = () => DateTime.Now.ToString();
+                            //else
+                            //    cb.Function = () => Guid.NewGuid().ToString();
+
+                            //token.ControlBlock = cb;
+                            //EOS = true;
+                        }
+                        else if(char.Equals(pattern[pos], '?'))
+                        {
+                            if (!char.Equals(pattern[pos + 1], '}'))
+                                throw new InvalidPatternException($"Expecting a control block closing brace at positions {pos + 1}, which was not found.");
+
+                            force = true;
+                            EOS = true;
+                            pos++;
                         }
                         else if (char.Equals(pattern[pos], ':'))
                         {
@@ -255,30 +252,18 @@ namespace SMC.Utilities.RSG
 
                                     EOS = true;
                                 }
+                                else if (char.Equals(pattern[pos], '?'))
+                                {
+                                        if (!char.Equals(pattern[pos + 1], '}'))
+                                            throw new InvalidPatternException($"Expecting a control block closing brace at positions {pos + 1}, which was not found.");
+
+                                    force = true;
+                                }
                                 else
                                 {
                                     formatter.Append(pattern[pos]);
                                 }
                             }
-
-                            var format = formatter.ToString();
-                            if (char.Equals(functionCode, 'G'))
-                            {
-                                if (!string.Equals("N", format, StringComparison.CurrentCulture) && !string.Equals("D", format, StringComparison.CurrentCulture)
-                                    && !string.Equals("B", format, StringComparison.CurrentCulture) && !string.Equals("P", format, StringComparison.CurrentCulture)
-                                    && !string.Equals("X", format, StringComparison.CurrentCulture))
-                                {
-                                    throw new InvalidPatternException($"An unrecognized GUID format string was found.  Format string found: '{format}'.");
-                                }
-
-                                cb.Function = () => Guid.NewGuid().ToString(format);
-                            }
-                            else
-                            {
-                                cb.Function = () => DateTime.Now.ToString(format);
-                            }
-
-                            token.ControlBlock = cb;
                         }
                         else
                         {
@@ -289,6 +274,86 @@ namespace SMC.Utilities.RSG
                         break;
                 }
             }
+
+            var format = formatter.ToString();
+
+            if(char.Equals(functionCode, 'G'))
+            {
+                cb.FunctionName = "GUID";
+                if (!string.IsNullOrWhiteSpace(format))
+                {
+                    if (!string.Equals("N", format, StringComparison.CurrentCulture) && !string.Equals("D", format, StringComparison.CurrentCulture)
+                        && !string.Equals("B", format, StringComparison.CurrentCulture) && !string.Equals("P", format, StringComparison.CurrentCulture)
+                        && !string.Equals("X", format, StringComparison.CurrentCulture))
+                    {
+                        throw new InvalidPatternException($"An unrecognized GUID format string was found.  Format string found: '{format}'.");
+                    }
+
+                    
+                    if (force)
+                    {
+                        token.Type = TokenType.LITERAL;
+                        token.Value = Guid.NewGuid().ToString(format);
+                        cb = null;
+                    }
+                    else
+                    {
+                        cb.Function = () => Guid.NewGuid().ToString(format);
+                    }
+                }
+                else
+                {
+                    if (force)
+                    {
+                        token.Type = TokenType.LITERAL;
+                        token.Value = Guid.NewGuid().ToString();
+                        cb = null;
+                    }
+                    else
+                    {
+                        cb.Function = () => Guid.NewGuid().ToString();
+                    }
+                }
+
+
+            }
+            else if(char.Equals(functionCode, 'T'))
+            {
+                cb.FunctionName = "DATETIME";
+                if (!string.IsNullOrWhiteSpace(format))
+                {
+                    if (force)
+                    {
+                        token.Type = TokenType.LITERAL;
+                        token.Value = DateTime.Now.ToString(format);
+                        cb = null;
+                    }
+                    else
+                    {
+                        cb.Function = () => DateTime.Now.ToString(format);
+                    }
+                }
+                else
+                {
+                    if (force)
+                    {
+                        token.Type = TokenType.LITERAL;
+                        token.Value = DateTime.Now.ToString();
+                        cb = null;
+                    }
+                    else
+                    {
+                        cb.Function = () => DateTime.Now.ToString();
+                    }
+                }
+            }
+            else
+            {
+                //TODO: UDF
+            }
+
+           
+            token.ControlBlock = cb;
         }
 
         private void HandleModifier(ref Token token, string pattern)

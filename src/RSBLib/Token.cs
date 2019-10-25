@@ -2,7 +2,6 @@
 
 namespace SMC.Utilities.RSG
 {
-    [Serializable]
     internal class Token
     {
         internal TokenType Type { get; set; }

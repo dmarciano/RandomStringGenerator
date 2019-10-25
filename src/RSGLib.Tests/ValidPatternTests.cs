@@ -768,7 +768,7 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void DateTimeStringForceTest()
         {
-            var pattern = "{T:MM/dd/yyyy HH:mm:ss.ffffff?f}";
+            var pattern = "{T:MM/dd/yyyy HH:mm:ss.ffffff?}";
             var generator = new Generator(pattern);
             var output1 = generator.ToString();
             var output2 = generator.ToString();
@@ -832,7 +832,7 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDForceTest()
         {
-            var pattern = "{G?f}";
+            var pattern = "{G?}";
             var generator = new Generator(pattern);
             var guid1 = generator.ToString();
             var guid2 = generator.ToString();
@@ -846,7 +846,7 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDForceTest2()
         {
-            var pattern = "{G:D?f}";
+            var pattern = "{G:D?}";
             var generator = new Generator(pattern);
             var guid1 = generator.ToString();
             var guid2 = generator.ToString();
