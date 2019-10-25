@@ -2,7 +2,6 @@
 using SMC.Utilities.RSG;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 
 namespace RSGLib.Tests
@@ -679,8 +678,6 @@ namespace RSGLib.Tests
             //Best way to test for two date/time string concated?
         }
 
-        //TODO: Multiple Date/time
-
         [TestMethod]
         [TestCategory("Control Blocks")]
         public void DateStringTest()
@@ -775,7 +772,25 @@ namespace RSGLib.Tests
 
             Assert.IsTrue(DateTime.TryParse(output1, out var dt1));
             Assert.IsTrue(DateTime.TryParse(output2, out var dt2));
-            Assert.IsTrue(DateTime.Compare(dt1, dt2) == 0);
+            Assert.AreEqual(dt1, dt2);
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void DateTimeStringForceRepeatTest()
+        {
+            var pattern = "{T:MM/dd/yyyy HH:mm:ss.ffffff?}(2)";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 52);
+
+            var date1 = output.Substring(0, 26);
+            var date2 = output.Substring(26);
+
+            Assert.IsTrue(DateTime.TryParse(date1, out var dt1));
+            Assert.IsTrue(DateTime.TryParse(date2, out var dt2));
+            Assert.AreEqual(dt1, dt2);
         }
 
         [TestMethod]
@@ -856,7 +871,118 @@ namespace RSGLib.Tests
             Assert.AreEqual(guid1, guid2);
         }
 
-        //TODO: Control blocks with other characters
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDForceRepeatTest()
+        {
+            var pattern = "{G:D?}(2)";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 72);
+
+            var guid1 = output.Substring(0, 36);
+            var guid2 = output.Substring(36);
+
+            Assert.IsTrue(Guid.TryParse(guid1, out _));
+            Assert.IsTrue(Guid.TryParse(guid2, out _));
+            Assert.AreEqual(guid1, guid2);
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDWithSymbolTest()
+        {
+            var pattern = "{G}@";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 37);
+
+            var guid = output.Substring(0, 36);
+            var symbol = output.Substring(36);
+
+            Assert.IsTrue(Guid.TryParse(guid, out _));
+            Assert.IsTrue(char.IsSymbol(symbol[0]) || char.IsPunctuation(symbol[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDWithSymbolTest2()
+        {
+            var pattern = "{G:D}@";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 37);
+
+            var guid = output.Substring(0, 36);
+            var symbol = output.Substring(36);
+
+            Assert.IsTrue(Guid.TryParse(guid, out _));
+            Assert.IsTrue(char.IsSymbol(symbol[0]) || char.IsPunctuation(symbol[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDWithSymbolTest3()
+        {
+            var pattern = "{G}(2)@";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 73);
+
+            var guid1 = output.Substring(0, 36);
+            var guid2 = output.Substring(36, 36);
+            var symbol = output.Substring(72);
+
+            Assert.IsTrue(Guid.TryParse(guid1, out _));
+            Assert.IsTrue(Guid.TryParse(guid2, out _));
+            Assert.IsTrue(char.IsSymbol(symbol[0]) || char.IsPunctuation(symbol[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDWithSymbolTest4()
+        {
+            var pattern = "{G?}(2)@";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 73);
+
+            var guid1 = output.Substring(0, 36);
+            var guid2 = output.Substring(36, 36);
+            var symbol = output.Substring(72);
+
+            Assert.IsTrue(Guid.TryParse(guid1, out _));
+            Assert.IsTrue(Guid.TryParse(guid2, out _));
+            Assert.AreEqual(guid1, guid2);
+            Assert.IsTrue(char.IsSymbol(symbol[0]) || char.IsPunctuation(symbol[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GUIDWithSymbolTest5()
+        {
+            var pattern = "{G?}(2)@(2)";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 74);
+
+            var guid1 = output.Substring(0, 36);
+            var guid2 = output.Substring(36, 36);
+            var symbol1 = output.Substring(72, 1);
+            var symbol2 = output.Substring(73, 1);
+
+            Assert.IsTrue(Guid.TryParse(guid1, out _));
+            Assert.IsTrue(Guid.TryParse(guid2, out _));
+            Assert.AreEqual(guid1, guid2);
+            Assert.IsTrue(char.IsSymbol(symbol1[0]) || char.IsPunctuation(symbol1[0]));
+            Assert.IsTrue(char.IsSymbol(symbol2[0]) || char.IsPunctuation(symbol2[0]));
+        }
         #endregion
 
         #region Real-World Formats
