@@ -439,6 +439,34 @@ namespace RSGLib.Tests
         #region Escape Sequences
         [TestMethod]
         [TestCategory("Escape Sequence")]
+        public void NewLineInPatternTest()
+        {
+            var generator = new Generator("a\\n0");
+            var output = generator.GetString();
+            
+            // Environment.NewLine.Length is used below to account for different OS's new line
+            // i.e. some are \n and Windows is \r\n
+            Assert.IsTrue(output.Length == 2 + Environment.NewLine.Length);
+            Assert.IsTrue(output.Contains(Environment.NewLine));
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsNumber(output[2 + Environment.NewLine.Length - 1]));
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void TabInPatternTest()
+        {
+            var generator = new Generator("a\\t0");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 3);
+            Assert.IsTrue(output.Contains("\t"));
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsNumber(output[2]));
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
         public void LiteralClosingBracketEscapeTest()
         {
             var generator = new Generator("[\\]]");

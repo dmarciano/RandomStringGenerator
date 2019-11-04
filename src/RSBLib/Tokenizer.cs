@@ -54,6 +54,22 @@ namespace SMC.Utilities.RSG
                         token.Type = TokenType.LITERAL;
                         HandleLiteral(ref token, pattern);
                         break;
+                    case '\\':
+                        token.Type = TokenType.LITERAL;
+                        pos++;
+                        if (pattern[pos].Equals('n'))
+                        {
+                            token.Value = Environment.NewLine;
+                        }
+                        else if (pattern[pos].Equals('t'))
+                        {
+                            token.Value = "\t";
+                        }
+                        else
+                        {
+                            throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {pos - 1}.");
+                        }
+                        break;
                     default:
                         throw new InvalidPatternException($"Unknown token '{pattern[pos]}' found in Position {pos}.");
                 }
@@ -108,7 +124,6 @@ namespace SMC.Utilities.RSG
             return true;
         }
 
-        //TODO: Escape ] - Literals
         //TODO Escape # - Optionals
         //TODO: Escape , Options
         //TODO: Escape } - ECB
@@ -515,7 +530,6 @@ namespace SMC.Utilities.RSG
                         break;
                     case '\\':
                         pos++;
-                        var c = pattern[pos];
                         if(pattern[pos].Equals('n'))
                         {
                             literal.Append(Environment.NewLine);
