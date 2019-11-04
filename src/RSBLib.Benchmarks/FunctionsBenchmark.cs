@@ -14,7 +14,6 @@ namespace RSBLib.Benchmarks
     {
         private Generator generator;
         private Generator cryptoGenerator;
-        private Xeger xeger;
 
         private class Config : ManualConfig
         {

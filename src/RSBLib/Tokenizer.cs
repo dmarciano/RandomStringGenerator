@@ -312,6 +312,18 @@ namespace SMC.Utilities.RSG
                         }
                         break;
                     default:
+                        functionName.Append(pattern[pos]);
+                        while (true)
+                        {
+                            pos++;
+                            if (pos >= pattern.Length)
+                                throw new InvalidPatternException($"No closing control block token found for the control block starting at position {originalPosition}.");
+
+                            if (pattern[pos].Equals('}')) break;
+                            functionName.Append(pattern[pos]);
+                        }
+                        cb.FunctionName = functionName.ToString();
+                        EOS = true;
                         break;
                 }
             }
@@ -388,11 +400,6 @@ namespace SMC.Utilities.RSG
                     }
                 }
             }
-            else
-            {
-                //TODO: UDF
-            }
-
 
             token.ControlBlock = cb;
         }

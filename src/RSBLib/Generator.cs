@@ -44,6 +44,7 @@ namespace SMC.Utilities.RSG
         #region Variables
         private Tokenizer _tokenizer;
         private List<Token> _tokenizedPattern;
+        private Dictionary<string, Func<string>> _functions = new Dictionary<string, Func<string>>();
         private IRandom _rng;
         #endregion
 
@@ -111,8 +112,20 @@ namespace SMC.Utilities.RSG
             var valid = _tokenizer.Tokenize(pattern);
             if (valid)
                 _tokenizedPattern = _tokenizer.TokenizedPattern;
-
+          
             Pattern = pattern;
+        }
+
+        /// <summary>
+        /// Add a <see cref="Func{TResult}"/> with a specific name.
+        /// </summary>
+        /// <param name="name">The name of the function as it appears in a function control block in the pattern.</param>
+        /// <param name="function">The function that will be executed to get the data for the pattern.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public void AddFunction(string name, Func<string> function)
+        {
+            _functions.Add(name, function);
         }
 
         /// <summary>
@@ -424,19 +437,17 @@ namespace SMC.Utilities.RSG
 
         private void HandleControlBlock(Token token, int repeat, ref StringBuilder sb)
         {
-            //TODO: Process function block
-            if (token.ControlBlock.Lazy)
-            {
-                //If lazy, run the specified function each time.
+
                 for (var count = 0; count < repeat; count++)
                 {
+                if(token.ControlBlock.FunctionName.Equals("DATETIME") || token.ControlBlock.FunctionName.Equals("GUID"))
+                { 
                     sb.Append(token.ControlBlock.Function());
                 }
-
-            }
-            else
-            {
-                //If not lazy, just return the value property which was set during tokenization
+                else
+                {
+                    sb.Append(_functions[token.ControlBlock.FunctionName]());
+                }
             }
         }
 

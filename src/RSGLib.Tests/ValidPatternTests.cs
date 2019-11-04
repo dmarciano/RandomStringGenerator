@@ -434,11 +434,7 @@ namespace RSGLib.Tests
             Assert.IsTrue(char.IsNumber(output[0]));
             Assert.IsTrue(Convert.ToInt32(output[0]) != 0);
         }
-        #endregion
-
-        #region Basic Numeric Patterns with Formatting
-        //TODO: Numeric patterns
-        #endregion       
+        #endregion 
 
         #region Escape Sequences
         [TestMethod]
@@ -1674,6 +1670,54 @@ namespace RSGLib.Tests
             Assert.IsTrue(char.IsSymbol(symbol1[0]) || char.IsPunctuation(symbol1[0]));
             Assert.IsTrue(char.IsSymbol(symbol2[0]) || char.IsPunctuation(symbol2[0]));
         }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void UserDefinedFunctionDelegateTest()
+        {
+            var generator = new Generator("{My}");
+            generator.AddFunction("My", ()=> { return "25"; });
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(output.Equals("25"));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void UserDefinedFunctionDelegateRepeatTest()
+        {
+            var generator = new Generator("{My}(2)");
+            generator.AddFunction("My", () => { return "25"; });
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 4);
+            Assert.IsTrue(output.Equals("2525"));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void UserDefinedFunctionTest()
+        {
+            var generator = new Generator("{My}");
+            generator.AddFunction("My", ReturnString);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(output.Equals("55"));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void UserDefinedFunctionRepeatTest()
+        {
+            var generator = new Generator("{My}(2)");
+            generator.AddFunction("My", ReturnString);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 4);
+            Assert.IsTrue(output.Equals("5555"));
+        }
         #endregion
 
         #region Real-World Formats
@@ -1933,6 +1977,13 @@ namespace RSGLib.Tests
             }
 
             generator.ToString();
+        }
+        #endregion
+
+        #region Helper Methods (NOT TESTS)
+        private string ReturnString()
+        {
+            return "55";
         }
         #endregion
 

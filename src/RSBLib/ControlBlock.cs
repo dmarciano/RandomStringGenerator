@@ -12,7 +12,6 @@ namespace SMC.Utilities.RSG
         internal string FunctionName { get; set; }
         internal Func<string> Function { get; set; }
         internal string Value { get; set; }
-        internal bool Lazy { get; set; } = true;
         internal bool Global { get; set; }
         internal char[] ExceptValues { get; set; }
     }
