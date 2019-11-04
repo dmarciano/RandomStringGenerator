@@ -54,6 +54,10 @@ namespace SMC.Utilities.RSG
                         token.Type = TokenType.LITERAL;
                         HandleLiteral(ref token, pattern);
                         break;
+                    case '#':
+                        token.Type = TokenType.OPTIONAL;
+                        HandleOptional(ref token, pattern);
+                        break;
                     case '\\':
                         token.Type = TokenType.LITERAL;
                         pos++;
@@ -76,9 +80,12 @@ namespace SMC.Utilities.RSG
 
                 if (token.Type != TokenType.CONTROL_BLOCK || (token.Type == TokenType.CONTROL_BLOCK && token.ControlBlock != null && token.ControlBlock.Global == false))
                 {
-                    if (pos != pattern.Length - 1)
+                    if (token.Type != TokenType.OPTIONAL && token.Type != TokenType.LITERAL)
                     {
-                        if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(ref token, pattern);
+                        if (pos != pattern.Length - 1)
+                        {
+                            if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(ref token, pattern);
+                        }
                     }
                     //}
 
@@ -124,12 +131,7 @@ namespace SMC.Utilities.RSG
             return true;
         }
 
-        //TODO Escape # - Optionals
-        //TODO: Escape , Options
-        //TODO: Escape } - ECB
-        //TODO: Escape \ - ECB
-        //TODO: Add \n
-        //TODO: Add \t
+        //TODO Escape # , \n \t - Optionals
 
         private void HandleControlBlock(ref Token token, string pattern)
         {
@@ -184,6 +186,25 @@ namespace SMC.Utilities.RSG
                     case '{':
                         openings += 1;
                         sb.Append(pattern[pos]);
+                        break;
+                    case '\\':
+                        pos++;
+                        if (pattern[pos].Equals('}'))
+                        {
+                            sb.Append('}');
+                        }
+                        else if (pattern[pos].Equals('\\'))
+                        {
+                            sb.Append('\\');
+                        }
+                        else if (pattern[pos].Equals('-'))
+                        {
+                            sb.Append('-');
+                        }
+                        else
+                        {
+                            throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {pos - 1}.");
+                        }
                         break;
                     case '}':
                         openings -= 1;
@@ -548,7 +569,7 @@ namespace SMC.Utilities.RSG
                         }
                         else
                         {
-                            throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {pos - 1}.");
+                            throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {originalPosition}.");
                         }
                         break;
                     case ']':
@@ -565,6 +586,63 @@ namespace SMC.Utilities.RSG
                         break;
                     default:
                         literal.Append(pattern[pos]);
+                        break;
+                }
+            }
+        }
+
+        private void HandleOptional(ref Token token, string pattern)
+        {
+            var EOS = false;
+            var originalPosition = pos;
+            var optional =new StringBuilder();
+            if (null == token.Values) token.Values = new List<string>();
+
+            while (!EOS)
+            {
+                pos++;
+                if (pos >= pattern.Length)
+                    throw new InvalidPatternException($"No closing optional token found for the opening optional token at position {originalPosition}.");
+
+                switch (pattern[pos])
+                {
+                    case '\\':
+                        pos++;
+                        if (pattern[pos].Equals('n'))
+                        {
+                            optional.Append(Environment.NewLine);
+                        }
+                        else if (pattern[pos].Equals('t'))
+                        {
+                            optional.Append("\t");
+                        }
+                        else if (pattern[pos].Equals('#'))
+                        {
+                            optional.Append('#');
+                        }
+                        else if (pattern[pos].Equals('\\'))
+                        {
+                            optional.Append('\\');
+                        }
+                        else if (pattern[pos].Equals(','))
+                        {
+                            optional.Append(',');
+                        }
+                        else
+                        {
+                            throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {originalPosition}.");
+                        }
+                        break;
+                    case ',':
+                        token.Values.Add(optional.ToString());
+                        optional.Clear();
+                        break;
+                    case '#':
+                        token.Values.Add(optional.ToString());
+                        EOS = true;
+                        break;
+                    default:
+                        optional.Append(pattern[pos]);
                         break;
                 }
             }

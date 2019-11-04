@@ -436,6 +436,10 @@ namespace RSGLib.Tests
         }
         #endregion
 
+        #region Basic Numeric Patterns with Formatting
+        //TODO: Numeric patterns
+        #endregion       
+
         #region Escape Sequences
         [TestMethod]
         [TestCategory("Escape Sequence")]
@@ -505,6 +509,202 @@ namespace RSGLib.Tests
             Assert.IsTrue(output.Contains("\\"));
             Assert.AreEqual(output, "a\\b", false);
         }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void ClosingBraceGlobalExclusionTest()
+        {
+            var generator = new Generator("{-\\}}@");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!output.Equals("}"));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void BackSlashGlobalExclusionTest()
+        {
+            var generator = new Generator("{-\\\\}@");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!output.Equals("\\"));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void HypenGlobalExclusionTest()
+        {
+            var generator = new Generator("{-\\-}@");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!output.Equals("-"));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void ClosingBraceLocalExclusionTest()
+        {
+            var generator = new Generator("@{-\\}}");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!output.Equals("}"));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void BackSlashLocalExclusionTest()
+        {
+            var generator = new Generator("@{-\\\\}");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!output.Equals("\\"));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void HypenLocalExclusionTest()
+        {
+            var generator = new Generator("@{-\\-}");
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!output.Equals("-"));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void OptionalHashEscapeTest()
+        {
+            var generator = new Generator("#Suite \\#1,Suite \\#2,Suite \\#3#");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 8);
+            Assert.IsTrue(output.Equals("Suite #1") || output.Equals("Suite #2") || output.Equals("Suite #3"));
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void OptionalCommaEscapeTest()
+        {
+            var generator = new Generator("#Suite 1\\,,Suite 2\\,,Suite 3\\,#");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 8);
+            Assert.IsTrue(output.Equals("Suite 1,") || output.Equals("Suite 2,") || output.Equals("Suite 3,"));
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void OptionalBackSlashEscapeTest()
+        {
+            var generator = new Generator("#Suite \\\\1,Suite \\\\2,Suite \\\\3#");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 8);
+            Assert.IsTrue(output.Equals("Suite \\1") || output.Equals("Suite \\2") || output.Equals("Suite \\3"));
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void OptionalNewLineEscapeTest()
+        {
+            var generator = new Generator("#Suite \\n1,Suite \\n2,Suite \\n3#");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Equals($"Suite {Environment.NewLine}1") || output.Equals($"Suite {Environment.NewLine}2") || output.Equals($"Suite {Environment.NewLine}3"));
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void OptionalTabEscapeTest()
+        {
+            var generator = new Generator("#Suite \\t1,Suite \\t2,Suite \\t3#");
+            var output = generator.GetString();
+            
+            Assert.IsTrue(output.Equals("Suite \t1") || output.Equals("Suite \t2") || output.Equals("Suite \t3"));
+        }
+        #endregion
+
+        #region Optionals
+        [TestMethod]
+        [TestCategory("Optional Blocks")]
+        public void OptionalBlockTest()
+        {
+            var generator = new Generator("#First,Fizzy,Fuzzy#");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 5);
+            Assert.IsTrue(output.Equals("First") || output.Equals("Fizzy") || output.Equals("Fuzzy"));
+        }
+
+        [TestMethod]
+        [TestCategory("Optional Blocks")]
+        public void OptionalBlockWithRepeatTest()
+        {
+            var generator = new Generator("#First,Fizzy,Fuzzy#(2)");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 10);
+
+            var output1 = output.Substring(0, 5);
+            var output2 = output.Substring(5);
+            Assert.IsTrue(output1.Equals("First") || output1.Equals("Fizzy") || output1.Equals("Fuzzy"));
+            Assert.IsTrue(output2.Equals("First") || output2.Equals("Fizzy") || output2.Equals("Fuzzy"));
+        }
+
+        [TestMethod]
+        [TestCategory("Optional Blocks")]
+        public void OptionalBlockWithRepeatTest2()
+        {
+            var generator = new Generator("#First,Fizzy,Fuzzy#(2,3)");
+            var test = true;
+            var doubleSeen = false;
+            var tripleSeen = false;
+            var count = 0;  //To prevent the loop from running indefinitely
+            while (test)
+            {
+                count++;
+                var output = generator.GetString();
+                
+                Assert.IsTrue(output.Length == 10 || output.Length == 15);
+
+                var output1 = output.Substring(0, 5);
+                var output2 = output.Substring(5, 5);
+                var output3 = string.Empty;
+
+                if (output.Length == 10)
+                {
+                    doubleSeen = true;
+                }
+                else
+                {
+                    tripleSeen = true;
+                    output3 = output.Substring(10, 5);
+                    Assert.IsTrue(output3.Equals("First") || output3.Equals("Fizzy") || output3.Equals("Fuzzy"));
+                }
+
+                Assert.IsTrue(output1.Equals("First") || output1.Equals("Fizzy") || output1.Equals("Fuzzy"));
+                Assert.IsTrue(output2.Equals("First") || output2.Equals("Fizzy") || output2.Equals("Fuzzy"));
+
+                test = !((doubleSeen && tripleSeen) || count==500);
+            }
+
+            Assert.IsTrue(doubleSeen);
+            Assert.IsTrue(tripleSeen);
+        }
+        #endregion
+
+        #region Ranges
+        //TODO: Alphanumerical range
+        /*
+         Need to decide how this should be done.  For example, should letters be done by alphabetical order or byte order?
+         What if the range specifies letters AND number (and possibly symbols)?
+         */
         #endregion
 
         #region Advanced Patterns

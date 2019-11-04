@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Security;
 using System.Text;
 
 namespace SMC.Utilities.RSG
@@ -226,8 +222,11 @@ namespace SMC.Utilities.RSG
                     case TokenType.LITERAL:
                         for (var count = 0; count < repeat; count++)
                         {
-                                sb.Append(token.Value);
+                            sb.Append(token.Value);
                         }
+                        break;
+                    case TokenType.OPTIONAL:
+                        HandleOptionalBlock(token, repeat, ref sb);
                         break;
                     case TokenType.CONTROL_BLOCK:
                         if (token.ControlBlock.Global)
@@ -241,10 +240,10 @@ namespace SMC.Utilities.RSG
                         break;
                 }
 
-                if (token.Type != TokenType.LITERAL && token.Type!=TokenType.CONTROL_BLOCK)
+                if (token.Type != TokenType.LITERAL && token.Type != TokenType.CONTROL_BLOCK && token.Type != TokenType.OPTIONAL)
                 {
                     characters = characters.Except(globalExcept).ToArray();
-                    if(token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Length> 0)
+                    if (token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Length > 0)
                     {
                         characters = characters.Except(token.ControlBlock.ExceptValues).ToArray();
                     }
@@ -370,11 +369,19 @@ namespace SMC.Utilities.RSG
                 {
                     sb.Append(token.ControlBlock.Function());
                 }
-                
+
             }
             else
             {
                 //If not lazy, just return the value property which was set during tokenization
+            }
+        }
+
+        private void HandleOptionalBlock(Token token, int repeat, ref StringBuilder sb)
+        {
+            for (var count = 0; count < repeat; count++)
+            {
+                sb.Append(token.Values[_rng.Next(token.Values.Count)]);
             }
         }
         #endregion

@@ -6,8 +6,10 @@ A library from generating random strings based on a simple pattern language.
 - Ability to specify a random number generator to use
   - Library comes with two built-in classes: ```RandomGenerator``` and ```CryptoRandomGenerator```
 - Able to specify anything from single character strings to very complex patterns including letters, numbers, and symbols/punctuation
-- Able to specify
-- Control Blocks to have granular control over tokens or to use built-in/user-defined, functions (e.g. date/time, GUID, etc.) to generate part of the string
+- Able to specify list to choose an item from
+- Built-in DateTime and GUID functions
+- Ability to specify user-defined functions for generating a portion of the string (e.g. to pull information from a database and have it directly be incorporated in the output string)
+- Global and local exclusion blocks to allow exclusing a character, number, or symbol from anywhere in the output string, or just preventing a single token from generating a specific character, number, or symbol.
 
 ## Uses
 This library is used for generating random string based on a pattern or specific requirements, such as:
@@ -15,10 +17,11 @@ This library is used for generating random string based on a pattern or specific
 - Passwords
 - Order/Product Numbers
 - File Names
+- Generating large data sets for testing/demonstration
 
-The RSG language used to the specify the pattern is relatively simply.  Although Regular Expressions can express *very* complicated patterns (e.g. using look-aheads), it makes them much more complicated.  In addition,
-regular expressions were designed more for matching strings to a pattern rather than generating a string from a pattern.  The latter is exactly what this library is designed to do and is in many ways a complement to
-regular expressions.
+The RSG language is used to specify the pattern.  RSG can be thought of as a complement to Regular Expression (RegEx) - whereas RegEx is used to *test* strings against a pattern, RSG is used to *create* strings from a pattern.
+Therefore an RSG pattern can be as simple as a single character token or as complex as incorporating optional blocks and user-defined functions.  It depends on the specific use can and the data that needs to be generated.
+Although it contains some advanced features (such as the user-defined functions), most users will not need to use them; but they are should the need ever arise.
 
 ## RSG Language
 Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of [Tokens](#tokens), [Modifiers](#modifiers), [Literals](#literals), [Optionals](#optionals), and [Others](#others).
@@ -78,11 +81,11 @@ The RSG language has so called **Optional** blocks.  These allow you to specify 
 These blocks are surrounded by the pound, or hash, symbol **#**.  For example, if a random list of addresses was being used as test data, and the type of street (Street, Avenue, Blvd, etc.) should be randomly selected
 to allow a variety of words, this can be specified by using:
 
-\#\#Street, Avenue, Blvd\#\#
+\#Street, Avenue, Blvd\#
 
 The generater would then randomly selected one of the items in the list. 
 > **NOTE** To use a hash (\#) or comma (,) in the list, it must be escaped using a backslash (\\).  For example, if the list was to contain suite numbers that had a hash symbole, they would need to be escape like this:
-\#\#Suite \\\#1, Suite \\\#2, Suite \\\#3\#\#
+\#Suite \\\#1, Suite \\\#2, Suite \\\#3\#
 
 
 ### Others
@@ -102,7 +105,7 @@ There are a couple of additional characters that are used to help define the pat
   - **a(0,1)** or **a(,2)** - Would output zero (0) to 2 characters.  The possible outputs would be the same as the first example, however it is also possible nothing would be outputted (i.e. the character would just be skipped).
   - **a!(2)** - Would output any two LOWERCASE letters.
   - **\[-](3)** - Would output three hypens sequentially.
-  - **\#\#Street, Avenue, Blvd\#\#(2)** - Would output one of the words randomly from the list, followed by another word from the list randomly selected.
+  - **\#Street, Avenue, Blvd\#(2)** - Would output one of the words randomly from the list, followed by another word from the list randomly selected.
 - **{}** - Braces are used to specify a control block and can have different means depending on where it is placed and its exact format.  See [Advanced Features](#advanced-features) for more information on this token.
 
 #### NOTE Although **a(0)** seems like it would be valid based on the information above, this pattern is not valid as this would not generate any output and would simply add to the processing time.
@@ -117,7 +120,7 @@ A control block, **{}** is a special token which is used for more granular contr
 A **{}** block can be specified at the very beginning of a pattern string to specify any letters, numbers, or symbols to leave out of any token selection.  For example, if the pattern string is *a9a*, but the letters
 'l' (lowercase L) or 'O' (uppercase letter "Oh") should not be generated for either **a** token in the pattern, a control block can be specified at the beginning of the pattern string as **{-lO}a9a**.  Such a global control 
 block can only be specified once at the beginning of the pattern.  That is writing **{-l}{-O}a9a** is invalid.
-> **NOTE** To exclude the closing brace } or backslash , it must be escaped within the ECB with a backlash like so: **{\\}}** **{\\\\}**
+> **NOTE** To exclude the closing brace }, backslash \, or hypen - , it must be escaped within the ECB with a backlash like so: **{\\}}**, **{\\\\}**, and **{\\-}**
 
 However, if 'l' should only be excluded from the first letter token and 'O' should be excluded from the second letter token, a  ECB can be specified for each token individually: **a{-l}9a{-O}**.
 > **NOTE** ECBs must *always* have a hypen ('-') immediately after the opening brace ('{') to indicate that it is a ECB and not a Function Control Block (described below).
@@ -182,8 +185,14 @@ Below are invalid patterns with a description of *why* it is invalid:
 - **a(2,** or **a(2,3%** - No closing parenthesis
 - **a(2,3,4)** - Invalid format/too many commas
 
+## Benchmarks
+This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNet) library for all benchmark testing.  Below is some benchmarks that were executed to test the speed of the RSG library:
+
+### ***COMING SOON***
+
 ## Future Plans
 - A method of specifying a range, or set, of numbers/character to use for generating the string.
+- A method of specifying a format string for numerical data.
 
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.

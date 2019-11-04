@@ -53,6 +53,11 @@ namespace SMC.Utilities.RSG
         [Description("[]")]
         LITERAL,
         /// <summary>
+        /// This token is for representing an optional list block.
+        /// </summary>
+        [Description("#")]
+        OPTIONAL,
+        /// <summary>
         /// This token is for representing either a Exclusion Control Block (ECB) or Function Control Block (FCB).
         /// </summary>
         [Description("{}")]
