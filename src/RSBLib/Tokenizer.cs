@@ -100,6 +100,11 @@ namespace SMC.Utilities.RSG
                         if (char.Equals(pattern[pos + 1], '(')) HandleCount(ref token, pattern);
                     }
 
+                    if (pos < pattern.Length - 1)
+                    {
+                        if (char.Equals(pattern[pos + 1], '>')) HandleFormatControlBlock(ref token, pattern);
+                    }
+
 
                     tokenizedList.Add(token);
                 }
@@ -152,7 +157,6 @@ namespace SMC.Utilities.RSG
 
         private void HandleExclusionBlock(ref Token token, string pattern, int originalPosition)
         {
-            var openings = 1;
             Token tempToken = null;
             var cb = new ControlBlock();
             var sb = new StringBuilder();
@@ -186,7 +190,6 @@ namespace SMC.Utilities.RSG
                 switch (pattern[pos])
                 {
                     case '{':
-                        openings += 1;
                         sb.Append(pattern[pos]);
                         break;
                     case '\\':
@@ -209,15 +212,7 @@ namespace SMC.Utilities.RSG
                         }
                         break;
                     case '}':
-                        openings -= 1;
-                        if (openings == 0)
-                        {
-                            process = false;
-                        }
-                        else
-                        {
-                            sb.Append(pattern[pos]);
-                        }
+                        process = false;
                         break;
                     default:
                         sb.Append(pattern[pos]);
@@ -553,7 +548,7 @@ namespace SMC.Utilities.RSG
                         break;
                     case '\\':
                         pos++;
-                        if(pattern[pos].Equals('n'))
+                        if (pattern[pos].Equals('n'))
                         {
                             literal.Append(Environment.NewLine);
                         }
@@ -597,7 +592,7 @@ namespace SMC.Utilities.RSG
         {
             var EOS = false;
             var originalPosition = pos;
-            var optional =new StringBuilder();
+            var optional = new StringBuilder();
             if (null == token.Values) token.Values = new List<string>();
 
             while (!EOS)
@@ -682,7 +677,7 @@ namespace SMC.Utilities.RSG
                             throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {originalPosition}.");
                         }
 
-                        if(pattern[pos + 1] == '-')
+                        if (pattern[pos + 1] == '-')
                         {
                             range = new Range() { Start = pattern[pos] };
                             pos++;  // Move to the hypen
@@ -699,9 +694,9 @@ namespace SMC.Utilities.RSG
                         EOS = true;
                         break;
                     default:
-                        if(pattern[pos + 1] == '-')
+                        if (pattern[pos + 1] == '-')
                         {
-                            range = new Range() { Start = pattern[pos]};
+                            range = new Range() { Start = pattern[pos] };
                             pos++;  // Move to the hypen
                             pos++;   // Move to character after hypen
                             range.End = pattern[pos];
@@ -711,6 +706,63 @@ namespace SMC.Utilities.RSG
                         {
                             token.Ranges.Add(new Range { Start = pattern[pos], End = pattern[pos] });
                         }
+                        break;
+                }
+            }
+        }
+
+        private void HandleFormatControlBlock(ref Token token, string pattern)
+        {
+            var EOS = false;
+            var originalPosition = pos;
+            var format = new StringBuilder();
+
+            pos++; //Consume the open angle bracket
+            while (!EOS)
+            {
+                pos++;
+                if (pos >= pattern.Length)
+                    throw new InvalidPatternException($"No closing format block token found for the format control block starting at position {originalPosition}.");
+
+                switch (pattern[pos])
+                {
+                    case '\\':
+                        pos++;
+                        if (pattern[pos].Equals('n'))
+                        {
+                            format.Append(Environment.NewLine);
+                        }
+                        else if (pattern[pos].Equals('t'))
+                        {
+                            format.Append("\t");
+                        }
+                        else if (pattern[pos].Equals('<'))
+                        {
+                            format.Append("<");
+                        }
+                        else if (pattern[pos].Equals('\\'))
+                        {
+                            format.Append('\\');
+                        }
+                        else
+                        {
+                            throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {originalPosition}.");
+                        }
+                        break;
+                    case '<':
+                        var formatString = format.ToString();
+                        if (!formatString.Contains("{0"))
+                            throw new InvalidPatternException($"No argument placeholder '{{0}}' found in the format block starting at position {originalPosition}.");
+
+                        token.ControlBlock = new ControlBlock()
+                        {
+                            Type = ControlBlockType.FMT,
+                            Value = formatString
+                        };
+                        EOS = true;
+                        break;
+                    default:
+                        format.Append(pattern[pos]);
                         break;
                 }
             }

@@ -762,7 +762,7 @@ namespace RSGLib.Tests
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
             Assert.IsTrue(char.IsLower(output[0]));
-            Assert.IsTrue(output[0].Equals('a') || output[1].Equals('b'));
+            Assert.IsTrue(output[0].Equals('a') || output[0].Equals('b'));
         }
 
         [TestMethod]
@@ -1032,6 +1032,54 @@ namespace RSGLib.Tests
         }
         #endregion
 
+        #region Format Block
+        [TestMethod]
+        [TestCategory("Format Block")]
+        public void FormatNumberLiteralAsHexStringTest()
+        {
+            var regex = new Regex("^[A-Fa-f0-9]*$");
+            var generator = new Generator("[255]>{0:X}<");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(regex.IsMatch(output));
+        }
+
+        [TestMethod]
+        [TestCategory("Format Block")]
+        public void FormatNumberAsHexStringTest()
+        {
+            var regex = new Regex("^[A-Fa-f0-9]*$");
+            var generator = new Generator("0(2)>{0:X}<");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(regex.IsMatch(output));
+        }
+
+        [TestMethod]
+        [TestCategory("Format Block")]
+        public void FormatStringLiteralWithAlignmentTest()
+        {
+            var generator = new Generator("[TEST]>{0,5}<");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 5);
+            Assert.IsTrue(output.Equals(" TEST"));
+        }
+
+        [TestMethod]
+        [TestCategory("Format Block")]
+        public void FormatStringWithAlignmentTest()
+        {
+            var generator = new Generator("a(3)>{0,5}<");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 5);
+            Assert.IsTrue(output.StartsWith("  "));
+        }
+        #endregion
+
         #region Advanced Patterns
         [TestMethod]
         [TestCategory("Advanced Patterns")]
@@ -1245,7 +1293,7 @@ namespace RSGLib.Tests
         public void GlobalExclusionTest2()
         {
             var excluded = new List<char>() { 'a', '{', '}' };
-            var generator = new Generator("{-a{}}a!");
+            var generator = new Generator("{-a{\\}}a!");
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
@@ -1269,7 +1317,7 @@ namespace RSGLib.Tests
         public void TokenExclusionTest2()
         {
             var excluded = new List<char>() { '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~' };
-            var generator = new Generator("a^{-!\"#$%&'()*+,-./:;<>?@[\\]^_`{|}~}");
+            var generator = new Generator("@{-!\"#$%&'()*+,-.\\\\/:;<>?@[]^_`{|\\}~}");
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));

@@ -15,5 +15,9 @@ namespace SMC.Utilities.RSG
         /// A Function Control Block (FCB).
         /// </summary>
         FCB,
+        /// <summary>
+        /// A string formatting control block.
+        /// </summary>
+        FMT
     }
 }

@@ -111,6 +111,8 @@ There are a couple of additional characters that are used to help define the pat
   - **\[-](3)** - Would output three hypens sequentially.
   - **\#Street, Avenue, Blvd\#(2)** - Would output one of the words randomly from the list, followed by another word from the list randomly selected.
 - **{}** - Braces are used to specify a control block and can have different means depending on where it is placed and its exact format.  See [Advanced Features](#advanced-features) for more information on this token.
+- **><** - Angled brackets can be used to specify a format string.  This can be any standard .NET format string but **MUST** include **{0}** somewhere in the string (e.g. **>Number as hex {0}<**) and be after a token.
+  - **0(2)>#{0:X}<** - Would output a hexadecimal number (with a leading pound/hash sign) that has a decimal value between 0 and 99
 
 #### NOTE Although **a(0)** seems like it would be valid based on the information above, this pattern is not valid as this would not generate any output and would simply add to the processing time.
 
@@ -195,7 +197,6 @@ This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNe
 ### ***COMING SOON***
 
 ## Future Plans
-- A method of specifying a format string for numerical data.
 - Logical ORing of pattern groups
 
 ## Contributing

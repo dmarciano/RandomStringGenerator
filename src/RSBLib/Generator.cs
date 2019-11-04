@@ -220,10 +220,10 @@ namespace SMC.Utilities.RSG
                         characters = GetLettersNumbersSymbols(token);
                         break;
                     case TokenType.LITERAL:
-                        for (var count = 0; count < repeat; count++)
-                        {
-                            sb.Append(token.Value);
-                        }
+                        //for (var count = 0; count < repeat; count++)
+                        //{
+                        //    sb.Append(token.Value);
+                        //}
                         break;
                     case TokenType.OPTIONAL:
                         HandleOptionalBlock(token, repeat, ref sb);
@@ -250,9 +250,69 @@ namespace SMC.Utilities.RSG
                     {
                         characters = characters.Except(token.ControlBlock.ExceptValues).ToArray();
                     }
+
+                    if (null == token.ControlBlock || token.ControlBlock.Type != ControlBlockType.FMT)
+                    {
+                        for(var count = 0; count<repeat; count++)
+                        {
+                            sb.Append(characters[_rng.Next(characters.Length)]);
+                        }
+                    }
+                    else
+                    {
+                        var temp = new StringBuilder(repeat);
+                        for (var count = 0; count < repeat; count++)
+                        {
+                            temp.Append(characters[_rng.Next(characters.Length)]);
+                        }
+
+                        var str = temp.ToString();
+                        if(int.TryParse(str, out var number))
+                        {
+                            sb.Append(string.Format(token.ControlBlock.Value, number));
+                        }
+                        else
+                        {
+                            sb.Append(string.Format(token.ControlBlock.Value, str));
+                        }
+                    }
+
+
+                    //    for (var count = 0; count < repeat; count++)
+                    //{
+                    //    if (null != token.ControlBlock && token.ControlBlock.Type == ControlBlockType.FMT)
+                    //    {
+                    //        var temp = characters[_rng.Next(characters.Length)];
+                    //        var formatted = string.Format(token.ControlBlock.Value, temp);
+                    //        sb.Append(formatted);
+                    //    }
+                    //    else
+                    //    {
+                    //        sb.Append(characters[_rng.Next(characters.Length)]);
+                    //    }
+                    //}
+                }
+                else if(token.Type == TokenType.LITERAL)
+                {
                     for (var count = 0; count < repeat; count++)
                     {
-                        sb.Append(characters[_rng.Next(characters.Length)]);
+                        if (null != token.ControlBlock && token.ControlBlock.Type == ControlBlockType.FMT)
+                        {
+                            var formatted = string.Empty;
+                            if(int.TryParse(token.Value, out var number))
+                            {
+                                formatted = string.Format(token.ControlBlock.Value, number);
+                            }
+                            else
+                            {
+                                formatted = string.Format(token.ControlBlock.Value, token.Value);
+                            }
+                            sb.Append(formatted);
+                        }
+                        else
+                        {
+                            sb.Append(token.Value);
+                        }
                     }
                 }
             }
