@@ -15,7 +15,7 @@ namespace RSBLib.Benchmarks
 {
     //[Config(typeof(Config))]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    public class SocialSecurityNumbersBenchmark
+    public class CreateAddressBenchmark
     {
         Generator generator;
         Generator cryptoGenerator;
@@ -30,15 +30,15 @@ namespace RSBLib.Benchmarks
             }
         }
 
-        public SocialSecurityNumbersBenchmark()
+        public CreateAddressBenchmark()
         {
             var ticks = Environment.TickCount;
-            generator = new Generator("0(3)[-]0(2)[-]0(4)", new RandomGenerator(ticks));
+            generator = new Generator("9(1,5)[ ]#Main,1st,8th#[ ]#Street,Avenue,Court#[, ]#Brooklyn,Newark#[, ]#NY,NJ#[ ]0(5)", new RandomGenerator(ticks));
 
-            cryptoGenerator = new Generator("0(3)[-]0(2)[-]0(4)", new CryptoRandomGenerator());
+            cryptoGenerator = new Generator("9(1,5)[ ]#Main,1st,8th#[ ]#Street,Avenue,Court#[, ]#Brooklyn,Newark#[, ]#NY,NJ#[ ]0(5)", new CryptoRandomGenerator());
 
             var random = new Random(Environment.TickCount);
-            xeger = new Xeger("^\\d{3}-\\d{2}-\\d{4}$", random);
+            xeger = new Xeger("^[1-9]{1,5} (Main|1st|8th) (Street|Avenue|Court), (Brooklyn|Newark), (NY|NJ) \\d{5}$", random);
         }
 
         [Benchmark]

@@ -1349,6 +1349,17 @@ namespace RSGLib.Tests
 
         [TestMethod]
         [TestCategory("Control Blocks")]
+        public void GeneralDateTimeStringForceTest()
+        {
+            var pattern = "{T?}";
+            var generator = new Generator(pattern);
+            var output = generator.ToString();
+
+            Assert.IsTrue(DateTime.TryParse(output, out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
         public void GeneralDateTimeStringRepeatTest()
         {
             var pattern = "{T}(2)";

@@ -11,7 +11,10 @@ namespace RSBLib.Benchmarks
     {
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<SocialSecurityNumbersBenchmark>();
+            //var summary = BenchmarkRunner.Run<SocialSecurityNumbersBenchmark>();
+            var summary = BenchmarkRunner.Run<SelectionFromGroupBenchmark>();
+            //var summary = BenchmarkRunner.Run<FunctionsBenchmark>();
+            //var summary = BenchmarkRunner.Run<CreateAddressBenchmark>();
         }
     }
 }

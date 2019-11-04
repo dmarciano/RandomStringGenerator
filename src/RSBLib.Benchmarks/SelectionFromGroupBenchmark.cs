@@ -15,7 +15,7 @@ namespace RSBLib.Benchmarks
 {
     //[Config(typeof(Config))]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    public class SocialSecurityNumbersBenchmark
+    public class SelectionFromGroupBenchmark
     {
         Generator generator;
         Generator cryptoGenerator;
@@ -30,24 +30,24 @@ namespace RSBLib.Benchmarks
             }
         }
 
-        public SocialSecurityNumbersBenchmark()
+        public SelectionFromGroupBenchmark()
         {
             var ticks = Environment.TickCount;
-            generator = new Generator("0(3)[-]0(2)[-]0(4)", new RandomGenerator(ticks));
+            generator = new Generator("#First,Fizzy,Fuzzy#(2,5)", new RandomGenerator(ticks));
 
-            cryptoGenerator = new Generator("0(3)[-]0(2)[-]0(4)", new CryptoRandomGenerator());
+            cryptoGenerator = new Generator("#First,Fizzy,Fuzzy#(2,5)", new CryptoRandomGenerator());
 
             var random = new Random(Environment.TickCount);
-            xeger = new Xeger("^\\d{3}-\\d{2}-\\d{4}$", random);
+            xeger = new Xeger("^(First|Fizzy|Fuzzy){2,5}$", random);
         }
 
         [Benchmark]
-        public string RSG_SSN_RNG() => generator.GetString();
+        public string RSG_SELECT_RNG() => generator.GetString();
 
         [Benchmark]
-        public string RSG_SSN_CRNG() => cryptoGenerator.GetString();
+        public string RSG_SELECT_CRNG() => cryptoGenerator.GetString();
 
         [Benchmark]
-        public string XEGER_SSN() => xeger.Generate();
+        public string XEGER_SELECT() => xeger.Generate();
     }
 }
