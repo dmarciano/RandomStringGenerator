@@ -436,6 +436,49 @@ namespace RSGLib.Tests
         }
         #endregion
 
+        #region Escape Sequences
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void LiteralClosingBracketEscapeTest()
+        {
+            var generator = new Generator("[\\]]");
+            var output = generator.GetString();
+
+            Assert.AreEqual(output, "]", false);
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void LiteralNewLineEscapeTest()
+        {
+            var generator = new Generator("[a\\nb]");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Contains(Environment.NewLine));
+            Assert.AreEqual(output, $"a{Environment.NewLine}b", false);
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void LiteralTabEscapeTest()
+        {
+            var generator = new Generator("[a\\tb]");
+            var output = generator.GetString();
+            Assert.IsTrue(output.Contains("\t"));
+            Assert.AreEqual(output, "a\tb", false);
+        }
+
+        [TestMethod]
+        [TestCategory("Escape Sequence")]
+        public void LiteralBackSlashEscapeTest()
+        {
+            var generator = new Generator("[a\\\\b]");
+            var output = generator.GetString();
+            Assert.IsTrue(output.Contains("\\"));
+            Assert.AreEqual(output, "a\\b", false);
+        }
+        #endregion
+
         #region Advanced Patterns
         [TestMethod]
         [TestCategory("Advanced Patterns")]

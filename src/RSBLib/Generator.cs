@@ -226,7 +226,7 @@ namespace SMC.Utilities.RSG
                     case TokenType.LITERAL:
                         for (var count = 0; count < repeat; count++)
                         {
-                            sb.Append(token.Value);
+                                sb.Append(token.Value);
                         }
                         break;
                     case TokenType.CONTROL_BLOCK:

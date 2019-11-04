@@ -21,7 +21,7 @@ regular expressions were designed more for matching strings to a pattern rather 
 regular expressions.
 
 ## RSG Language
-Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of [Tokens](#tokens), [Modifiers](#modifiers), [Literals](#literals), and [Others](#others).
+Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of [Tokens](#tokens), [Modifiers](#modifiers), [Literals](#literals), [Optionals](#optionals), and [Others](#others).
 
 ### Tokens
 Tokens are used to specify the type of character that should be generated.  Currently, there are eight (8) different tokens that can be specified in a pattern and each is listed below with what they represent:
@@ -56,19 +56,38 @@ The last modifier can only appear once per valid token, listed below:
 You can see the [Examples](#examples) section for samples of valid/invalid patterns and examples of what their output would look like for further clarity.
 
 ### Literals
-Literal are written by surrounding them with brackets (**[]**).  Some examples include:
+There are three diffent literals supported by the RSG language:
+- **\\n** - Outputs a new line.  This literal can be used directly within a pattern, in an options box, or within the literal brackets (see below).
+- **\\t** - Same as the above literal but outputs a tab instead of a new line
+- **[ ]** - Outputs anything within the brackets exactly as it is written without any processing
+> **NOTE** To output a closing bracket ] it must be escaped with a backslash like so: [\\]]
+
+The following are some samples of how literals can be used:
 - **[-]** - Outputs a single hypen
 - **[_]** - Outputs a single underscore
 - **[\\]** - Outputs a single backspace
 - **[/]** - Outputs a single forward slash
-- **[ ]** - Outputs a single blank space.  The double quotes should **not** be used and are only used here to show the blank space.  **Cannot** be the first or last item in a pattern (i.e. no leading or trailing whitespace).
+- **[Line1\\nLine2]** - Outputs 'Line1', then a new line, and then 'Line2'.
+- **[ ]** - Outputs a single blank space.
 - **[a]** - Outputs the letter 'a'.
 
 **Note** Modifiers are *not* valid on any literals.
 
+### Optionals
+The RSG language has so called **Optional** blocks.  These allow you to specify a list of characters and/or words that will be used as a random selection list.  
+These blocks are surrounded by the pound, or hash, symbol **#**.  For example, if a random list of addresses was being used as test data, and the type of street (Street, Avenue, Blvd, etc.) should be randomly selected
+to allow a variety of words, this can be specified by using:
+
+\#\#Street, Avenue, Blvd\#\#
+
+The generater would then randomly selected one of the items in the list. 
+> **NOTE** To use a hash (\#) or comma (,) in the list, it must be escaped using a backslash (\\).  For example, if the list was to contain suite numbers that had a hash symbole, they would need to be escape like this:
+\#\#Suite \\\#1, Suite \\\#2, Suite \\\#3\#\#
+
+
 ### Others
 There are a couple of additional characters that are used to help define the pattern:
-- **()** - Parentheses are used next to tokens (but after modifiers), or after literals, to specify a number of repeats.  For example:
+- **()** - Parentheses are used next to tokens (but after modifiers), or after other types of blocks, to specify a number of repeats.  For example:
   - **a(2)** - Would output any two letters.  Some possible examples are:
     - aa
 	- tV
@@ -83,8 +102,8 @@ There are a couple of additional characters that are used to help define the pat
   - **a(0,1)** or **a(,2)** - Would output zero (0) to 2 characters.  The possible outputs would be the same as the first example, however it is also possible nothing would be outputted (i.e. the character would just be skipped).
   - **a!(2)** - Would output any two LOWERCASE letters.
   - **\[-](3)** - Would output three hypens sequentially.
-  - **\[a4](3)** - Would output "a4" three times (i.e. "a4a4a4").
--- **{}** - Braces are used to specify a control block and can have different means depending on where it is placed and its exact format.  See [Advanced Features](#advanced-features) for more information on this token.
+  - **\#\#Street, Avenue, Blvd\#\#(2)** - Would output one of the words randomly from the list, followed by another word from the list randomly selected.
+- **{}** - Braces are used to specify a control block and can have different means depending on where it is placed and its exact format.  See [Advanced Features](#advanced-features) for more information on this token.
 
 #### NOTE Although **a(0)** seems like it would be valid based on the information above, this pattern is not valid as this would not generate any output and would simply add to the processing time.
 
@@ -98,6 +117,7 @@ A control block, **{}** is a special token which is used for more granular contr
 A **{}** block can be specified at the very beginning of a pattern string to specify any letters, numbers, or symbols to leave out of any token selection.  For example, if the pattern string is *a9a*, but the letters
 'l' (lowercase L) or 'O' (uppercase letter "Oh") should not be generated for either **a** token in the pattern, a control block can be specified at the beginning of the pattern string as **{-lO}a9a**.  Such a global control 
 block can only be specified once at the beginning of the pattern.  That is writing **{-l}{-O}a9a** is invalid.
+> **NOTE** To exclude the closing brace } or backslash , it must be escaped within the ECB with a backlash like so: **{\\}}** **{\\\\}**
 
 However, if 'l' should only be excluded from the first letter token and 'O' should be excluded from the second letter token, a  ECB can be specified for each token individually: **a{-l}9a{-O}**.
 > **NOTE** ECBs must *always* have a hypen ('-') immediately after the opening brace ('{') to indicate that it is a ECB and not a Function Control Block (described below).
@@ -114,7 +134,7 @@ Both of these accept a standard .NET formatting string by separating it with a c
 - **{T: MMMM dd, yyyy}** - This would generate a custom DateTime string (e.g June 10, 2011).
 - **{G:N}** - This would generate a GUID with only numbers (e.g. 00000000000000000000000000000000)
 - **{G:X}** - This would generate a GUID formatted as hexadecimals (e.g. {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}})
-- **{T:d}[ ]{T:t}** - This would gnerated a standard .NET DateTime short data string followed by a long time string (e.g. 6/15/2009 1:45:30 PM)
+- **{T:d}[ ]{T:t}** - This would generate a standard .NET DateTime short data string followed by a long time string (e.g. 6/15/2009 1:45:30 PM)
 
 It is also possible to call a custom Func\<TResult> method where *TResult* is a *string* type.  This also inserting data to the randomly generated string that is taken from other places.  For example, the Func\<TResult>
 may return data from a database or different data depending on the state of the application.  In order to use this kind of FCB, several things must be done:

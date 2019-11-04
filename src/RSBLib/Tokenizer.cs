@@ -108,6 +108,14 @@ namespace SMC.Utilities.RSG
             return true;
         }
 
+        //TODO: Escape ] - Literals
+        //TODO Escape # - Optionals
+        //TODO: Escape , Options
+        //TODO: Escape } - ECB
+        //TODO: Escape \ - ECB
+        //TODO: Add \n
+        //TODO: Add \t
+
         private void HandleControlBlock(ref Token token, string pattern)
         {
             var originalPosition = pos;
@@ -200,7 +208,7 @@ namespace SMC.Utilities.RSG
             var cb = new ControlBlock() { Type = ControlBlockType.FCB };
             var functionName = new StringBuilder();
             var formatter = new StringBuilder(string.Empty);
-            char functionCode='x';
+            char functionCode = 'x';
 
             while (!EOS)
             {
@@ -228,7 +236,7 @@ namespace SMC.Utilities.RSG
                             //token.ControlBlock = cb;
                             //EOS = true;
                         }
-                        else if(char.Equals(pattern[pos], '?'))
+                        else if (char.Equals(pattern[pos], '?'))
                         {
                             if (!char.Equals(pattern[pos + 1], '}'))
                                 throw new InvalidPatternException($"Expecting a control block closing brace at positions {pos + 1}, which was not found.");
@@ -254,8 +262,8 @@ namespace SMC.Utilities.RSG
                                 }
                                 else if (char.Equals(pattern[pos], '?'))
                                 {
-                                        if (!char.Equals(pattern[pos + 1], '}'))
-                                            throw new InvalidPatternException($"Expecting a control block closing brace at positions {pos + 1}, which was not found.");
+                                    if (!char.Equals(pattern[pos + 1], '}'))
+                                        throw new InvalidPatternException($"Expecting a control block closing brace at positions {pos + 1}, which was not found.");
 
                                     force = true;
                                 }
@@ -277,7 +285,7 @@ namespace SMC.Utilities.RSG
 
             var format = formatter.ToString();
 
-            if(char.Equals(functionCode, 'G'))
+            if (char.Equals(functionCode, 'G'))
             {
                 cb.FunctionName = "GUID";
                 if (!string.IsNullOrWhiteSpace(format))
@@ -289,7 +297,7 @@ namespace SMC.Utilities.RSG
                         throw new InvalidPatternException($"An unrecognized GUID format string was found.  Format string found: '{format}'.");
                     }
 
-                    
+
                     if (force)
                     {
                         token.Type = TokenType.LITERAL;
@@ -317,7 +325,7 @@ namespace SMC.Utilities.RSG
 
 
             }
-            else if(char.Equals(functionCode, 'T'))
+            else if (char.Equals(functionCode, 'T'))
             {
                 cb.FunctionName = "DATETIME";
                 if (!string.IsNullOrWhiteSpace(format))
@@ -352,7 +360,7 @@ namespace SMC.Utilities.RSG
                 //TODO: UDF
             }
 
-           
+
             token.ControlBlock = cb;
         }
 
@@ -504,6 +512,30 @@ namespace SMC.Utilities.RSG
                     case '[':
                         openings += 1;
                         literal.Append(pattern[pos]);
+                        break;
+                    case '\\':
+                        pos++;
+                        var c = pattern[pos];
+                        if(pattern[pos].Equals('n'))
+                        {
+                            literal.Append(Environment.NewLine);
+                        }
+                        else if (pattern[pos].Equals('t'))
+                        {
+                            literal.Append("\t");
+                        }
+                        else if (pattern[pos].Equals(']'))
+                        {
+                            literal.Append("]");
+                        }
+                        else if (pattern[pos].Equals('\\'))
+                        {
+                            literal.Append('\\');
+                        }
+                        else
+                        {
+                            throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {pos - 1}.");
+                        }
                         break;
                     case ']':
                         openings -= 1;
