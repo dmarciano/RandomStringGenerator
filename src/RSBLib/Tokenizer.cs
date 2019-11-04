@@ -58,6 +58,10 @@ namespace SMC.Utilities.RSG
                         token.Type = TokenType.OPTIONAL;
                         HandleOptional(ref token, pattern);
                         break;
+                    case '<':
+                        token.Type = TokenType.RANGE;
+                        HandleRange(ref token, pattern);
+                        break;
                     case '\\':
                         token.Type = TokenType.LITERAL;
                         pos++;
@@ -80,7 +84,7 @@ namespace SMC.Utilities.RSG
 
                 if (token.Type != TokenType.CONTROL_BLOCK || (token.Type == TokenType.CONTROL_BLOCK && token.ControlBlock != null && token.ControlBlock.Global == false))
                 {
-                    if (token.Type != TokenType.OPTIONAL && token.Type != TokenType.LITERAL)
+                    if (token.Type != TokenType.OPTIONAL && token.Type != TokenType.LITERAL && token.Type != TokenType.RANGE)
                     {
                         if (pos != pattern.Length - 1)
                         {
@@ -130,8 +134,6 @@ namespace SMC.Utilities.RSG
             TokenizedPattern = tokenizedList;
             return true;
         }
-
-        //TODO Escape # , \n \t - Optionals
 
         private void HandleControlBlock(ref Token token, string pattern)
         {
@@ -643,6 +645,72 @@ namespace SMC.Utilities.RSG
                         break;
                     default:
                         optional.Append(pattern[pos]);
+                        break;
+                }
+            }
+        }
+
+        private void HandleRange(ref Token token, string pattern)
+        {
+            var EOS = false;
+            var originalPosition = pos;
+            Range range;
+            if (null == token.Ranges) token.Ranges = new List<Range>();
+
+            while (!EOS)
+            {
+                pos++;
+                if (pos >= pattern.Length)
+                    throw new InvalidPatternException($"No closing range token found for the opening range token at position {originalPosition}.");
+
+
+                switch (pattern[pos])
+                {
+                    case '\\':
+                        pos++;
+                        char start;
+                        if (pattern[pos].Equals('\\'))
+                        {
+                            start = '\\';
+                        }
+                        else if (pattern[pos].Equals('>'))
+                        {
+                            start = '>';
+                        }
+                        else
+                        {
+                            throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {originalPosition}.");
+                        }
+
+                        if(pattern[pos + 1] == '-')
+                        {
+                            range = new Range() { Start = pattern[pos] };
+                            pos++;  // Move to the hypen
+                            pos++;   // Move to character after hypen
+                            range.End = pattern[pos];
+                            token.Ranges.Add(range);
+                        }
+                        else
+                        {
+                            token.Ranges.Add(new Range { Start = start, End = start });
+                        }
+                        break;
+                    case '>':
+                        EOS = true;
+                        break;
+                    default:
+                        if(pattern[pos + 1] == '-')
+                        {
+                            range = new Range() { Start = pattern[pos]};
+                            pos++;  // Move to the hypen
+                            pos++;   // Move to character after hypen
+                            range.End = pattern[pos];
+                            token.Ranges.Add(range);
+                        }
+                        else
+                        {
+                            token.Ranges.Add(new Range { Start = pattern[pos], End = pattern[pos] });
+                        }
                         break;
                 }
             }

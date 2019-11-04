@@ -49,6 +49,7 @@
     <Compile Include="Enums\ModifierType.cs" />
     <Compile Include="Random Generators\CryptoRandomGenerator.cs" />
     <Compile Include="Random Generators\RandomGenerator.cs" />
+    <Compile Include="Range.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokenFile.cs" />
     <Compile Include="Tokenizer.cs" />

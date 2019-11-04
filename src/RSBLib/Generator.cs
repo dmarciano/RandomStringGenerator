@@ -228,6 +228,9 @@ namespace SMC.Utilities.RSG
                     case TokenType.OPTIONAL:
                         HandleOptionalBlock(token, repeat, ref sb);
                         break;
+                    case TokenType.RANGE:
+                        HandleRangeBlock(token, repeat, ref sb);
+                        break;
                     case TokenType.CONTROL_BLOCK:
                         if (token.ControlBlock.Global)
                         {
@@ -240,7 +243,7 @@ namespace SMC.Utilities.RSG
                         break;
                 }
 
-                if (token.Type != TokenType.LITERAL && token.Type != TokenType.CONTROL_BLOCK && token.Type != TokenType.OPTIONAL)
+                if (token.Type != TokenType.LITERAL && token.Type != TokenType.CONTROL_BLOCK && token.Type != TokenType.OPTIONAL && token.Type != TokenType.RANGE)
                 {
                     characters = characters.Except(globalExcept).ToArray();
                     if (token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Length > 0)
@@ -382,6 +385,30 @@ namespace SMC.Utilities.RSG
             for (var count = 0; count < repeat; count++)
             {
                 sb.Append(token.Values[_rng.Next(token.Values.Count)]);
+            }
+        }
+
+        private void HandleRangeBlock(Token token, int repeat, ref StringBuilder sb)
+        {
+            List<char> characters = new List<char>();
+
+            foreach(var range in token.Ranges)
+            {
+                if (range.Start.Equals(range.End))
+                {
+                    characters.Add(range.Start);
+                }
+                else
+                {
+                    var r = Enumerable.Range(range.Start, range.End - range.Start + 1).Select(i => (char)i);
+                    characters.AddRange(r);
+                }
+            }
+
+
+            for(var count = 0; count<repeat; count++)
+            {
+                sb.Append(characters[_rng.Next(characters.Count)]);
             }
         }
         #endregion

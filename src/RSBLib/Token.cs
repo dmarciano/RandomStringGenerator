@@ -11,6 +11,7 @@ namespace SMC.Utilities.RSG
         public int MaximumCount { get; set; } = 1;
         internal string Value { get; set; }
         internal List<string> Values { get; set; }
+        internal List<Range> Ranges { get; set; }
         internal ControlBlock ControlBlock { get; set; }
     }
 }

@@ -700,11 +700,336 @@ namespace RSGLib.Tests
         #endregion
 
         #region Ranges
-        //TODO: Alphanumerical range
-        /*
-         Need to decide how this should be done.  For example, should letters be done by alphabetical order or byte order?
-         What if the range specifies letters AND number (and possibly symbols)?
-         */
+         [TestMethod]
+         [TestCategory("Ranges")]
+         public void LowercaseLetterRangeTest()
+        {
+            var generator = new Generator("<a-z>");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsLower(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void LowercaseLetterRangeRepeatTest()
+        {
+            var generator = new Generator("<a-z>(2)");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsLetter(output[1]));
+            Assert.IsTrue(char.IsLower(output[0]));
+            Assert.IsTrue(char.IsLower(output[1]));
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void UppercasecaseLetterRangeTest()
+        {
+            var generator = new Generator("<A-Z>");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsUpper(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void UppercaseLetterRangeRepeatTest()
+        {
+            var generator = new Generator("<A-Z>(2)");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsLetter(output[1]));
+            Assert.IsTrue(char.IsUpper(output[0]));
+            Assert.IsTrue(char.IsUpper(output[1]));
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void IndividualLettersRangeTest()
+        {
+            var generator = new Generator("<ab>");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsLower(output[0]));
+            Assert.IsTrue(output[0].Equals('a') || output[1].Equals('b'));
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void IndividualLettersRangeTest2()
+        {
+            var generator = new Generator("<ab>");
+            var test = true;
+            var aSeen = false;
+            var bSeen = false;
+            var count = 0;  //To prevent the loop from running indefinitely
+            while (test)
+            {
+                count++;
+                var output = generator.GetString();
+
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsLower(output[0]));
+
+                if (output[0].Equals('a'))
+                {
+                    aSeen = true;
+                }
+                else if(output[0].Equals('b'))
+                {
+                    bSeen = true;
+                }
+                test = !((aSeen && bSeen) || count == 500);
+            }
+
+            Assert.IsTrue(aSeen);
+            Assert.IsTrue(bSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void FullNumberRangeTest()
+        {
+            var generator = new Generator("<0-9>");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsNumber(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void RestrictedNumberRangeTest()
+        {
+            var generator = new Generator("<1-8>");
+
+            foreach(var output in generator.GetStrings(10000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsNumber(output[0]));
+                Assert.IsTrue(!output[0].Equals('0') && !output[0].Equals('9'));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void LetterNumberRangeTest()
+        {
+            var generator = new Generator("<a1-8>");
+            foreach(var output in generator.GetStrings(100000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
+
+                if (char.IsLetter(output[0]))
+                    Assert.IsTrue(output[0].Equals('a'));
+                else
+                    Assert.IsTrue(!output[0].Equals('0') && !output[0].Equals('9'));
+                
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void LetterNumberRangeRepeatTest()
+        {
+            var generator = new Generator("<a1-8>(2)");
+            foreach (var output in generator.GetStrings(100000))
+            {
+                Assert.IsTrue(output.Length == 2);
+
+                var output1 = output[0];
+                var output2 = output[1];
+
+                Assert.IsTrue(char.IsLetterOrDigit(output1));
+                Assert.IsTrue(char.IsLetterOrDigit(output2));
+
+                if (char.IsLetter(output1))
+                    Assert.IsTrue(output1.Equals('a'));
+                else
+                    Assert.IsTrue(!output1.Equals('0') && !output1.Equals('9'));
+
+                if (char.IsLetter(output2))
+                    Assert.IsTrue(output2.Equals('a'));
+                else
+                    Assert.IsTrue(!output2.Equals('0') && !output2.Equals('9'));
+
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void MultipleRangesTest()
+        {
+            var generator = new Generator("<a-cx-z>");
+            foreach(var output in generator.GetStrings(100000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsLower(output[0]));
+                Assert.IsTrue(output[0].Equals('a') || output[0].Equals('b') || output[0].Equals('c') || output[0].Equals('x') || output[0].Equals('y') || output[0].Equals('z'));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void MultipleRangesTest2()
+        {
+            var generator = new Generator("<b-d3-5>");
+            foreach (var output in generator.GetStrings(100000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
+                Assert.IsTrue(output[0].Equals('b') || output[0].Equals('c') || output[0].Equals('d') || output[0].Equals('3') || output[0].Equals('4') || output[0].Equals('5'));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void MultipleRangesTest3()
+        {
+            var generator = new Generator("<bd379>");
+            foreach (var output in generator.GetStrings(100000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
+                Assert.IsTrue(output[0].Equals('b') || output[0].Equals('d') || output[0].Equals('3') || output[0].Equals('7') || output[0].Equals('9'));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void MultipleRangesTest3Modified()
+        {
+            var generator = new Generator("<bd379>");
+            var bSeen = false;
+            var dSeen = false;
+            var threeSeen = false;
+            var sevenSeen = false;
+            var nineSeen = false;
+            foreach (var output in generator.GetStrings(100000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
+                Assert.IsTrue(output[0].Equals('b') || output[0].Equals('d') || output[0].Equals('3') || output[0].Equals('7') || output[0].Equals('9'));
+
+                switch (output[0])
+                {
+                    case 'b':
+                        bSeen = true;
+                        break;
+                    case 'd':
+                        dSeen = true;
+                        break;
+                    case '3':
+                        threeSeen = true;
+                        break;
+                    case '7':
+                        sevenSeen = true;
+                        break;
+                    case '9':
+                        nineSeen = true;
+                        break;
+                }
+            }
+
+            Assert.IsTrue(bSeen);
+            Assert.IsTrue(dSeen);
+            Assert.IsTrue(threeSeen);
+            Assert.IsTrue(sevenSeen);
+            Assert.IsTrue(nineSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void MultipleRangesRepeatTest()
+        {
+            var generator = new Generator("<bd379>(2)");
+            var bSeen1 = 0;
+            var dSeen1 = 0;
+            var threeSeen1 = 0;
+            var sevenSeen1 = 0;
+            var nineSeen1 = 0;
+
+            var bSeen2 = 0;
+            var dSeen2 = 0;
+            var threeSeen2 = 0;
+            var sevenSeen2 = 0;
+            var nineSeen2 = 0;
+            foreach (var output in generator.GetStrings(100000))
+            {
+                Assert.IsTrue(output.Length == 2);
+
+                var output1 = output[0];
+                var output2 = output[1];
+                Assert.IsTrue(char.IsLetterOrDigit(output1));
+                Assert.IsTrue(char.IsLetterOrDigit(output2));
+                Assert.IsTrue(output1.Equals('b') || output1.Equals('d') || output1.Equals('3') || output1.Equals('7') || output1.Equals('9'));
+                Assert.IsTrue(output2.Equals('b') || output2.Equals('d') || output2.Equals('3') || output2.Equals('7') || output2.Equals('9'));
+
+                switch (output1)
+                {
+                    case 'b':
+                        bSeen1++;
+                        break;
+                    case 'd':
+                        dSeen1++;
+                        break;
+                    case '3':
+                        threeSeen1++;
+                        break;
+                    case '7':
+                        sevenSeen1++;
+                        break;
+                    case '9':
+                        nineSeen1++;
+                        break;
+                }
+
+                switch (output2)
+                {
+                    case 'b':
+                        bSeen2++;
+                        break;
+                    case 'd':
+                        dSeen2++;
+                        break;
+                    case '3':
+                        threeSeen2++;
+                        break;
+                    case '7':
+                        sevenSeen2++;
+                        break;
+                    case '9':
+                        nineSeen2++;
+                        break;
+                }
+            }
+
+            Assert.IsTrue(bSeen1 >=2 );
+            Assert.IsTrue(dSeen1>=2);
+            Assert.IsTrue(threeSeen1 >= 2);
+            Assert.IsTrue(sevenSeen1 >= 2);
+            Assert.IsTrue(nineSeen1 >= 2);
+
+            Assert.IsTrue(bSeen2 >= 2);
+            Assert.IsTrue(dSeen2 >= 2);
+            Assert.IsTrue(threeSeen2 >= 2);
+            Assert.IsTrue(sevenSeen2 >= 2);
+            Assert.IsTrue(nineSeen2 >= 2);
+        }
         #endregion
 
         #region Advanced Patterns

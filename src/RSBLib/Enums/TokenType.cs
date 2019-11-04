@@ -58,6 +58,11 @@ namespace SMC.Utilities.RSG
         [Description("#")]
         OPTIONAL,
         /// <summary>
+        /// This token is for representing a character range block.
+        /// </summary>
+        [Description("<>")]
+        RANGE,
+        /// <summary>
         /// This token is for representing either a Exclusion Control Block (ECB) or Function Control Block (FCB).
         /// </summary>
         [Description("{}")]

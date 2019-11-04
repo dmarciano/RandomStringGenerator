@@ -24,7 +24,7 @@ Therefore an RSG pattern can be as simple as a single character token or as comp
 Although it contains some advanced features (such as the user-defined functions), most users will not need to use them; but they are should the need ever arise.
 
 ## RSG Language
-Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of [Tokens](#tokens), [Modifiers](#modifiers), [Literals](#literals), [Optionals](#optionals), and [Others](#others).
+Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of [Tokens](#tokens), [Modifiers](#modifiers), [Literals](#literals), [Optionals](#optionals), [Ranges](#ranges), and [Others](#others).
 
 ### Tokens
 Tokens are used to specify the type of character that should be generated.  Currently, there are eight (8) different tokens that can be specified in a pattern and each is listed below with what they represent:
@@ -87,6 +87,10 @@ The generater would then randomly selected one of the items in the list.
 > **NOTE** To use a hash (\#) or comma (,) in the list, it must be escaped using a backslash (\\).  For example, if the list was to contain suite numbers that had a hash symbole, they would need to be escape like this:
 \#Suite \\\#1, Suite \\\#2, Suite \\\#3\#
 
+### Ranges
+Ranges in the RSG language works in the same way that ranges work in Regular Expressions and are enclosed in angled brackets **<>**.  You can specify ranges of characters **\<a-b>**, numbers **\<3-5>**,
+symbols **\<!-$>**, and multiple ranges **\<a-z3-5>** or **\<a-z345>**.  When the output string is generated, it will pick a valid character from the specified range(s).  
+If a range should be repeated (e.g. a number between three and six, two times), the repeat count can be specified in the same manner as for a single token **\<3-6>(2)**.
 
 ### Others
 There are a couple of additional characters that are used to help define the pattern:
@@ -191,8 +195,8 @@ This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNe
 ### ***COMING SOON***
 
 ## Future Plans
-- A method of specifying a range, or set, of numbers/character to use for generating the string.
 - A method of specifying a format string for numerical data.
+- Logical ORing of pattern groups
 
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.
