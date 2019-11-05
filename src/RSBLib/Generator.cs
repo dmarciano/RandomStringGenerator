@@ -103,7 +103,7 @@ namespace SMC.Utilities.RSG
         /// <exception cref="NoPatternException">Pattern is null, empty, or only whitespace.</exception>
         /// <exception cref="InvalidPatternException">Pattern is not valid.</exception>
         /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
-        public void SetPattern(string pattern)
+        public Generator SetPattern(string pattern)
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
             if (string.IsNullOrWhiteSpace(pattern))
@@ -114,6 +114,8 @@ namespace SMC.Utilities.RSG
                 _tokenizedPattern = _tokenizer.TokenizedPattern;
 
             Pattern = pattern;
+
+            return this;
         }
 
         /// <summary>
@@ -122,13 +124,15 @@ namespace SMC.Utilities.RSG
         /// <param name="builder">The <see cref="PatternBuilder"/> to use.</param>
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
-        public void UseBuilder(PatternBuilder builder)
+        public Generator UseBuilder(PatternBuilder builder)
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
             if (null == builder)
                 throw new ArgumentNullException(nameof(builder), "Pattern builder cannot be null.");
 
             _tokenizedPattern = builder.TokenizedPattern;
+
+            return this;
         }
 
         /// <summary>

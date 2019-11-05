@@ -14,21 +14,8 @@ namespace RSGLib.Tests
         [TestCategory("Constructor")]
         public void ConstructorTest()
         {
-            var builder = new PatternBuilder().Letter().Repeat(2, 3);
-
-            var t = "t";
-            //var generator = new Generator();
-
-            //Assert.IsTrue(true);
-        }
-
-        [TestMethod]
-        [TestCategory("Constructor")]
-        public void ConstructorEmptyStringTest()
-        {
-            var generator = new Generator(string.Empty);
-
-            Assert.IsTrue(true);
+            var builder = new PatternBuilder();
+           Assert.IsTrue(true);
         }
         #endregion
 
@@ -37,8 +24,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleCharacterTest()
         {
-            var generator = new Generator("a");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -48,8 +35,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleNumberTest()
         {
-            var generator = new Generator("0");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Number();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsNumber(output[0]));
@@ -59,8 +46,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleNumberExcludingZeroTest()
         {
-            var generator = new Generator("9");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().NumberExceptZero();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsNumber(output[0]));
@@ -71,8 +58,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleSymbolTest()
         {
-            var generator = new Generator("@");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Symbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
@@ -82,8 +69,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleCharacterWithCryptoTest()
         {
-            var generator = new Generator("a", new CryptoRandomGenerator());
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter();
+            var output = new Generator(new CryptoRandomGenerator()).UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -93,8 +80,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleNumberWithCryptoTest()
         {
-            var generator = new Generator("0", new CryptoRandomGenerator());
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Number();
+            var output = new Generator(new CryptoRandomGenerator()).UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsNumber(output[0]));
@@ -104,8 +91,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleNumberExcludingZeroWithCryptoTest()
         {
-            var generator = new Generator("9", new CryptoRandomGenerator());
-            var output = generator.GetString();
+            var builder = new PatternBuilder().NumberExceptZero();
+            var output = new Generator(new CryptoRandomGenerator()).UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsNumber(output[0]));
@@ -116,8 +103,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleSymbolWithCryptoTest()
         {
-            var generator = new Generator("@", new CryptoRandomGenerator());
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Symbol();
+            var output = new Generator(new CryptoRandomGenerator()).UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
@@ -127,8 +114,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleLiteralTest()
         {
-            var generator = new Generator("[ab]");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("ab");
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.AreEqual(output, "ab", false);
         }
@@ -137,8 +124,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleLiteralTest2()
         {
-            var generator = new Generator("[[]]");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("[]");
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.AreEqual(output, "[]", false);
         }
@@ -147,8 +134,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void SingleLiteralTest3()
         {
-            var generator = new Generator("[[ab]]");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("[ab]");
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.AreEqual(output, "[ab]", false);
         }
@@ -157,8 +144,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void LetterNumberTest()
         {
-            var generator = new Generator(".");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().LetterOrNumber();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(char.IsLetterOrDigit(output[0]));
         }
@@ -167,8 +154,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void LetterSymbolTest()
         {
-            var generator = new Generator("+");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().LetterOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(char.IsLetter(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
         }
@@ -177,8 +164,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void NumberSymbolTest()
         {
-            var generator = new Generator("%");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().NumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
         }
@@ -187,8 +174,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void LetterNumberSymbolTest()
         {
-            var generator = new Generator("%");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().LetterNumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
         }
@@ -197,8 +184,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void MultipleCharacterTest()
         {
-            var generator = new Generator("a(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             foreach (var c in output.ToCharArray())
@@ -211,8 +198,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void MultipleNumberTest()
         {
-            var generator = new Generator("0(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Number().Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             foreach (var c in output.ToCharArray())
@@ -225,8 +212,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void MultipleNumberExcludingZeroTest()
         {
-            var generator = new Generator("9(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().NumberExceptZero().Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             foreach (var c in output.ToCharArray())
@@ -240,8 +227,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void MultipleSymbolTest()
         {
-            var generator = new Generator("@(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Symbol().Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             foreach (var c in output.ToCharArray())
@@ -254,8 +241,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void MultipleLiteralTest()
         {
-            var generator = new Generator("[ab](2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("ab").Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.AreEqual(output, "abab", false);
         }
@@ -264,8 +251,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void MultipleLiteralTest2()
         {
-            var generator = new Generator("[[]](2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("[]").Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.AreEqual(output, "[][]", false);
         }
@@ -274,8 +261,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void MultipleLiteralTest3()
         {
-            var generator = new Generator("[[ab]](2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("[ab]").Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.AreEqual(output, "[ab][ab]", false);
         }
@@ -284,8 +271,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void RangeRepeatTest()
         {
-            var generator = new Generator("a(1,5)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().Repeat(1,5);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length >= 1 && output.Length <= 5);
             foreach (var c in output.ToCharArray())
@@ -298,22 +285,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void ZeroRangeRepeatTest()
         {
-            var generator = new Generator("a(0,2)");
-            var output = generator.GetString();
-
-            Assert.IsTrue(output.Length >= 0 && output.Length <= 2);
-            foreach (var c in output.ToCharArray())
-            {
-                Assert.IsTrue(char.IsLetter(c));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Basic Pattern")]
-        public void ZeroRangeRepeatTest2()
-        {
-            var generator = new Generator("a(,2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().Repeat(0,5);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length >= 0 && output.Length <= 2);
             foreach (var c in output.ToCharArray())
@@ -326,8 +299,9 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void StringInterpolationTest()
         {
-            var pattern = $"[{"AAA".ToString()}]@";
-            var generator = new Generator(pattern);
+            var builder = new PatternBuilder().Literal($"{"AAA".ToString()}").Symbol();
+            var generator = new Generator().UseBuilder(builder);
+
             var output1 = generator.ToString();
             var output2 = generator.ToString();
 
@@ -344,8 +318,8 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void StringInterpolationRepeatTest()
         {
-            var pattern = $"[{"AAA".ToString()}](2)@";
-            var generator = new Generator(pattern);
+            var builder = new PatternBuilder().Literal($"{"AAA".ToString()}").Repeat(2).Symbol();
+            var generator = new Generator().UseBuilder(builder);
             var output1 = generator.ToString();
             var output2 = generator.ToString();
 
@@ -364,8 +338,8 @@ namespace RSGLib.Tests
         [TestCategory("Modifiers")]
         public void SingleUppercaseLetterTest()
         {
-            var generator = new Generator("a^");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().UppercaseOnly();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -376,8 +350,8 @@ namespace RSGLib.Tests
         [TestCategory("Modifiers")]
         public void SingleLowercaseLetterTest()
         {
-            var generator = new Generator("a!");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().LowercaseOnly();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -388,8 +362,8 @@ namespace RSGLib.Tests
         [TestCategory("Modifiers")]
         public void NumberSymbolExceptZeroTest()
         {
-            var generator = new Generator("%~");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().NumberOrSymbol().ExcludeZero();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
@@ -400,8 +374,8 @@ namespace RSGLib.Tests
         [TestCategory("Modifiers")]
         public void MultipleUppercaseLetterTest()
         {
-            var generator = new Generator("a^(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().UppercaseOnly().Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             foreach (var c in output.ToCharArray())
@@ -415,8 +389,8 @@ namespace RSGLib.Tests
         [TestCategory("Modifiers")]
         public void MultipleLowercaseLetterTest()
         {
-            var generator = new Generator("a!(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().LowercaseOnly().Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             foreach (var c in output.ToCharArray())
@@ -430,204 +404,14 @@ namespace RSGLib.Tests
         [TestCategory("Modifiers")]
         public void ExcludeZeroTest()
         {
-            var generator = new Generator("0~");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Number().ExcludeZero();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsNumber(output[0]));
             Assert.IsTrue(Convert.ToInt32(output[0]) != 0);
         }
         #endregion 
-
-        #region Escape Sequences
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void NewLineInPatternTest()
-        {
-            var generator = new Generator("a\\n0");
-            var output = generator.GetString();
-            
-            // Environment.NewLine.Length is used below to account for different OS's new line
-            // i.e. some are \n and Windows is \r\n
-            Assert.IsTrue(output.Length == 2 + Environment.NewLine.Length);
-            Assert.IsTrue(output.Contains(Environment.NewLine));
-            Assert.IsTrue(char.IsLetter(output[0]));
-            Assert.IsTrue(char.IsNumber(output[2 + Environment.NewLine.Length - 1]));
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void TabInPatternTest()
-        {
-            var generator = new Generator("a\\t0");
-            var output = generator.GetString();
-
-            Assert.IsTrue(output.Length == 3);
-            Assert.IsTrue(output.Contains("\t"));
-            Assert.IsTrue(char.IsLetter(output[0]));
-            Assert.IsTrue(char.IsNumber(output[2]));
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void LiteralClosingBracketEscapeTest()
-        {
-            var generator = new Generator("[\\]]");
-            var output = generator.GetString();
-
-            Assert.AreEqual(output, "]", false);
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void LiteralNewLineEscapeTest()
-        {
-            var generator = new Generator("[a\\nb]");
-            var output = generator.GetString();
-
-            Assert.IsTrue(output.Contains(Environment.NewLine));
-            Assert.AreEqual(output, $"a{Environment.NewLine}b", false);
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void LiteralTabEscapeTest()
-        {
-            var generator = new Generator("[a\\tb]");
-            var output = generator.GetString();
-            Assert.IsTrue(output.Contains("\t"));
-            Assert.AreEqual(output, "a\tb", false);
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void LiteralBackSlashEscapeTest()
-        {
-            var generator = new Generator("[a\\\\b]");
-            var output = generator.GetString();
-            Assert.IsTrue(output.Contains("\\"));
-            Assert.AreEqual(output, "a\\b", false);
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void ClosingBraceGlobalExclusionTest()
-        {
-            var generator = new Generator("{-\\}}@");
-            foreach (var output in generator.GetStrings(500))
-            {
-                Assert.IsTrue(!output.Equals("}"));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void BackSlashGlobalExclusionTest()
-        {
-            var generator = new Generator("{-\\\\}@");
-            foreach (var output in generator.GetStrings(500))
-            {
-                Assert.IsTrue(!output.Equals("\\"));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void HypenGlobalExclusionTest()
-        {
-            var generator = new Generator("{-\\-}@");
-            foreach (var output in generator.GetStrings(500))
-            {
-                Assert.IsTrue(!output.Equals("-"));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void ClosingBraceLocalExclusionTest()
-        {
-            var generator = new Generator("@{-\\}}");
-            foreach (var output in generator.GetStrings(500))
-            {
-                Assert.IsTrue(!output.Equals("}"));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void BackSlashLocalExclusionTest()
-        {
-            var generator = new Generator("@{-\\\\}");
-            foreach (var output in generator.GetStrings(500))
-            {
-                Assert.IsTrue(!output.Equals("\\"));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void HypenLocalExclusionTest()
-        {
-            var generator = new Generator("@{-\\-}");
-            foreach (var output in generator.GetStrings(500))
-            {
-                Assert.IsTrue(!output.Equals("-"));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void OptionalHashEscapeTest()
-        {
-            var generator = new Generator("#Suite \\#1,Suite \\#2,Suite \\#3#");
-            var output = generator.GetString();
-
-            Assert.IsTrue(output.Length == 8);
-            Assert.IsTrue(output.Equals("Suite #1") || output.Equals("Suite #2") || output.Equals("Suite #3"));
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void OptionalCommaEscapeTest()
-        {
-            var generator = new Generator("#Suite 1\\,,Suite 2\\,,Suite 3\\,#");
-            var output = generator.GetString();
-
-            Assert.IsTrue(output.Length == 8);
-            Assert.IsTrue(output.Equals("Suite 1,") || output.Equals("Suite 2,") || output.Equals("Suite 3,"));
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void OptionalBackSlashEscapeTest()
-        {
-            var generator = new Generator("#Suite \\\\1,Suite \\\\2,Suite \\\\3#");
-            var output = generator.GetString();
-
-            Assert.IsTrue(output.Length == 8);
-            Assert.IsTrue(output.Equals("Suite \\1") || output.Equals("Suite \\2") || output.Equals("Suite \\3"));
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void OptionalNewLineEscapeTest()
-        {
-            var generator = new Generator("#Suite \\n1,Suite \\n2,Suite \\n3#");
-            var output = generator.GetString();
-
-            Assert.IsTrue(output.Equals($"Suite {Environment.NewLine}1") || output.Equals($"Suite {Environment.NewLine}2") || output.Equals($"Suite {Environment.NewLine}3"));
-        }
-
-        [TestMethod]
-        [TestCategory("Escape Sequence")]
-        public void OptionalTabEscapeTest()
-        {
-            var generator = new Generator("#Suite \\t1,Suite \\t2,Suite \\t3#");
-            var output = generator.GetString();
-            
-            Assert.IsTrue(output.Equals("Suite \t1") || output.Equals("Suite \t2") || output.Equals("Suite \t3"));
-        }
-        #endregion
 
         #region Optionals
         [TestMethod]

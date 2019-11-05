@@ -140,10 +140,10 @@ namespace SMC.Utilities.RSG
             if (lastToken.Type == TokenType.NUMBER || lastToken.Type == TokenType.NUMBER_EXCEPT_ZERO || lastToken.Type == TokenType.NUMBER_SYMBOL)
                 throw new PatternBuilderException("The lowercase token modifier can only be used on tokens that generate letters.");
 
-            if (lastToken.Modifier.HasFlag(ModifierType.UPPERCASE))
+            if (lastToken.Modifier.HasFlag(ModifierType.LOWERCASE))
                 throw new DuplicateModifierException("The token already has a lowercase modifier specified.");
 
-            lastToken.Modifier = lastToken.Modifier | ModifierType.UPPERCASE;
+            lastToken.Modifier = lastToken.Modifier | ModifierType.LOWERCASE;
             return this;
         }
 
