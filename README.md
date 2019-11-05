@@ -10,6 +10,7 @@ A library from generating random strings based on a simple pattern language.
 - Built-in DateTime and GUID functions
 - Ability to specify user-defined functions for generating a portion of the string (e.g. to pull information from a database and have it directly be incorporated in the output string)
 - Global and local exclusion blocks to allow exclusing a character, number, or symbol from anywhere in the output string, or just preventing a single token from generating a specific character, number, or symbol.
+- Fluent interface provided via the **PatternBuilder** class - no need to remember the specific tokens.
 
 ## Uses
 This library is used for generating random string based on a pattern or specific requirements, such as:
@@ -149,10 +150,10 @@ It is also possible to call a custom Func\<TResult> method where *TResult* is a 
 may return data from a database or different data depending on the state of the application.  In order to use this kind of FCB, several things must be done:
 - Create a unique name that will be used to associate the function.  It is recommended that this is a short string and can only be letters.
 - Include the FCB in the pattern using this name
-- Call the **AssignFunction** method of the generator instance and pass in this unique name as well as the delegate for the function.
+- Call the **AddFunction** method of the generator instance and pass in this unique name as well as the delegate for the function.
 
 For example, if the function being used was getting data from a database, it can be called **DB**.  This name is included in the FCB in the same way that the date/time and GUID functions were used, **{DB}**.  Finally,
-it is necessary to call the **AssignFunction** method of the generator instance with this name and the function **AssignFunction("DB", GetDataFromDatabase)**.
+it is necessary to call the **AddFunction** method of the generator instance with this name and the function **AddFunction("DB", GetDataFromDatabase)**.
 
 The FCBs are evaluated using a lazy methodology.  That is, the **GetDataFromDatabase** method in the example above is not called during tokenization and is only called when the random string is actually generated.
 Because of this, using a function, like the date/time function, will use a data/time when the string is actually generated instead of when the pattern was originally loaded and parsed.  It is possible though to force
@@ -163,6 +164,25 @@ For example, if every generated string should have the *same* date/time at the b
 > **NOTE** The force switch applies *per block*.  So if a pattern contains **{T:d?}a{T:d?}**, the date/time will be gotten twice; once for the first block and once for the second block.  Therefore, all the generated
 string will have the same date/time in the first and second blocks, but the first and second blocks will be different from each other.
 > **NOTE** The force switch *cannot* be applied to user-defined functions.  This is because the user-defined function is specified in the generator and may not even be defined in the generator when the pattern is processed
+
+## Using the PatternBuilder class
+The pattern builder class provides methods to help create a pattern without having to remember all the possible tokens, modifiers, control blocks, etc.  This makes it much
+easier to build very complex patterns.
+
+Using the **PatternBuilder** class is very easy.  First, a new instance of the class must be created:
+
+```c#
+var builder = new PatternBuilder();
+```
+
+The the various methods of the ```builder``` can be used to create the pattern:
+
+```c#
+builder = builder().Letter().Repeat(2).WithModifer(UpperCase).Letter().WithModifier(LowerCase).Repeat(2,3).Number.Exclude(1,2,3,4,5).NumberWithZero();
+```
+
+The above is the equivalent of ```a^(2)a!(2,3)0{1,2,3,4,5}9```.  The fluent interface make is much easier to understand what is being intended with the pattern and allows
+changes to be easily made.  The string equivalent of the fluently generated pattern can be gotten by calling the ```ToString()``` method on the ```PatternBuilder``` instance.
 
 ## Examples
 
@@ -197,7 +217,7 @@ This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNe
 ### ***COMING SOON***
 
 ## Future Plans
-- Logical ORing of pattern groups
+- Fluent interface to allow building patterns from objects instead of strings
 
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.

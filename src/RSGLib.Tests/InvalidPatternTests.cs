@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMC.Utilities.RSG;
 
@@ -54,7 +55,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(InvalidModifierException))]
         public void InvalidExceptZeroModifierTest()
         {
@@ -62,7 +63,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(InvalidModifierException))]
         public void InvalidExceptZeroModifierTest2()
         {
@@ -70,7 +71,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(InvalidModifierException))]
         public void InvalidExceptZeroModifierTest3()
         {
@@ -78,7 +79,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(InvalidModifierException))]
         public void InvalidCaseModifierTest()
         {
@@ -86,7 +87,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(InvalidModifierException))]
         public void InvalidCaseModifierTest2()
         {
@@ -94,7 +95,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(InvalidModifierException))]
         public void InvalidCaseModifierTest3()
         {
@@ -102,7 +103,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(InvalidModifierException))]
         public void InvalidCaseModifierTest4()
         {
@@ -134,7 +135,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(DuplicateModifierException))]
         public void DuplicateModifierTest()
         {
@@ -142,7 +143,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(DuplicateModifierException))]
         public void DuplicateModifierTest2()
         {
@@ -150,7 +151,7 @@ namespace RSGLib.Tests
         }
 
         [TestMethod]
-        [TestCategory("Invalid Pattern")]
+        [TestCategory("Invalid Modifier")]
         [ExpectedException(typeof(DuplicateModifierException))]
         public void DuplicateModifierTest3()
         {
@@ -263,11 +264,43 @@ namespace RSGLib.Tests
             generator.SetPattern("v");
         }
 
+
         //Control block on closed
         //Control block missing formatter
-        //No function specified
         //Unknown function
         //Duplicate globals
         //Invalid GUID formatting string
+        //Invalid range
+        //Unknown UDF
+        //Option block
+
+
+        [TestMethod]
+        [TestCategory("Invalid UDF")]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void NullFunctionNameTest()
+        {
+            var generator = new Generator();
+            generator.AddFunction(null, () => { return "2"; });
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid UDF")]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DuplicateFunctionNameTest()
+        {
+            var generator = new Generator();
+            generator.AddFunction("MyFunction", () => { return "2"; });
+            generator.AddFunction("MyFunction", () => { return "3"; });
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid UDF")]
+        [ExpectedException(typeof(KeyNotFoundException))]
+        public void NoFunctionAddedTest()
+        {
+            var generator = new Generator("{My}(2)");
+            var output = generator.ToString();
+        }
     }
 }

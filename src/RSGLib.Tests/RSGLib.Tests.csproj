@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InvalidPatternTests.cs" />
+    <Compile Include="ValidPatternBuilderTests.cs" />
     <Compile Include="ValidPatternTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

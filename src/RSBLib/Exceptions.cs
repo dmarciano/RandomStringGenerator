@@ -68,4 +68,17 @@ namespace SMC.Utilities.RSG
 
         public DuplicateGlobalControlBlockException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
+
+    [ExcludeFromCodeCoverage]
+    [Serializable]
+    public class PatternBuilderException : Exception
+    {
+        public PatternBuilderException() { }
+
+        public PatternBuilderException(string message) : base(message) { }
+
+        public PatternBuilderException(string message, Exception innerException) : base(message, innerException) { }
+
+        public PatternBuilderException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
 }

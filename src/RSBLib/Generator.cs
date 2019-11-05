@@ -112,8 +112,23 @@ namespace SMC.Utilities.RSG
             var valid = _tokenizer.Tokenize(pattern);
             if (valid)
                 _tokenizedPattern = _tokenizer.TokenizedPattern;
-          
+
             Pattern = pattern;
+        }
+
+        /// <summary>
+        /// Uses a <see cref="PatternBuilder"/> for the random string generation.
+        /// </summary>
+        /// <param name="builder">The <see cref="PatternBuilder"/> to use.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
+        public void UseBuilder(PatternBuilder builder)
+        {
+            if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
+            if (null == builder)
+                throw new ArgumentNullException(nameof(builder), "Pattern builder cannot be null.");
+
+            _tokenizedPattern = builder.TokenizedPattern;
         }
 
         /// <summary>
@@ -136,6 +151,7 @@ namespace SMC.Utilities.RSG
         /// <exception cref="InvalidModifierException">An unknown modifier was found in the pattern.</exception>
         /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
         /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
+        /// <exception cref="KeyNotFoundException">A user-defined function FCB was not associated with a function in the generator.</exception>
         public override string ToString()
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
@@ -150,6 +166,7 @@ namespace SMC.Utilities.RSG
         /// <exception cref="InvalidModifierException">An unknown modifier was found in the pattern.</exception>
         /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
         /// <exception cref="ObjectDisposedException">Object has been disposed.</exception>
+        /// <exception cref="KeyNotFoundException">A user-defined function FCB was not associated with a function in the generator.</exception>
         public string GetString()
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
@@ -164,6 +181,7 @@ namespace SMC.Utilities.RSG
         /// <exception cref="InvalidPatternException">No valid pattern set.</exception>
         /// <exception cref="InvalidModifierException">An unknown modifier was found in the pattern.</exception>
         /// <exception cref="DuplicateModifierException">A modifier was found twice in a row.</exception>
+        /// <exception cref="KeyNotFoundException">A user-defined function FCB was not associated with a function in the generator.</exception>
         public IEnumerable<string> GetStrings(int count)
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(Generator));
@@ -266,7 +284,7 @@ namespace SMC.Utilities.RSG
 
                     if (null == token.ControlBlock || token.ControlBlock.Type != ControlBlockType.FMT)
                     {
-                        for(var count = 0; count<repeat; count++)
+                        for (var count = 0; count < repeat; count++)
                         {
                             sb.Append(characters[_rng.Next(characters.Length)]);
                         }
@@ -280,7 +298,7 @@ namespace SMC.Utilities.RSG
                         }
 
                         var str = temp.ToString();
-                        if(int.TryParse(str, out var number))
+                        if (int.TryParse(str, out var number))
                         {
                             sb.Append(string.Format(token.ControlBlock.Value, number));
                         }
@@ -289,30 +307,15 @@ namespace SMC.Utilities.RSG
                             sb.Append(string.Format(token.ControlBlock.Value, str));
                         }
                     }
-
-
-                    //    for (var count = 0; count < repeat; count++)
-                    //{
-                    //    if (null != token.ControlBlock && token.ControlBlock.Type == ControlBlockType.FMT)
-                    //    {
-                    //        var temp = characters[_rng.Next(characters.Length)];
-                    //        var formatted = string.Format(token.ControlBlock.Value, temp);
-                    //        sb.Append(formatted);
-                    //    }
-                    //    else
-                    //    {
-                    //        sb.Append(characters[_rng.Next(characters.Length)]);
-                    //    }
-                    //}
                 }
-                else if(token.Type == TokenType.LITERAL)
+                else if (token.Type == TokenType.LITERAL)
                 {
                     for (var count = 0; count < repeat; count++)
                     {
                         if (null != token.ControlBlock && token.ControlBlock.Type == ControlBlockType.FMT)
                         {
                             var formatted = string.Empty;
-                            if(int.TryParse(token.Value, out var number))
+                            if (int.TryParse(token.Value, out var number))
                             {
                                 formatted = string.Format(token.ControlBlock.Value, number);
                             }
@@ -438,10 +441,10 @@ namespace SMC.Utilities.RSG
         private void HandleControlBlock(Token token, int repeat, ref StringBuilder sb)
         {
 
-                for (var count = 0; count < repeat; count++)
+            for (var count = 0; count < repeat; count++)
+            {
+                if (token.ControlBlock.FunctionName.Equals("DATETIME") || token.ControlBlock.FunctionName.Equals("GUID"))
                 {
-                if(token.ControlBlock.FunctionName.Equals("DATETIME") || token.ControlBlock.FunctionName.Equals("GUID"))
-                { 
                     sb.Append(token.ControlBlock.Function());
                 }
                 else
@@ -463,7 +466,7 @@ namespace SMC.Utilities.RSG
         {
             List<char> characters = new List<char>();
 
-            foreach(var range in token.Ranges)
+            foreach (var range in token.Ranges)
             {
                 if (range.Start.Equals(range.End))
                 {
@@ -477,7 +480,7 @@ namespace SMC.Utilities.RSG
             }
 
 
-            for(var count = 0; count<repeat; count++)
+            for (var count = 0; count < repeat; count++)
             {
                 sb.Append(characters[_rng.Next(characters.Count)]);
             }

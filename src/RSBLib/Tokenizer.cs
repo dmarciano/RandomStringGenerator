@@ -171,8 +171,8 @@ namespace SMC.Utilities.RSG
             {
                 //Get the previous token in the the list.  If it is not a regular token (i.e. it is a control box) throw exception
                 tempToken = tokenizedList.Last();
-                if (tempToken.ControlBlock != null && tempToken.ControlBlock.Global == true)
-                    throw new DuplicateGlobalControlBlockException($"A second global control block was found starting at position {originalPosition}.");
+                if (tempToken.ControlBlock != null) //&& tempToken.ControlBlock.Global == true)
+                    throw new DuplicateGlobalControlBlockException($"A second exclusion control block was found starting at position {originalPosition}.");
 
                 cb.Global = false;
             }
@@ -323,6 +323,10 @@ namespace SMC.Utilities.RSG
                             functionName.Append(pattern[pos]);
                         }
                         cb.FunctionName = functionName.ToString();
+
+                        if (string.IsNullOrWhiteSpace(cb.FunctionName))
+                            throw new InvalidPatternException($"User-defined function name cannot be null, empty, or whitespace (UDF starting at position {originalPosition}).");
+
                         EOS = true;
                         break;
                 }
