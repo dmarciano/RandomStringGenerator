@@ -32,5 +32,8 @@ The following are some guidelines for contributing to this project:
 - **DO NOT** merge multiple changes into one pull request unless they have the same root cause.
 - **DO NOT** submit changes that only include formatting changes and/or typographical fixes if no code has been otherwise modified.
 
+***All unit tests MUST be passing before submitting a pull request***
+
 ## Review Process
-After a pull request is submitted, a member of the RSG team will review the code.  Any community member may participate in the review, and provide feedback, but a member of the RSG team will ultimately approve the request.
+After a pull request is submitted, a member of the RSG team will review the code.  Any community member may participate in the review, and provide feedback, 
+but a member of the RSG team will ultimately approve the request.
