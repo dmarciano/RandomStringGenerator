@@ -15,7 +15,7 @@ namespace RSGLib.Tests
         public void ConstructorTest()
         {
             var builder = new PatternBuilder();
-           Assert.IsTrue(true);
+            Assert.IsTrue(true);
         }
         #endregion
 
@@ -271,7 +271,7 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void RangeRepeatTest()
         {
-            var builder = new PatternBuilder().Letter().Repeat(1,5);
+            var builder = new PatternBuilder().Letter().Repeat(1, 5);
             var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length >= 1 && output.Length <= 5);
@@ -285,7 +285,7 @@ namespace RSGLib.Tests
         [TestCategory("Basic Pattern")]
         public void ZeroRangeRepeatTest()
         {
-            var builder = new PatternBuilder().Letter().Repeat(0,5);
+            var builder = new PatternBuilder().Letter().Repeat(0, 5);
             var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length >= 0 && output.Length <= 2);
@@ -418,8 +418,19 @@ namespace RSGLib.Tests
         [TestCategory("Optional Blocks")]
         public void OptionalBlockTest()
         {
-            var generator = new Generator("#First,Fizzy,Fuzzy#");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Optional("First", "Fizzy", "Fuzzy");
+            var output = new Generator().UseBuilder(builder).GetString();
+
+            Assert.IsTrue(output.Length == 5);
+            Assert.IsTrue(output.Equals("First") || output.Equals("Fizzy") || output.Equals("Fuzzy"));
+        }
+
+        [TestMethod]
+        [TestCategory("Optional Blocks")]
+        public void OptionalBlockTest2()
+        {
+            var builder = new PatternBuilder().Optional(new List<string>() { "First", "Fizzy", "Fuzzy" });
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 5);
             Assert.IsTrue(output.Equals("First") || output.Equals("Fizzy") || output.Equals("Fuzzy"));
@@ -429,8 +440,8 @@ namespace RSGLib.Tests
         [TestCategory("Optional Blocks")]
         public void OptionalBlockWithRepeatTest()
         {
-            var generator = new Generator("#First,Fizzy,Fuzzy#(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Optional("First", "Fizzy", "Fuzzy");
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 10);
 
@@ -444,7 +455,23 @@ namespace RSGLib.Tests
         [TestCategory("Optional Blocks")]
         public void OptionalBlockWithRepeatTest2()
         {
-            var generator = new Generator("#First,Fizzy,Fuzzy#(2,3)");
+            var builder = new PatternBuilder().Optional(new List<string> { "First", "Fizzy", "Fuzzy" });
+            var output = new Generator().UseBuilder(builder).GetString();
+
+            Assert.IsTrue(output.Length == 10);
+
+            var output1 = output.Substring(0, 5);
+            var output2 = output.Substring(5);
+            Assert.IsTrue(output1.Equals("First") || output1.Equals("Fizzy") || output1.Equals("Fuzzy"));
+            Assert.IsTrue(output2.Equals("First") || output2.Equals("Fizzy") || output2.Equals("Fuzzy"));
+        }
+
+        [TestMethod]
+        [TestCategory("Optional Blocks")]
+        public void OptionalBlockWithRepeatTest3()
+        {
+            var builder = new PatternBuilder().Optional("First", "Fizzy", "Fuzzy");
+            var generator = new Generator().UseBuilder(builder);
             var test = true;
             var doubleSeen = false;
             var tripleSeen = false;
@@ -453,7 +480,7 @@ namespace RSGLib.Tests
             {
                 count++;
                 var output = generator.GetString();
-                
+
                 Assert.IsTrue(output.Length == 10 || output.Length == 15);
 
                 var output1 = output.Substring(0, 5);
@@ -474,7 +501,49 @@ namespace RSGLib.Tests
                 Assert.IsTrue(output1.Equals("First") || output1.Equals("Fizzy") || output1.Equals("Fuzzy"));
                 Assert.IsTrue(output2.Equals("First") || output2.Equals("Fizzy") || output2.Equals("Fuzzy"));
 
-                test = !((doubleSeen && tripleSeen) || count==500);
+                test = !((doubleSeen && tripleSeen) || count == 500);
+            }
+
+            Assert.IsTrue(doubleSeen);
+            Assert.IsTrue(tripleSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Optional Blocks")]
+        public void OptionalBlockWithRepeatTest4()
+        {
+            var builder = new PatternBuilder().Optional(new List<string> { "First", "Fizzy", "Fuzzy" });
+            var generator = new Generator().UseBuilder(builder);
+            var test = true;
+            var doubleSeen = false;
+            var tripleSeen = false;
+            var count = 0;  //To prevent the loop from running indefinitely
+            while (test)
+            {
+                count++;
+                var output = generator.GetString();
+
+                Assert.IsTrue(output.Length == 10 || output.Length == 15);
+
+                var output1 = output.Substring(0, 5);
+                var output2 = output.Substring(5, 5);
+                var output3 = string.Empty;
+
+                if (output.Length == 10)
+                {
+                    doubleSeen = true;
+                }
+                else
+                {
+                    tripleSeen = true;
+                    output3 = output.Substring(10, 5);
+                    Assert.IsTrue(output3.Equals("First") || output3.Equals("Fizzy") || output3.Equals("Fuzzy"));
+                }
+
+                Assert.IsTrue(output1.Equals("First") || output1.Equals("Fizzy") || output1.Equals("Fuzzy"));
+                Assert.IsTrue(output2.Equals("First") || output2.Equals("Fizzy") || output2.Equals("Fuzzy"));
+
+                test = !((doubleSeen && tripleSeen) || count == 500);
             }
 
             Assert.IsTrue(doubleSeen);
@@ -483,12 +552,12 @@ namespace RSGLib.Tests
         #endregion
 
         #region Ranges
-         [TestMethod]
-         [TestCategory("Ranges")]
-         public void LowercaseLetterRangeTest()
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void LowercaseLetterRangeTest()
         {
-            var generator = new Generator("<a-z>");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Range('a', 'z');
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -499,8 +568,8 @@ namespace RSGLib.Tests
         [TestCategory("Ranges")]
         public void LowercaseLetterRangeRepeatTest()
         {
-            var generator = new Generator("<a-z>(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Range('a', 'z').Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -513,8 +582,8 @@ namespace RSGLib.Tests
         [TestCategory("Ranges")]
         public void UppercasecaseLetterRangeTest()
         {
-            var generator = new Generator("<A-Z>");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Range('A', 'Z');
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -525,8 +594,8 @@ namespace RSGLib.Tests
         [TestCategory("Ranges")]
         public void UppercaseLetterRangeRepeatTest()
         {
-            var generator = new Generator("<A-Z>(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Range('A', 'Z').Repeat(2);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -539,8 +608,8 @@ namespace RSGLib.Tests
         [TestCategory("Ranges")]
         public void IndividualLettersRangeTest()
         {
-            var generator = new Generator("<ab>");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Range('a', 'b');
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -552,7 +621,8 @@ namespace RSGLib.Tests
         [TestCategory("Ranges")]
         public void IndividualLettersRangeTest2()
         {
-            var generator = new Generator("<ab>");
+            var builder = new PatternBuilder().Range('a', 'b');
+            var generator = new Generator().UseBuilder(builder);
             var test = true;
             var aSeen = false;
             var bSeen = false;
@@ -570,7 +640,7 @@ namespace RSGLib.Tests
                 {
                     aSeen = true;
                 }
-                else if(output[0].Equals('b'))
+                else if (output[0].Equals('b'))
                 {
                     bSeen = true;
                 }
@@ -585,8 +655,8 @@ namespace RSGLib.Tests
         [TestCategory("Ranges")]
         public void FullNumberRangeTest()
         {
-            var generator = new Generator("<0-9>");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Range('0', '9');
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsNumber(output[0]));
@@ -596,222 +666,15 @@ namespace RSGLib.Tests
         [TestCategory("Ranges")]
         public void RestrictedNumberRangeTest()
         {
-            var generator = new Generator("<1-8>");
+            var builder = new PatternBuilder().Range('1', '8');
+            var generator = new Generator().UseBuilder(builder);
 
-            foreach(var output in generator.GetStrings(10000))
+            foreach (var output in generator.GetStrings(10000))
             {
                 Assert.IsTrue(output.Length == 1);
                 Assert.IsTrue(char.IsNumber(output[0]));
                 Assert.IsTrue(!output[0].Equals('0') && !output[0].Equals('9'));
             }
-        }
-
-        [TestMethod]
-        [TestCategory("Ranges")]
-        public void LetterNumberRangeTest()
-        {
-            var generator = new Generator("<a1-8>");
-            foreach(var output in generator.GetStrings(100000))
-            {
-                Assert.IsTrue(output.Length == 1);
-                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
-
-                if (char.IsLetter(output[0]))
-                    Assert.IsTrue(output[0].Equals('a'));
-                else
-                    Assert.IsTrue(!output[0].Equals('0') && !output[0].Equals('9'));
-                
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Ranges")]
-        public void LetterNumberRangeRepeatTest()
-        {
-            var generator = new Generator("<a1-8>(2)");
-            foreach (var output in generator.GetStrings(100000))
-            {
-                Assert.IsTrue(output.Length == 2);
-
-                var output1 = output[0];
-                var output2 = output[1];
-
-                Assert.IsTrue(char.IsLetterOrDigit(output1));
-                Assert.IsTrue(char.IsLetterOrDigit(output2));
-
-                if (char.IsLetter(output1))
-                    Assert.IsTrue(output1.Equals('a'));
-                else
-                    Assert.IsTrue(!output1.Equals('0') && !output1.Equals('9'));
-
-                if (char.IsLetter(output2))
-                    Assert.IsTrue(output2.Equals('a'));
-                else
-                    Assert.IsTrue(!output2.Equals('0') && !output2.Equals('9'));
-
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Ranges")]
-        public void MultipleRangesTest()
-        {
-            var generator = new Generator("<a-cx-z>");
-            foreach(var output in generator.GetStrings(100000))
-            {
-                Assert.IsTrue(output.Length == 1);
-                Assert.IsTrue(char.IsLetter(output[0]));
-                Assert.IsTrue(char.IsLower(output[0]));
-                Assert.IsTrue(output[0].Equals('a') || output[0].Equals('b') || output[0].Equals('c') || output[0].Equals('x') || output[0].Equals('y') || output[0].Equals('z'));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Ranges")]
-        public void MultipleRangesTest2()
-        {
-            var generator = new Generator("<b-d3-5>");
-            foreach (var output in generator.GetStrings(100000))
-            {
-                Assert.IsTrue(output.Length == 1);
-                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
-                Assert.IsTrue(output[0].Equals('b') || output[0].Equals('c') || output[0].Equals('d') || output[0].Equals('3') || output[0].Equals('4') || output[0].Equals('5'));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Ranges")]
-        public void MultipleRangesTest3()
-        {
-            var generator = new Generator("<bd379>");
-            foreach (var output in generator.GetStrings(100000))
-            {
-                Assert.IsTrue(output.Length == 1);
-                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
-                Assert.IsTrue(output[0].Equals('b') || output[0].Equals('d') || output[0].Equals('3') || output[0].Equals('7') || output[0].Equals('9'));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Ranges")]
-        public void MultipleRangesTest3Modified()
-        {
-            var generator = new Generator("<bd379>");
-            var bSeen = false;
-            var dSeen = false;
-            var threeSeen = false;
-            var sevenSeen = false;
-            var nineSeen = false;
-            foreach (var output in generator.GetStrings(100000))
-            {
-                Assert.IsTrue(output.Length == 1);
-                Assert.IsTrue(char.IsLetterOrDigit(output[0]));
-                Assert.IsTrue(output[0].Equals('b') || output[0].Equals('d') || output[0].Equals('3') || output[0].Equals('7') || output[0].Equals('9'));
-
-                switch (output[0])
-                {
-                    case 'b':
-                        bSeen = true;
-                        break;
-                    case 'd':
-                        dSeen = true;
-                        break;
-                    case '3':
-                        threeSeen = true;
-                        break;
-                    case '7':
-                        sevenSeen = true;
-                        break;
-                    case '9':
-                        nineSeen = true;
-                        break;
-                }
-            }
-
-            Assert.IsTrue(bSeen);
-            Assert.IsTrue(dSeen);
-            Assert.IsTrue(threeSeen);
-            Assert.IsTrue(sevenSeen);
-            Assert.IsTrue(nineSeen);
-        }
-
-        [TestMethod]
-        [TestCategory("Ranges")]
-        public void MultipleRangesRepeatTest()
-        {
-            var generator = new Generator("<bd379>(2)");
-            var bSeen1 = 0;
-            var dSeen1 = 0;
-            var threeSeen1 = 0;
-            var sevenSeen1 = 0;
-            var nineSeen1 = 0;
-
-            var bSeen2 = 0;
-            var dSeen2 = 0;
-            var threeSeen2 = 0;
-            var sevenSeen2 = 0;
-            var nineSeen2 = 0;
-            foreach (var output in generator.GetStrings(100000))
-            {
-                Assert.IsTrue(output.Length == 2);
-
-                var output1 = output[0];
-                var output2 = output[1];
-                Assert.IsTrue(char.IsLetterOrDigit(output1));
-                Assert.IsTrue(char.IsLetterOrDigit(output2));
-                Assert.IsTrue(output1.Equals('b') || output1.Equals('d') || output1.Equals('3') || output1.Equals('7') || output1.Equals('9'));
-                Assert.IsTrue(output2.Equals('b') || output2.Equals('d') || output2.Equals('3') || output2.Equals('7') || output2.Equals('9'));
-
-                switch (output1)
-                {
-                    case 'b':
-                        bSeen1++;
-                        break;
-                    case 'd':
-                        dSeen1++;
-                        break;
-                    case '3':
-                        threeSeen1++;
-                        break;
-                    case '7':
-                        sevenSeen1++;
-                        break;
-                    case '9':
-                        nineSeen1++;
-                        break;
-                }
-
-                switch (output2)
-                {
-                    case 'b':
-                        bSeen2++;
-                        break;
-                    case 'd':
-                        dSeen2++;
-                        break;
-                    case '3':
-                        threeSeen2++;
-                        break;
-                    case '7':
-                        sevenSeen2++;
-                        break;
-                    case '9':
-                        nineSeen2++;
-                        break;
-                }
-            }
-
-            Assert.IsTrue(bSeen1 >=2 );
-            Assert.IsTrue(dSeen1>=2);
-            Assert.IsTrue(threeSeen1 >= 2);
-            Assert.IsTrue(sevenSeen1 >= 2);
-            Assert.IsTrue(nineSeen1 >= 2);
-
-            Assert.IsTrue(bSeen2 >= 2);
-            Assert.IsTrue(dSeen2 >= 2);
-            Assert.IsTrue(threeSeen2 >= 2);
-            Assert.IsTrue(sevenSeen2 >= 2);
-            Assert.IsTrue(nineSeen2 >= 2);
         }
         #endregion
 
@@ -821,9 +684,9 @@ namespace RSGLib.Tests
         public void FormatNumberLiteralAsHexStringTest()
         {
             var regex = new Regex("^[A-Fa-f0-9]*$");
-            var generator = new Generator("[255]>{0:X}<");
-            var output = generator.GetString();
-
+            var builder = new PatternBuilder().Literal("255").Format("{0:X}");
+            var output = new Generator().UseBuilder(builder).GetString();
+            
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(regex.IsMatch(output));
         }
@@ -833,8 +696,8 @@ namespace RSGLib.Tests
         public void FormatNumberAsHexStringTest()
         {
             var regex = new Regex("^[A-Fa-f0-9]*$");
-            var generator = new Generator("0(2)>{0:X}<");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Number().Repeat(2).Format("{0:X}");
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(regex.IsMatch(output));
@@ -844,8 +707,8 @@ namespace RSGLib.Tests
         [TestCategory("Format Block")]
         public void FormatStringLiteralWithAlignmentTest()
         {
-            var generator = new Generator("[TEST]>{0,5}<");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("TEST").Format("{0,5}");
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 5);
             Assert.IsTrue(output.Equals(" TEST"));
@@ -855,8 +718,8 @@ namespace RSGLib.Tests
         [TestCategory("Format Block")]
         public void FormatStringWithAlignmentTest()
         {
-            var generator = new Generator("a(3)>{0,5}<");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().Repeat(3).Format("{0,5}");
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 5);
             Assert.IsTrue(output.StartsWith("  "));
@@ -868,8 +731,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LettersNumbersTest()
         {
-            var generator = new Generator("a0");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().Number();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsLetter(output[0]) && char.IsNumber(output[1]));
@@ -880,8 +743,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LettersSymbolsTest()
         {
-            var generator = new Generator("a@");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().Symbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -892,8 +755,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void NumbersSymbolsTest()
         {
-            var generator = new Generator("0@");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Number().Symbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsNumber(output[0]));
@@ -904,8 +767,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void NumbersSymbolsTest2()
         {
-            var generator = new Generator("0%");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Number().NumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsNumber(output[0]));
@@ -916,8 +779,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LettersNumbersSymbolsTest()
         {
-            var generator = new Generator("a0@");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().Number().Symbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 3);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -929,8 +792,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LettersNumbersSymbolsTest2()
         {
-            var generator = new Generator("a0%");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Letter().Number().NumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 3);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -942,8 +805,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LettersNumbersSymbolsTest3()
         {
-            var generator = new Generator("**");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().LetterNumberOrSymbol().LetterNumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
@@ -954,8 +817,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LettersNumbersSymbolsTest4()
         {
-            var generator = new Generator("*a*");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().LetterNumberOrSymbol().Letter().LetterNumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 3);
             Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
@@ -967,8 +830,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LiteralLettersNumbersTest()
         {
-            var generator = new Generator("[Order-]a0");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("Order-").Letter().Number();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 8);
             Assert.AreEqual(output.Substring(0, 6), "Order-", false);
@@ -980,8 +843,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LiteralLettersSymbolsTest()
         {
-            var generator = new Generator("[Order-]a@");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("Order-").Letter().Symbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 8);
             Assert.AreEqual(output.Substring(0, 6), "Order-", false);
@@ -993,8 +856,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LiteralNumbersSymbolsTest()
         {
-            var generator = new Generator("[Order-]0@");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("Order-").Number().Symbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 8);
             Assert.AreEqual(output.Substring(0, 6), "Order-", false);
@@ -1006,8 +869,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LiteralLettersNumbersSymbolsTest()
         {
-            var generator = new Generator("[Order-]a0@");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("Order-").Letter().Number().Symbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 9);
             Assert.AreEqual(output.Substring(0, 6), "Order-", false);
@@ -1020,8 +883,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LiteralLettersNumbersSymbolsTest2()
         {
-            var generator = new Generator("[Order-]a0%");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("Order-").Letter().Number().NumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 9);
             Assert.AreEqual(output.Substring(0, 6), "Order-", false);
@@ -1034,8 +897,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LiteralLettersNumbersSymbolsTest3()
         {
-            var generator = new Generator("[Order-]**");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("Order-").LetterNumberOrSymbol().LetterNumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 8);
             Assert.AreEqual(output.Substring(0, 6), "Order-", false);
@@ -1047,8 +910,8 @@ namespace RSGLib.Tests
         [TestCategory("Advanced Patterns")]
         public void LiteralLettersNumbersSymbolsTest4()
         {
-            var generator = new Generator("[Order-]*a*");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Literal("Order-").LetterNumberOrSymbol().Letter().LetterNumberOrSymbol();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 9);
             Assert.AreEqual(output.Substring(0, 6), "Order-", false);
@@ -1064,10 +927,13 @@ namespace RSGLib.Tests
         public void GlobalExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("{-ABCDEFGHIJKLM}a^");
+            var builder = new PatternBuilder().AddGlobalExclusions('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M').Letter().UppercaseOnly();
+            var generator = new Generator().UseBuilder(builder);
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
             }
         }
 
@@ -1076,10 +942,14 @@ namespace RSGLib.Tests
         public void GlobalExclusionTest2()
         {
             var excluded = new List<char>() { 'a', '{', '}' };
-            var generator = new Generator("{-a{\\}}a!");
+            var builder = new PatternBuilder().AddGlobalExclusions('a', '{', '}').LetterOrSymbol().LowercaseOnly();
+            var generator = new Generator().UseBuilder(builder);
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
+                if (char.IsLetter(output[0]))
+                    Assert.IsTrue(char.IsLower(output[0]));
             }
         }
 
@@ -1088,10 +958,13 @@ namespace RSGLib.Tests
         public void TokenExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("a^{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().Letter().UppercaseOnly().Exclude('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M');
+            var generator = new Generator().UseBuilder(builder);
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
             }
         }
 
@@ -1100,10 +973,12 @@ namespace RSGLib.Tests
         public void TokenExclusionTest2()
         {
             var excluded = new List<char>() { '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~' };
-            var generator = new Generator("@{-!\"#$%&'()*+,-.\\\\/:;<>?@[]^_`{|\\}~}");
+            var builder = new PatternBuilder().Symbol().Exclude('!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~');
+            var generator = new Generator().UseBuilder(builder);
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
             }
         }
 
@@ -1112,10 +987,14 @@ namespace RSGLib.Tests
         public void GlobalAndTokenExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'Z' };
-            var generator = new Generator("{-Z}a^{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().AddGlobalExclusions('Z').Letter().UppercaseOnly().Exclude('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M');
+            var generator = new Generator().UseBuilder(builder);
+
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
             }
         }
 
@@ -1123,9 +1002,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GeneralDateTimeStringTest()
         {
-            var pattern = "{T}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime();
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(DateTime.TryParse(output, out _));
         }
@@ -1134,9 +1012,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GeneralDateTimeStringForceTest()
         {
-            var pattern = "{T?}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime(true);
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(DateTime.TryParse(output, out _));
         }
@@ -1145,9 +1022,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GeneralDateTimeStringRepeatTest()
         {
-            var pattern = "{T}(2)";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime().Repeat(2);
+            var output = new Generator().UseBuilder(builder).ToString();
 
             //Best way to test for two date/time string concated?
         }
@@ -1156,9 +1032,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void DateStringTest()
         {
-            var pattern = "{T:d}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime("d");
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(DateTime.TryParse(output, out _));
         }
@@ -1167,9 +1042,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void TimeStringTest()
         {
-            var pattern = "{T:t}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime("t");
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(DateTime.TryParse(output, out _));
         }
@@ -1178,9 +1052,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void DateTimeStringTest()
         {
-            var pattern = "{T:G}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime("G");
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(DateTime.TryParse(output, out _));
         }
@@ -1189,9 +1062,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void CustomDateStringTest()
         {
-            var pattern = "{T:MMMM dd, yyyy}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime("MMMM dd, yyyy");
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(DateTime.TryParse(output, out _));
         }
@@ -1200,9 +1072,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void CustomTimeStringTest2()
         {
-            var pattern = "{T:HH:mm:ss}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime("HH:mm:ss");
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(DateTime.TryParse(output, out _));
         }
@@ -1211,9 +1082,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void CustomTimeStringRepeatTest()
         {
-            var pattern = "{T:HH:mm:ss}(2)";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime("HH:mm:ss").Repeat(2);
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(output.Length == 16);
 
@@ -1228,9 +1098,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void CustomDateTimeStringTest2()
         {
-            var pattern = "{T:MMM dd, yyyy HH:mm:ss zzz}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddDateTime("MMM dd, yyyy HH:mm:ss zzz");
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(DateTime.TryParse(output, out _));
         }
@@ -1239,8 +1108,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void DateTimeStringForceTest()
         {
-            var pattern = "{T:MM/dd/yyyy HH:mm:ss.ffffff?}";
-            var generator = new Generator(pattern);
+            var builder = new PatternBuilder().AddDateTime("MM/dd/yyyy HH:mm:ss.ffffff", true);
+            var generator = new Generator().UseBuilder(builder);
             var output1 = generator.ToString();
             var output2 = generator.ToString();
 
@@ -1253,8 +1122,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void DateTimeStringForceRepeatTest()
         {
-            var pattern = "{T:MM/dd/yyyy HH:mm:ss.ffffff?}(2)";
-            var generator = new Generator(pattern);
+            var builder = new PatternBuilder().AddDateTime("MM/dd/yyyy HH:mm:ss.ffffff", true).Repeat(2);
+            var generator = new Generator().UseBuilder(builder);
             var output = generator.ToString();
 
             Assert.IsTrue(output.Length == 52);
@@ -1271,9 +1140,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDTest()
         {
-            var pattern = "{G}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid();
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(Guid.TryParse(output, out _));
         }
@@ -1282,9 +1150,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDTest2()
         {
-            var pattern = "{G:N}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid("N");
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(output.Length == 32);
             Assert.IsTrue(Guid.TryParse(output, out _));
@@ -1294,9 +1161,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDTest3()
         {
-            var pattern = "{G:D}";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid("D");
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(output.Length == 36);
             Assert.IsTrue(Guid.TryParse(output, out _));
@@ -1306,9 +1172,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDRepeatTest()
         {
-            var pattern = "{G}(2)";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid().Repeat(2);
+            var output = new Generator().UseBuilder(builder).ToString();
 
             var guid1 = output.Substring(0, 36);
             var guid2 = output.Substring(36);
@@ -1321,8 +1186,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDForceTest()
         {
-            var pattern = "{G?}";
-            var generator = new Generator(pattern);
+            var builder = new PatternBuilder().AddGuid(true);
+            var generator = new Generator().UseBuilder(builder);
             var guid1 = generator.ToString();
             var guid2 = generator.ToString();
 
@@ -1335,8 +1200,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDForceTest2()
         {
-            var pattern = "{G:D?}";
-            var generator = new Generator(pattern);
+            var builder = new PatternBuilder().AddGuid("D", true);
+            var generator = new Generator().UseBuilder(builder);
             var guid1 = generator.ToString();
             var guid2 = generator.ToString();
 
@@ -1349,8 +1214,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDForceRepeatTest()
         {
-            var pattern = "{G:D?}(2)";
-            var generator = new Generator(pattern);
+            var builder = new PatternBuilder().AddGuid("D", true).Repeat(2);
+            var generator = new Generator().UseBuilder(builder);
             var output = generator.ToString();
 
             Assert.IsTrue(output.Length == 72);
@@ -1367,9 +1232,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDWithSymbolTest()
         {
-            var pattern = "{G}@";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid().Symbol();
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(output.Length == 37);
 
@@ -1384,9 +1248,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDWithSymbolTest2()
         {
-            var pattern = "{G:D}@";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid("D").Symbol();
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(output.Length == 37);
 
@@ -1401,9 +1264,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDWithSymbolTest3()
         {
-            var pattern = "{G}(2)@";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid().Repeat(2).Symbol();
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(output.Length == 73);
 
@@ -1420,9 +1282,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDWithSymbolTest4()
         {
-            var pattern = "{G?}(2)@";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid(true).Repeat(2).Symbol();
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(output.Length == 73);
 
@@ -1440,9 +1301,8 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void GUIDWithSymbolTest5()
         {
-            var pattern = "{G?}(2)@(2)";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().AddGuid(true).Repeat(2).Symbol().Repeat(2);
+            var output = new Generator().UseBuilder(builder).ToString();
 
             Assert.IsTrue(output.Length == 74);
 
@@ -1462,8 +1322,22 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void UserDefinedFunctionDelegateTest()
         {
-            var generator = new Generator("{My}");
-            generator.AddFunction("My", ()=> { return "25"; });
+            var builder = new PatternBuilder().AddUDF("My");
+            var generator = new Generator().UseBuilder(builder);
+
+            generator.AddFunction("My", () => { return "25"; });
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(output.Equals("25"));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void UserDefinedFunctionDelegate2Test()
+        {
+            var builder = new PatternBuilder().AddUDF("My", ()=> { return "25"; });
+            var generator = new Generator().UseBuilder(builder);
             var output = generator.ToString();
 
             Assert.IsTrue(output.Length == 2);
@@ -1474,8 +1348,22 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void UserDefinedFunctionDelegateRepeatTest()
         {
-            var generator = new Generator("{My}(2)");
+            var builder = new PatternBuilder().AddUDF("My").Repeat(2);
+            var generator = new Generator().UseBuilder(builder);
+
             generator.AddFunction("My", () => { return "25"; });
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 4);
+            Assert.IsTrue(output.Equals("2525"));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void UserDefinedFunctionDelegateRepeat2Test()
+        {
+            var builder = new PatternBuilder().AddUDF("My", () => { return "25"; }).Repeat(2);
+            var generator = new Generator().UseBuilder(builder);
             var output = generator.ToString();
 
             Assert.IsTrue(output.Length == 4);
@@ -1486,8 +1374,22 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void UserDefinedFunctionTest()
         {
-            var generator = new Generator("{My}");
+            var builder = new PatternBuilder().AddUDF("My");
+            var generator = new Generator().UseBuilder(builder);
+
             generator.AddFunction("My", ReturnString);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(output.Equals("55"));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void UserDefinedFunction2Test()
+        {
+            var builder = new PatternBuilder().AddUDF("My", ReturnString);
+            var generator = new Generator().UseBuilder(builder);
             var output = generator.ToString();
 
             Assert.IsTrue(output.Length == 2);
@@ -1498,8 +1400,22 @@ namespace RSGLib.Tests
         [TestCategory("Control Blocks")]
         public void UserDefinedFunctionRepeatTest()
         {
-            var generator = new Generator("{My}(2)");
+            var builder = new PatternBuilder().AddUDF("My").Repeat(2);
+            var generator = new Generator().UseBuilder(builder);
+
             generator.AddFunction("My", ReturnString);
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length == 4);
+            Assert.IsTrue(output.Equals("5555"));
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void UserDefinedFunctionRepeat2Test()
+        {
+            var builder = new PatternBuilder().AddUDF("My", ReturnString).Repeat(2);
+            var generator = new Generator().UseBuilder(builder);
             var output = generator.ToString();
 
             Assert.IsTrue(output.Length == 4);
@@ -1513,8 +1429,8 @@ namespace RSGLib.Tests
         public void SocialSecurityNumberTest()
         {
             var regex = new Regex("^\\d{3}-\\d{2}-\\d{4}$");
-            var generator = new Generator("0(3)[-]0(2)[-]0(4)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().Number().Repeat(3).Literal("-").Number().Repeat(2).Literal("-").Number().Repeat(4);
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(regex.IsMatch(output));
         }
@@ -1524,12 +1440,16 @@ namespace RSGLib.Tests
         public void VisaCardTest()
         {
             var regex = new Regex("^4[0-9]{12}(?:[0-9]{3})?$");
-            var generator = new Generator("[4]0(12)");
+            var builder = new PatternBuilder().Literal("4").Number().Repeat(12);
+            var generator = new Generator().UseBuilder(builder);
+
             var oldCardNumber = generator.GetString();
 
             Assert.IsTrue(regex.IsMatch(oldCardNumber));
 
-            generator.SetPattern("[4]0(15)");
+            builder = new PatternBuilder().Literal("4").Number().Repeat(15);
+            generator.UseBuilder(builder);
+
             var newCardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(newCardNumber));
         }
@@ -1540,31 +1460,37 @@ namespace RSGLib.Tests
         {
             // MC has many variations for their card numbers.
             var regex = new Regex("^(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}$");
-            var generator = new Generator("[51]0(14)");
+            var builder = new PatternBuilder().Literal("51").Number().Repeat(14);
+            var generator = new Generator().UseBuilder(builder);
             var cardNumber = generator.GetString();
 
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[52]0(14)");
+            builder = new PatternBuilder().Literal("52").Number().Repeat(14);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[53]0(14)");
+            builder = new PatternBuilder().Literal("53").Number().Repeat(14);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[54]0(14)");
+            builder = new PatternBuilder().Literal("54").Number().Repeat(14);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[55]0(14)");
+            builder = new PatternBuilder().Literal("55").Number().Repeat(14);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
             //MC card numbers can also start with values between 2221 through 2720 but will still be 16 characters long
             for (var start = 2221; start <= 2720; start++)
             {
-                generator.SetPattern($"[{start.ToString()}]0(12)");
+                builder = new PatternBuilder().Literal(start.ToString()).Number().Repeat(12);
+                generator.UseBuilder(builder);
                 cardNumber = generator.GetString();
                 Assert.IsTrue(regex.IsMatch(cardNumber));
             }
@@ -1575,12 +1501,14 @@ namespace RSGLib.Tests
         public void AMEXTest()
         {
             var regex = new Regex("^3[47][0-9]{13}$");
-            var generator = new Generator("[34]0(13)");
+            var builder = new PatternBuilder().Literal("32").Number().Repeat(13);
+            var generator = new Generator().UseBuilder(builder);
             var cardNumber = generator.GetString();
 
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[37]0(13)");
+            builder = new PatternBuilder().Literal("37").Number().Repeat(13);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
         }
@@ -1590,18 +1518,21 @@ namespace RSGLib.Tests
         public void DinersClubCardText()
         {
             var regex = new Regex("^3(?:0[0-5]|[68][0-9])[0-9]{11}$");
-            var generator = new Generator("[36]0(12)");
+            var builder = new PatternBuilder().Literal("36").Number().Repeat(12);
+            var generator = new Generator().UseBuilder(builder);
             var cardNumber = generator.GetString();
 
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[38]0(12)");
+            builder = new PatternBuilder().Literal("38").Number().Repeat(12);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
             for (var start = 300; start <= 305; start++)
             {
-                generator.SetPattern($"[{start.ToString()}]0(11)");
+                builder = new PatternBuilder().Literal(start.ToString()).Number().Repeat(11);
+                generator.UseBuilder(builder);
                 cardNumber = generator.GetString();
                 Assert.IsTrue(regex.IsMatch(cardNumber));
             }
@@ -1612,12 +1543,14 @@ namespace RSGLib.Tests
         public void DiscoverCardTest()
         {
             var regex = new Regex("^6(?:011|5[0-9]{2})[0-9]{12}$");
-            var generator = new Generator("[6011]0(12)");
+            var builder = new PatternBuilder().Literal("6011").Number().Repeat(12);
+            var generator = new Generator().UseBuilder(builder);
             var cardNumber = generator.GetString();
 
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[65]0(14)");
+            builder = new PatternBuilder().Literal("65").Number().Repeat(14);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
         }
@@ -1627,16 +1560,19 @@ namespace RSGLib.Tests
         public void JCBCardTest()
         {
             var regex = new Regex("^(?:2131|1800|35\\d{3})\\d{11}$");
-            var generator = new Generator("[2131]0(11)");
+            var builder = new PatternBuilder().Literal("2131").Number().Repeat(11);
+            var generator = new Generator().UseBuilder(builder);
             var cardNumber = generator.GetString();
 
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[1800]0(11)");
+            builder = new PatternBuilder().Literal("1800").Number().Repeat(11);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
 
-            generator.SetPattern("[35]0(14)");
+            builder = new PatternBuilder().Literal("35").Number().Repeat(14);
+            generator.UseBuilder(builder);
             cardNumber = generator.GetString();
             Assert.IsTrue(regex.IsMatch(cardNumber));
         }
@@ -1647,7 +1583,27 @@ namespace RSGLib.Tests
         {
 
             var regex = new Regex("^((\\(\\d{3}\\) ?)|(\\d{3}-))?\\d{3}-\\d{4}$");
-            var generator = new Generator("[(]90(2)[) ]90(2)[-]0(4)");
+            var builder = new PatternBuilder()
+                .Literal("(").NumberExceptZero().Number().Repeat(2).Literal(") ")
+                .NumberExceptZero().Number().Repeat(2)
+                .Literal("-").Number().Repeat(4);
+            var generator = new Generator().UseBuilder(builder);
+            var phoneNumber = generator.GetString();
+
+            Assert.IsTrue(regex.IsMatch(phoneNumber));
+        }
+
+        [TestMethod]
+        [TestCategory("Real-World Patterns")]
+        public void PhoneNumberFromMultipleBuildersTest()
+        {
+
+            var regex = new Regex("^((\\(\\d{3}\\) ?)|(\\d{3}-))?\\d{3}-\\d{4}$");
+            var areaBuilder = new PatternBuilder().Literal("(").NumberExceptZero().Number().Repeat(2).Literal(") ");
+            var exchangeBuilder = new PatternBuilder().NumberExceptZero().Number().Repeat(2);
+            var numberBuilder = new PatternBuilder().Number().Repeat(4);
+
+            var generator = new Generator().UseBuilder(areaBuilder + exchangeBuilder + new PatternBuilder().Literal("-") + numberBuilder);
             var phoneNumber = generator.GetString();
 
             Assert.IsTrue(regex.IsMatch(phoneNumber));
@@ -1659,18 +1615,20 @@ namespace RSGLib.Tests
         [TestCategory("Other")]
         public void PatternPropertyTest()
         {
-            var pattern = "a(2,3)";
-            var generator = new Generator(pattern);
+            //TODO: Need to generate the pattern from the token list for the pattern builder
+            //var pattern = "a(2,3)";
+            //var generator = new Generator(pattern);
 
-            Assert.AreEqual(pattern, generator.Pattern, false);
+            //Assert.AreEqual(pattern, generator.Pattern, false);
         }
 
         [TestMethod]
         [TestCategory("Other")]
         public void IEnumerableTest()
         {
-            var count = 10;
-            var generator = new Generator(".");
+            var count = 500;
+            var builder = new PatternBuilder().LetterOrNumber();
+            var generator = new Generator().UseBuilder(builder);
             IEnumerable<string> outputs = generator.GetStrings(count);
 
             var counted = 0;
@@ -1688,9 +1646,8 @@ namespace RSGLib.Tests
         [TestCategory("Other")]
         public void ToStringTest()
         {
-            var pattern = "a";
-            var generator = new Generator(pattern);
-            var output = generator.ToString();
+            var builder = new PatternBuilder().Letter();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -1700,70 +1657,14 @@ namespace RSGLib.Tests
         [TestCategory("Other")]
         public void UsingTest()
         {
-            using (var generator = new Generator("a"))
+            var builder = new PatternBuilder().Letter();
+            using (var generator = new Generator().UseBuilder(builder))
             {
                 var output = generator.ToString();
 
                 Assert.IsTrue(output.Length == 1);
                 Assert.IsTrue(char.IsLetter(output[0]));
             }
-        }
-
-        [TestMethod]
-        [TestCategory("Other")]
-        [ExpectedException(typeof(ObjectDisposedException))]
-        public void DisposeTest()
-        {
-            var generator = new Generator();
-            generator.Dispose();
-            generator.ToString();
-        }
-
-        [TestMethod]
-        [TestCategory("Other")]
-        [ExpectedException(typeof(ObjectDisposedException))]
-        public void DisposeTest2()
-        {
-            var generator = new Generator();
-            generator.Dispose();
-            generator.GetString();
-        }
-
-        [TestMethod]
-        [TestCategory("Other")]
-        [ExpectedException(typeof(ObjectDisposedException))]
-        public void DisposeTest3()
-        {
-            var generator = new Generator();
-            generator.Dispose();
-            foreach (var item in generator.GetStrings(10)) { }
-        }
-
-        [TestMethod]
-        [TestCategory("Other")]
-        [ExpectedException(typeof(ObjectDisposedException))]
-        public void DisposeTest4()
-        {
-            var generator = new Generator();
-            generator.Dispose();
-            generator.SetPattern("a");
-        }
-
-        [TestMethod]
-        [TestCategory("Other")]
-        [ExpectedException(typeof(ObjectDisposedException))]
-        public void UsingDisposeTest()
-        {
-            Generator generator;
-            using (generator = new Generator("a"))
-            {
-                var output = generator.ToString();
-
-                Assert.IsTrue(output.Length == 1);
-                Assert.IsTrue(char.IsLetter(output[0]));
-            }
-
-            generator.ToString();
         }
         #endregion
 

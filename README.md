@@ -184,6 +184,32 @@ builder = builder().Letter().Repeat(2).WithModifer(UpperCase).Letter().WithModif
 The above is the equivalent of ```a^(2)a!(2,3)0{1,2,3,4,5}9```.  The fluent interface make is much easier to understand what is being intended with the pattern and allows
 changes to be easily made.  The string equivalent of the fluently generated pattern can be gotten by calling the ```ToString()``` method on the ```PatternBuilder``` instance.
 
+It is also possible to combine multiple ```PatternBuilder``` instances using then ```+``` operater.  For example, using the fluent methods, a builder for a phone number can
+be generated like this:
+
+```c#
+var builder = new PatternBuilder()
+	.Literal("(").NumberExceptZero().Number().Repeat(2).Literal(") ")
+	.NumberExceptZero().Number().Repeat(2)
+	.Literal("-").Number().Repeat(4);
+var generator = new Generator().UseBuilder(builder);
+var phoneNumber = generator.GetString();
+```
+
+or the different parts of the number can be separated out into their own ```PatternBuilder``` instances and combined with the ```+``` operator like so:
+
+```c#
+var areaBuilder = new PatternBuilder().Literal("(").NumberExceptZero().Number().Repeat(2).Literal(") ");
+var exchangeBuilder = new PatternBuilder().NumberExceptZero().Number().Repeat(2);
+var numberBuilder = new PatternBuilder().Number().Repeat(4);
+
+var generator = new Generator().UseBuilder(areaBuilder + exchangeBuilder + new PatternBuilder().Literal("-") + numberBuilder);
+var phoneNumber = generator.GetString();
+```
+
+Both of the above examples will generate a phone number string using the same pattern.  However, depending on the complexity of the pattern being used, the second method
+may be better.  It also allows reusing, and recombining, multiple ```PatternBuilders```.
+
 ## Examples
 
 ### Valid Patterns

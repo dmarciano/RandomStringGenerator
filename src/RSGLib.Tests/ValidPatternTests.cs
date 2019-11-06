@@ -1281,6 +1281,8 @@ namespace RSGLib.Tests
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
             }
         }
 
@@ -1289,10 +1291,13 @@ namespace RSGLib.Tests
         public void GlobalExclusionTest2()
         {
             var excluded = new List<char>() { 'a', '{', '}' };
-            var generator = new Generator("{-a{\\}}a!");
+            var generator = new Generator("{-a{\\}}+!");
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
+                if (char.IsLetter(output[0]))
+                    Assert.IsTrue(char.IsLower(output[0]));
             }
         }
 
@@ -1305,6 +1310,8 @@ namespace RSGLib.Tests
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
             }
         }
 
@@ -1317,6 +1324,7 @@ namespace RSGLib.Tests
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
             }
         }
 
@@ -1329,6 +1337,8 @@ namespace RSGLib.Tests
             foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
             }
         }
 

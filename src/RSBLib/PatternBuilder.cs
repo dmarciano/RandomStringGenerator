@@ -431,6 +431,12 @@ namespace SMC.Utilities.RSG
         }
         #endregion
 
+        public static PatternBuilder operator + (PatternBuilder p1, PatternBuilder p2)
+        {
+            p1._patternList.AddRange(p2._patternList);
+            return p1;
+        }
+
         public override string ToString()
         {
             //TODO: Implement ToString()

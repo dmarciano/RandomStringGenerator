@@ -453,7 +453,14 @@ namespace SMC.Utilities.RSG
                 }
                 else
                 {
-                    sb.Append(_functions[token.ControlBlock.FunctionName]());
+                    if (null != token.ControlBlock.Function)    //Run functions that were added via a PatternBuilder instance
+                    {
+                        sb.Append(token.ControlBlock.Function());
+                    }
+                    else
+                    {
+                        sb.Append(_functions[token.ControlBlock.FunctionName]());
+                    }
                 }
             }
         }
