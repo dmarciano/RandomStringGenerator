@@ -27,6 +27,6 @@ namespace SMC.Utilities.RSG
         /// Any numbers should exclude zero.
         /// </summary>
         [Description("~")]
-        EXCLUDE_ZERO = 3,
+        EXCLUDE_ZERO = 4,
     }
 }

@@ -16,9 +16,11 @@ namespace SMC.Utilities.RSG
 
         internal bool Tokenize(string pattern)
         {
+            var handled = false;
             tokenizedList = new List<Token>();
             for (pos = 0; pos < pattern.Length; pos++)
             {
+                if (handled) handled = false;
                 var token = new Token();
                 switch (pattern[pos])
                 {
@@ -49,18 +51,22 @@ namespace SMC.Utilities.RSG
                     case '{':
                         token.Type = TokenType.CONTROL_BLOCK;
                         HandleControlBlock(ref token, pattern);
+                        handled = true;
                         break;
                     case '[':
                         token.Type = TokenType.LITERAL;
                         HandleLiteral(ref token, pattern);
+                        handled = true;
                         break;
                     case '#':
                         token.Type = TokenType.OPTIONAL;
                         HandleOptional(ref token, pattern);
+                        handled = true;
                         break;
                     case '<':
                         token.Type = TokenType.RANGE;
                         HandleRange(ref token, pattern);
+                        handled = true;
                         break;
                     case '\\':
                         token.Type = TokenType.LITERAL;
@@ -78,62 +84,28 @@ namespace SMC.Utilities.RSG
                             throw new InvalidPatternException($"Unknown escape sequence \\{pattern[pos]} at position {pos - 1}.");
                         }
                         break;
+                    case '^':
+                    case '!':
+                    case '~':
+                        HandleModifier(pattern);
+                        handled = true;
+                        break;
+                    case '(':
+                        HandleCount(pattern);
+                        handled = true;
+                        break;
+                    case '>':
+                        HandleFormatControlBlock(pattern);
+                        handled = true;
+                        break;
                     default:
                         throw new InvalidPatternException($"Unknown token '{pattern[pos]}' found in Position {pos}.");
                 }
 
-                if (token.Type != TokenType.CONTROL_BLOCK || (token.Type == TokenType.CONTROL_BLOCK && token.ControlBlock != null && token.ControlBlock.Global == false))
+                if (!handled)
                 {
-                    if (token.Type != TokenType.OPTIONAL && token.Type != TokenType.LITERAL && token.Type != TokenType.RANGE)
-                    {
-                        if (pos != pattern.Length - 1)
-                        {
-                            if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(ref token, pattern);
-                        }
-                    }
-                    //}
-
-                    //if(token.Type != TokenType.CONTROL_BLOCK || (token.Type == TokenType.CONTROL_BLOCK && token.ControlBlock.Global == false))
-                    //{ 
-                    if (pos < pattern.Length - 1)
-                    {
-                        if (char.Equals(pattern[pos + 1], '(')) HandleCount(ref token, pattern);
-                    }
-
-                    if (pos < pattern.Length - 1)
-                    {
-                        if (char.Equals(pattern[pos + 1], '>')) HandleFormatControlBlock(ref token, pattern);
-                    }
-
-
                     tokenizedList.Add(token);
                 }
-                //switch (pattern[pos])
-                //{
-                //    case 'a':
-                //    case '0':
-                //    case '9':
-                //    case '@':
-                //    case '.':
-                //    case '+':
-                //    case '%':
-                //    case '*':
-                //        HandleToken(pattern);
-                //        break;             
-                //    //case '^':
-                //    //case '!':
-                //    //case '~':
-                //    //    if (pos == 0)
-                //    //        throw new InvalidPatternException($"Modifier '{pattern[0]}' found in Position 0.  Modifiers must follow tokens.");
-                //    //    HandleModifier(pattern);
-                //    //    break;
-                //    //case '[':
-                //    //    HandleLiteral(pattern);
-                //    //    break;
-                //    default:
-                //        throw new InvalidPatternException($"Unknown token '{pattern[pos]}' found in Position {pos}.");
-                //}
-
             }
 
             TokenizedPattern = tokenizedList;
@@ -408,71 +380,112 @@ namespace SMC.Utilities.RSG
             token.ControlBlock = cb;
         }
 
-        private void HandleModifier(ref Token token, string pattern)
+        private void HandleModifier(string pattern)
         {
-            pos++;
+            var lastToken = tokenizedList[tokenizedList.Count - 1];
             var modifier = pattern[pos];
-            var EOS = false;
 
-            if (token.Type == TokenType.SYMBOL)
-                throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.  Symbol tokens cannot have any modifiers.");
+            if (lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.CONTROL_BLOCK)
+                throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.  Symbol and Control Block tokens cannot have any modifiers.");
 
-            do
+            switch (modifier)
             {
-                switch (modifier)
-                {
-                    case '^':
-                        if (token.Type == TokenType.NUMBER || token.Type == TokenType.NUMBER_EXCEPT_ZERO || token.Type == TokenType.NUMBER_SYMBOL)
-                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+                case '^':
+                    if (lastToken.Type == TokenType.NUMBER || lastToken.Type == TokenType.NUMBER_EXCEPT_ZERO || lastToken.Type == TokenType.NUMBER_SYMBOL)
+                        throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
 
-                        if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
-                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+                    if (lastToken.Modifier.HasFlag(ModifierType.UPPERCASE))
+                        throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
 
-                        token.Modifier = token.Modifier | ModifierType.UPPERCASE;
-                        break;
-                    case '!':
-                        if (token.Type == TokenType.NUMBER || token.Type == TokenType.NUMBER_EXCEPT_ZERO || token.Type == TokenType.SYMBOL || token.Type == TokenType.NUMBER_SYMBOL)
-                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+                    lastToken.Modifier = lastToken.Modifier | ModifierType.UPPERCASE;
+                    break;
+                case '!':
+                    if (lastToken.Type == TokenType.NUMBER || lastToken.Type == TokenType.NUMBER_EXCEPT_ZERO || lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.NUMBER_SYMBOL)
+                        throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
 
-                        if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
-                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+                    if (lastToken.Modifier.HasFlag(ModifierType.LOWERCASE))
+                        throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
 
-                        token.Modifier = token.Modifier | ModifierType.LOWERCASE;
-                        break;
-                    case '~':
-                        if (token.Type == TokenType.LETTER || token.Type == TokenType.SYMBOL || token.Type == TokenType.LETTER_SYMBOL)
-                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+                    lastToken.Modifier = lastToken.Modifier | ModifierType.LOWERCASE;
+                    break;
+                case '~':
+                    if (lastToken.Type == TokenType.LETTER || lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.LETTER_SYMBOL)
+                        throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
 
-                        if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
-                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+                    if (lastToken.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                        throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
 
-                        token.Modifier = token.Modifier | ModifierType.EXCLUDE_ZERO;
-                        break;
-                }
+                    lastToken.Modifier = lastToken.Modifier | ModifierType.EXCLUDE_ZERO;
+                    break;
+            }
 
-                if (pos != pattern.Length - 1)
-                {
-                    if (!MODIFIERS.Contains(pattern[pos + 1]))
-                        EOS = true;
-                    else
-                        pos++;
-                }
-                else
-                {
-                    EOS = true;
-                }
 
-            } while (!EOS);
+            //pos++;
+            //var modifier = pattern[pos];
+            //var EOS = false;
+
+            //if (token.Type == TokenType.SYMBOL)
+            //    throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.  Symbol tokens cannot have any modifiers.");
+
+            //do
+            //{
+            //    switch (modifier)
+            //    {
+            //        case '^':
+            //            if (token.Type == TokenType.NUMBER || token.Type == TokenType.NUMBER_EXCEPT_ZERO || token.Type == TokenType.NUMBER_SYMBOL)
+            //                throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+
+            //            if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+            //                throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+            //            token.Modifier = token.Modifier | ModifierType.UPPERCASE;
+            //            break;
+            //        case '!':
+            //            if (token.Type == TokenType.NUMBER || token.Type == TokenType.NUMBER_EXCEPT_ZERO || token.Type == TokenType.SYMBOL || token.Type == TokenType.NUMBER_SYMBOL)
+            //                throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+
+            //            if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+            //                throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+            //            token.Modifier = token.Modifier | ModifierType.LOWERCASE;
+            //            break;
+            //        case '~':
+            //            if (token.Type == TokenType.LETTER || token.Type == TokenType.SYMBOL || token.Type == TokenType.LETTER_SYMBOL)
+            //                throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+
+            //            if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+            //                throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+            //            token.Modifier = token.Modifier | ModifierType.EXCLUDE_ZERO;
+            //            break;
+            //    }
+
+            //    if (pos != pattern.Length - 1)
+            //    {
+            //        if (!MODIFIERS.Contains(pattern[pos + 1]))
+            //            EOS = true;
+            //        else
+            //            pos++;
+            //    }
+            //    else
+            //    {
+            //        EOS = true;
+            //    }
+
+            //} while (!EOS);
         }
 
-        private void HandleCount(ref Token token, string pattern)
+        private void HandleCount(string pattern)
         {
             var EOS = false;
             var originalPosition = pos;
             var commaCount = 0;
             var sb = new StringBuilder();
 
-            pos++; //Consume the opening parenthesis
+            var lastToken = tokenizedList[tokenizedList.Count - 1];
+            if (lastToken.Type == TokenType.CONTROL_BLOCK && lastToken.ControlBlock != null && lastToken.ControlBlock.Global)
+                throw new InvalidModifierException($"Count blocks are not valid on global control blocks");
+
             while (!EOS)
             {
                 pos++;
@@ -515,16 +528,16 @@ namespace SMC.Utilities.RSG
                 var div = countString.Split(',');
                 if (string.IsNullOrWhiteSpace(div[0]))
                 {
-                    token.MinimumCount = 0;
+                    lastToken.MinimumCount = 0;
                 }
                 else
                 {
-                    token.MinimumCount = int.Parse(div[0]);
+                    lastToken.MinimumCount = int.Parse(div[0]);
                 }
 
-                token.MaximumCount = int.Parse(div[1]);
+                lastToken.MaximumCount = int.Parse(div[1]);
 
-                if (token.MinimumCount > token.MaximumCount)
+                if (lastToken.MinimumCount > lastToken.MaximumCount)
                     throw new InvalidPatternException($"The count token starting at position {originalPosition}, ending at {pos}, is not valid.  Maximum repeat count must be greater than minimum repeat count.");
             }
             else
@@ -533,8 +546,8 @@ namespace SMC.Utilities.RSG
                 if (val == 0)
                     throw new InvalidPatternException($"The count token starting at position {originalPosition}, ending at {pos}, is not valid.  Repeat count cannot be exactly 0.");
 
-                token.MinimumCount = int.Parse(countString);
-                token.MaximumCount = int.Parse(countString);
+                lastToken.MinimumCount = int.Parse(countString);
+                lastToken.MaximumCount = int.Parse(countString);
             }
         }
 
@@ -722,13 +735,16 @@ namespace SMC.Utilities.RSG
             }
         }
 
-        private void HandleFormatControlBlock(ref Token token, string pattern)
+        private void HandleFormatControlBlock(string pattern)
         {
             var EOS = false;
             var originalPosition = pos;
             var format = new StringBuilder();
 
-            pos++; //Consume the open angle bracket
+            var lastToken = tokenizedList[tokenizedList.Count - 1];
+            if (lastToken.Type == TokenType.CONTROL_BLOCK && lastToken.ControlBlock != null && lastToken.ControlBlock.Global)
+                throw new InvalidModifierException($"Format control blocks are not valid on global control blocks");
+
             while (!EOS)
             {
                 pos++;
@@ -765,7 +781,7 @@ namespace SMC.Utilities.RSG
                         if (!formatString.Contains("{0"))
                             throw new InvalidPatternException($"No argument placeholder '{{0}}' found in the format block starting at position {originalPosition}.");
 
-                        token.ControlBlock = new ControlBlock()
+                        lastToken.ControlBlock = new ControlBlock()
                         {
                             Type = ControlBlockType.FMT,
                             Value = formatString

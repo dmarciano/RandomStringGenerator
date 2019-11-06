@@ -486,7 +486,7 @@ namespace RSGLib.Tests
             foreach (var output in generator.GetStrings(1000))
             {
                 Assert.IsTrue(output.Length == 1);
-                Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
                 if (char.IsLetter(output[0]))
                 {
                     Assert.IsTrue(char.IsUpper(output[0]));
@@ -507,10 +507,10 @@ namespace RSGLib.Tests
             foreach (var output in generator.GetStrings(1000))
             {
                 Assert.IsTrue(output.Length == 1);
-                Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]) || char.IsSymbol(output[0]) || char.IsPunctuation(output[0]));
                 if (char.IsLetter(output[0]))
                 {
-                    Assert.IsTrue(char.IsUpper(output[0]));
+                    Assert.IsTrue(char.IsLower(output[0]));
                 }
                 else
                 {
@@ -518,7 +518,98 @@ namespace RSGLib.Tests
                 }
             }
         }
+        #endregion
 
+        #region Order of Modifiers
+        [TestMethod]
+        [TestCategory("Order")]
+        public void OrderTest()
+        {
+            var generator = new Generator("a^(2)>{0,5}<");
+            foreach(var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 5);
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+                Assert.IsTrue(char.IsLetter(output[4]));
+                Assert.IsTrue(char.IsUpper(output[4]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Order")]
+        public void OrderTest2()
+        {
+            var generator = new Generator("a^>{0,5}<(2)");
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 5);
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+                Assert.IsTrue(char.IsLetter(output[4]));
+                Assert.IsTrue(char.IsUpper(output[4]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Order")]
+        public void OrderTest3()
+        {
+            var generator = new Generator("a(2)^>{0,5}<");
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 5);
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+                Assert.IsTrue(char.IsLetter(output[4]));
+                Assert.IsTrue(char.IsUpper(output[4]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Order")]
+        public void OrderTest4()
+        {
+            var generator = new Generator("a(2)>{0,5}<^");
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 5);
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+                Assert.IsTrue(char.IsLetter(output[4]));
+                Assert.IsTrue(char.IsUpper(output[4]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Order")]
+        public void OrderTest5()
+        {
+            var generator = new Generator("a>{0,5}<^(2)");
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 5);
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+                Assert.IsTrue(char.IsLetter(output[4]));
+                Assert.IsTrue(char.IsUpper(output[4]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Order")]
+        public void OrderTest6()
+        {
+            var generator = new Generator("a>{0,5}<(2)^");
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 5);
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+                Assert.IsTrue(char.IsLetter(output[4]));
+                Assert.IsTrue(char.IsUpper(output[4]));
+            }
+        }
         #endregion
 
         #region Escape Sequences
