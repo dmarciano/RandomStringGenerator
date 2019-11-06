@@ -14,5 +14,6 @@ namespace SMC.Utilities.RSG
         internal string Value { get; set; }
         internal bool Global { get; set; }
         internal char[] ExceptValues { get; set; }
+        internal string Format { get; set; }
     }
 }

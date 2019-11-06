@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SMC.Utilities.RSG
 {
@@ -121,7 +122,10 @@ namespace SMC.Utilities.RSG
                 throw new PatternBuilderException("The uppercase token modifier can only be used on tokens that generate letters.");
 
             if (lastToken.Modifier.HasFlag(ModifierType.UPPERCASE))
-                throw new DuplicateModifierException("The token already has an uppercase modifier specified.");
+                throw new PatternBuilderException("The token already has an uppercase modifier specified.");
+
+            if (lastToken.Modifier.HasFlag(ModifierType.LOWERCASE))
+                throw new PatternBuilderException("The token already has a lowercase modifier specified.");
 
             lastToken.Modifier = lastToken.Modifier | ModifierType.UPPERCASE;
             return this;
@@ -142,6 +146,9 @@ namespace SMC.Utilities.RSG
 
             if (lastToken.Modifier.HasFlag(ModifierType.LOWERCASE))
                 throw new DuplicateModifierException("The token already has a lowercase modifier specified.");
+
+            if (lastToken.Modifier.HasFlag(ModifierType.UPPERCASE))
+                throw new PatternBuilderException("The token already has an uppercase modifier specified.");
 
             lastToken.Modifier = lastToken.Modifier | ModifierType.LOWERCASE;
             return this;
@@ -251,10 +258,12 @@ namespace SMC.Utilities.RSG
                 }
                 else
                 {
+                    token.Type = TokenType.CONTROL_BLOCK;
                     cb = new ControlBlock()
                     {
                         FunctionName = "DATETIME",
-                        Function = () => DateTime.Now.ToString(format)
+                        Function = () => DateTime.Now.ToString(format),
+                        Format = format
                     };
                 }
             }
@@ -267,6 +276,7 @@ namespace SMC.Utilities.RSG
                 }
                 else
                 {
+                    token.Type = TokenType.CONTROL_BLOCK;
                     cb = new ControlBlock()
                     {
                         FunctionName = "DATETIME",
@@ -319,7 +329,8 @@ namespace SMC.Utilities.RSG
                     cb = new ControlBlock()
                     {
                         FunctionName = "GUID",
-                        Function = () => Guid.NewGuid().ToString(format)
+                        Function = () => Guid.NewGuid().ToString(format),
+                        Format = format,
                     };
                 }
             }
@@ -431,7 +442,7 @@ namespace SMC.Utilities.RSG
         }
         #endregion
 
-        public static PatternBuilder operator + (PatternBuilder p1, PatternBuilder p2)
+        public static PatternBuilder operator +(PatternBuilder p1, PatternBuilder p2)
         {
             p1._patternList.AddRange(p2._patternList);
             return p1;
@@ -439,8 +450,155 @@ namespace SMC.Utilities.RSG
 
         public override string ToString()
         {
-            //TODO: Implement ToString()
-            return base.ToString();
+            var sb = new StringBuilder(_patternList.Count * 2);
+
+            foreach (var token in _patternList)
+            {
+                switch (token.Type)
+                {
+                    case TokenType.LETTER:
+                        sb.Append("a");
+                        if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+                        {
+                            sb.Append("^");
+                        }
+                        else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                        {
+                            sb.Append("!");
+                        }
+                        break;
+                    case TokenType.NUMBER:
+                        sb.Append("0");
+                        if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                        {
+                            sb.Append("~");
+                        }
+                        break;
+                    case TokenType.NUMBER_EXCEPT_ZERO:
+                        sb.Append("9");
+                        break;
+                    case TokenType.SYMBOL:
+                        sb.Append("@");
+                        break;
+                    case TokenType.LETTER_NUMBER:
+                        sb.Append(".");
+                        if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+                        {
+                            sb.Append("^");
+                        }
+                        else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                        {
+                            sb.Append("!");
+                        }
+
+                        if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                        {
+                            sb.Append("~");
+                        }
+                        break;
+                    case TokenType.LETTER_SYMBOL:
+                        sb.Append("+");
+                        if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+                        {
+                            sb.Append("^");
+                        }
+                        else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                        {
+                            sb.Append("!");
+                        }
+                        break;
+                    case TokenType.NUMBER_SYMBOL:
+                        sb.Append("%");
+                        if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                        {
+                            sb.Append("~");
+                        }
+                        break;
+                    case TokenType.LETTER_NUMBER_SYMBOL:
+                        sb.Append("*");
+
+                        if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+                        {
+                            sb.Append("^");
+                        }
+                        else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                        {
+                            sb.Append("!");
+                        }
+                        if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                        {
+                            sb.Append("~");
+                        }
+                        break;
+                    case TokenType.LITERAL:
+                        sb.Append($"[{token.Value}]");
+                        break;
+                    case TokenType.OPTIONAL:
+                        sb.Append($"#{string.Join(",", token.Values)}#");
+                        break;
+                    case TokenType.RANGE:
+                        var r = token.Ranges[0];
+                        if (r.Start.Equals(r.End))
+                            sb.Append($"<{r.Start}>");
+                        else
+                            sb.Append($"<{r.Start}-{r.End}>");
+                        break;
+                    case TokenType.CONTROL_BLOCK:
+                        if (null != token.ControlBlock)
+                        {
+                            if (token.ControlBlock.Global)
+                            {
+                                var s = string.Join(string.Empty, token.ControlBlock.ExceptValues).Replace("\\", "\\\\").Replace("}", "\\}");
+                                sb.Insert(0, s);
+                            }
+                            else if (token.ControlBlock.FunctionName.Equals("DATETIME"))
+                            {
+                                if (string.IsNullOrWhiteSpace(token.ControlBlock.Format))
+                                {
+                                    sb.Append($"{{T:{token.ControlBlock.Format}}}");
+                                }
+                                else
+                                {
+                                    sb.Append($"{{T}}");
+                                }
+                            }
+                            else if (token.ControlBlock.FunctionName.Equals("GUID"))
+                            {
+                                if (string.IsNullOrWhiteSpace(token.ControlBlock.Format))
+                                {
+                                    sb.Append($"{{G:{token.ControlBlock.Format}}}");
+                                }
+                                else
+                                {
+                                    sb.Append($"{{G}}");
+                                }
+                            }
+                            else
+                            {
+                                sb.Append($"{{{token.ControlBlock.FunctionName}}}");
+                            }
+                        }
+                        break;
+                }
+
+                if (token.Type != TokenType.CONTROL_BLOCK)
+                {
+                    if (null != token.ControlBlock)
+                    {
+                        if (token.ControlBlock.Type == ControlBlockType.ECB)
+                        {
+                            var s = string.Join(string.Empty, token.ControlBlock.ExceptValues).Replace("\\", "\\\\").Replace("}", "\\}");
+                            sb.Append($"{{-{s}}}");
+                        }
+                        else if (token.ControlBlock.Type == ControlBlockType.FMT)
+                        {
+                            sb.Append($">{token.ControlBlock.Value.Replace("\\", "\\\\")}<");
+                        }
+                    }
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }

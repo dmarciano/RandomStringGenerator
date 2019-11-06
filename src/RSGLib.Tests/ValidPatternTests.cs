@@ -434,7 +434,92 @@ namespace RSGLib.Tests
             Assert.IsTrue(char.IsNumber(output[0]));
             Assert.IsTrue(Convert.ToInt32(output[0]) != 0);
         }
-        #endregion 
+
+        [TestMethod]
+        [TestCategory("Modifier")]
+        public void MultipleModifiersTest()
+        {
+            var generator = new Generator(".^~");
+
+            foreach(var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]));
+                if (char.IsLetter(output[0]))
+                {
+                    Assert.IsTrue(char.IsUpper(output[0]));
+                }
+                else
+                {
+                    Assert.IsTrue(!output[0].Equals('0'));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Modifier")]
+        public void MultipleModifiersTest2()
+        {
+            var generator = new Generator(".!~");
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]));
+                if (char.IsLetter(output[0]))
+                {
+                    Assert.IsTrue(char.IsLower(output[0]));
+                }
+                else
+                {
+                    Assert.IsTrue(!output[0].Equals('0'));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Modifier")]
+        public void MultipleModifiersTest3()
+        {
+            var generator = new Generator("*^~");
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]));
+                if (char.IsLetter(output[0]))
+                {
+                    Assert.IsTrue(char.IsUpper(output[0]));
+                }
+                else
+                {
+                    Assert.IsTrue(!output[0].Equals('0'));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Modifier")]
+        public void MultipleModifiersTest4()
+        {
+            var generator = new Generator("*!~");
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]));
+                if (char.IsLetter(output[0]))
+                {
+                    Assert.IsTrue(char.IsUpper(output[0]));
+                }
+                else
+                {
+                    Assert.IsTrue(!output[0].Equals('0'));
+                }
+            }
+        }
+
+        #endregion
 
         #region Escape Sequences
         [TestMethod]
@@ -443,7 +528,7 @@ namespace RSGLib.Tests
         {
             var generator = new Generator("a\\n0");
             var output = generator.GetString();
-            
+
             // Environment.NewLine.Length is used below to account for different OS's new line
             // i.e. some are \n and Windows is \r\n
             Assert.IsTrue(output.Length == 2 + Environment.NewLine.Length);
@@ -621,7 +706,7 @@ namespace RSGLib.Tests
         {
             var generator = new Generator("#Suite \\t1,Suite \\t2,Suite \\t3#");
             var output = generator.GetString();
-            
+
             Assert.IsTrue(output.Equals("Suite \t1") || output.Equals("Suite \t2") || output.Equals("Suite \t3"));
         }
         #endregion
@@ -666,7 +751,7 @@ namespace RSGLib.Tests
             {
                 count++;
                 var output = generator.GetString();
-                
+
                 Assert.IsTrue(output.Length == 10 || output.Length == 15);
 
                 var output1 = output.Substring(0, 5);
@@ -687,7 +772,7 @@ namespace RSGLib.Tests
                 Assert.IsTrue(output1.Equals("First") || output1.Equals("Fizzy") || output1.Equals("Fuzzy"));
                 Assert.IsTrue(output2.Equals("First") || output2.Equals("Fizzy") || output2.Equals("Fuzzy"));
 
-                test = !((doubleSeen && tripleSeen) || count==500);
+                test = !((doubleSeen && tripleSeen) || count == 500);
             }
 
             Assert.IsTrue(doubleSeen);
@@ -696,9 +781,9 @@ namespace RSGLib.Tests
         #endregion
 
         #region Ranges
-         [TestMethod]
-         [TestCategory("Ranges")]
-         public void LowercaseLetterRangeTest()
+        [TestMethod]
+        [TestCategory("Ranges")]
+        public void LowercaseLetterRangeTest()
         {
             var generator = new Generator("<a-z>");
             var output = generator.GetString();
@@ -783,7 +868,7 @@ namespace RSGLib.Tests
                 {
                     aSeen = true;
                 }
-                else if(output[0].Equals('b'))
+                else if (output[0].Equals('b'))
                 {
                     bSeen = true;
                 }
@@ -811,7 +896,7 @@ namespace RSGLib.Tests
         {
             var generator = new Generator("<1-8>");
 
-            foreach(var output in generator.GetStrings(10000))
+            foreach (var output in generator.GetStrings(10000))
             {
                 Assert.IsTrue(output.Length == 1);
                 Assert.IsTrue(char.IsNumber(output[0]));
@@ -824,7 +909,7 @@ namespace RSGLib.Tests
         public void LetterNumberRangeTest()
         {
             var generator = new Generator("<a1-8>");
-            foreach(var output in generator.GetStrings(100000))
+            foreach (var output in generator.GetStrings(100000))
             {
                 Assert.IsTrue(output.Length == 1);
                 Assert.IsTrue(char.IsLetterOrDigit(output[0]));
@@ -833,7 +918,7 @@ namespace RSGLib.Tests
                     Assert.IsTrue(output[0].Equals('a'));
                 else
                     Assert.IsTrue(!output[0].Equals('0') && !output[0].Equals('9'));
-                
+
             }
         }
 
@@ -870,7 +955,7 @@ namespace RSGLib.Tests
         public void MultipleRangesTest()
         {
             var generator = new Generator("<a-cx-z>");
-            foreach(var output in generator.GetStrings(100000))
+            foreach (var output in generator.GetStrings(100000))
             {
                 Assert.IsTrue(output.Length == 1);
                 Assert.IsTrue(char.IsLetter(output[0]));
@@ -1014,8 +1099,8 @@ namespace RSGLib.Tests
                 }
             }
 
-            Assert.IsTrue(bSeen1 >=2 );
-            Assert.IsTrue(dSeen1>=2);
+            Assert.IsTrue(bSeen1 >= 2);
+            Assert.IsTrue(dSeen1 >= 2);
             Assert.IsTrue(threeSeen1 >= 2);
             Assert.IsTrue(sevenSeen1 >= 2);
             Assert.IsTrue(nineSeen1 >= 2);
@@ -1686,7 +1771,7 @@ namespace RSGLib.Tests
         public void UserDefinedFunctionDelegateTest()
         {
             var generator = new Generator("{My}");
-            generator.AddFunction("My", ()=> { return "25"; });
+            generator.AddFunction("My", () => { return "25"; });
             var output = generator.ToString();
 
             Assert.IsTrue(output.Length == 2);

@@ -131,6 +131,7 @@ namespace SMC.Utilities.RSG
                 throw new ArgumentNullException(nameof(builder), "Pattern builder cannot be null.");
 
             _tokenizedPattern = builder.TokenizedPattern;
+            Pattern = builder.ToString();
 
             return this;
         }
