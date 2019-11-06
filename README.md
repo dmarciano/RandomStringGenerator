@@ -245,7 +245,8 @@ This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNe
 ### ***COMING SOON***
 
 ## Future Plans
-- Fluent interface to allow building patterns from objects instead of strings
+- Possible logical ORing of multiple tokens
+- Additional random number generators
 
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.
