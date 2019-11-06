@@ -235,7 +235,6 @@ namespace SMC.Utilities.RSG
                             characters = NUMBERS_EXCEPT_0;
                         else
                             characters = NUMBERS;
-
                         break;
                     case TokenType.NUMBER_EXCEPT_ZERO:
                         characters = NUMBERS_EXCEPT_0;
@@ -256,10 +255,6 @@ namespace SMC.Utilities.RSG
                         characters = GetLettersNumbersSymbols(token);
                         break;
                     case TokenType.LITERAL:
-                        //for (var count = 0; count < repeat; count++)
-                        //{
-                        //    sb.Append(token.Value);
-                        //}
                         break;
                     case TokenType.OPTIONAL:
                         HandleOptionalBlock(token, repeat, ref sb);

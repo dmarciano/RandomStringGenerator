@@ -288,7 +288,7 @@ namespace RSGLib.Tests
             var builder = new PatternBuilder().Letter().Repeat(0, 5);
             var output = new Generator().UseBuilder(builder).GetString();
 
-            Assert.IsTrue(output.Length >= 0 && output.Length <= 2);
+            Assert.IsTrue(output.Length >= 0 && output.Length <= 5);
             foreach (var c in output.ToCharArray())
             {
                 Assert.IsTrue(char.IsLetter(c));
@@ -440,7 +440,7 @@ namespace RSGLib.Tests
         [TestCategory("Optional Blocks")]
         public void OptionalBlockWithRepeatTest()
         {
-            var builder = new PatternBuilder().Optional("First", "Fizzy", "Fuzzy");
+            var builder = new PatternBuilder().Optional("First", "Fizzy", "Fuzzy").Repeat(2);
             var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 10);
@@ -455,7 +455,7 @@ namespace RSGLib.Tests
         [TestCategory("Optional Blocks")]
         public void OptionalBlockWithRepeatTest2()
         {
-            var builder = new PatternBuilder().Optional(new List<string> { "First", "Fizzy", "Fuzzy" });
+            var builder = new PatternBuilder().Optional(new List<string> { "First", "Fizzy", "Fuzzy" }).Repeat(2);
             var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 10);
@@ -470,7 +470,7 @@ namespace RSGLib.Tests
         [TestCategory("Optional Blocks")]
         public void OptionalBlockWithRepeatTest3()
         {
-            var builder = new PatternBuilder().Optional("First", "Fizzy", "Fuzzy");
+            var builder = new PatternBuilder().Optional("First", "Fizzy", "Fuzzy").Repeat(2,3);
             var generator = new Generator().UseBuilder(builder);
             var test = true;
             var doubleSeen = false;
@@ -512,7 +512,7 @@ namespace RSGLib.Tests
         [TestCategory("Optional Blocks")]
         public void OptionalBlockWithRepeatTest4()
         {
-            var builder = new PatternBuilder().Optional(new List<string> { "First", "Fizzy", "Fuzzy" });
+            var builder = new PatternBuilder().Optional(new List<string> { "First", "Fizzy", "Fuzzy" }).Repeat(2,3);
             var generator = new Generator().UseBuilder(builder);
             var test = true;
             var doubleSeen = false;
@@ -699,7 +699,7 @@ namespace RSGLib.Tests
             var builder = new PatternBuilder().Number().Repeat(2).Format("{0:X}");
             var output = new Generator().UseBuilder(builder).GetString();
 
-            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(output.Length == 1 || output.Length == 2);
             Assert.IsTrue(regex.IsMatch(output));
         }
 
@@ -988,6 +988,22 @@ namespace RSGLib.Tests
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'Z' };
             var builder = new PatternBuilder().AddGlobalExclusions('Z').Letter().UppercaseOnly().Exclude('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M');
+            var generator = new Generator().UseBuilder(builder);
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Control Blocks")]
+        public void GlobalAndTokenExclusionTest2()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'Z' };
+            var builder = new PatternBuilder().Letter().UppercaseOnly().Exclude('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M').AddGlobalExclusions('Z');
             var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
@@ -1501,7 +1517,7 @@ namespace RSGLib.Tests
         public void AMEXTest()
         {
             var regex = new Regex("^3[47][0-9]{13}$");
-            var builder = new PatternBuilder().Literal("32").Number().Repeat(13);
+            var builder = new PatternBuilder().Literal("34").Number().Repeat(13);
             var generator = new Generator().UseBuilder(builder);
             var cardNumber = generator.GetString();
 

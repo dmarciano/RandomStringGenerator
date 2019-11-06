@@ -13,10 +13,11 @@ namespace SMC.Utilities.RSG
 
         private List<Token> tokenizedList;
         private int pos;
+        private bool handled = false;
 
         internal bool Tokenize(string pattern)
         {
-            var handled = false;
+            handled = false;
             tokenizedList = new List<Token>();
             for (pos = 0; pos < pattern.Length; pos++)
             {
@@ -51,22 +52,18 @@ namespace SMC.Utilities.RSG
                     case '{':
                         token.Type = TokenType.CONTROL_BLOCK;
                         HandleControlBlock(ref token, pattern);
-                        handled = true;
                         break;
                     case '[':
                         token.Type = TokenType.LITERAL;
                         HandleLiteral(ref token, pattern);
-                        handled = true;
                         break;
                     case '#':
                         token.Type = TokenType.OPTIONAL;
                         HandleOptional(ref token, pattern);
-                        handled = true;
                         break;
                     case '<':
                         token.Type = TokenType.RANGE;
                         HandleRange(ref token, pattern);
-                        handled = true;
                         break;
                     case '\\':
                         token.Type = TokenType.LITERAL;
@@ -204,6 +201,8 @@ namespace SMC.Utilities.RSG
                 tokenizedList.RemoveAt(tokenizedList.Count - 1);
                 tokenizedList.Add(tempToken);
             }
+
+            handled = true;
         }
 
         private void HandleFunctionBlock(ref Token token, string pattern, int originalPosition)

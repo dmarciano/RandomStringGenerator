@@ -117,6 +117,8 @@ There are a couple of additional characters that are used to help define the pat
 
 #### NOTE Although **a(0)** seems like it would be valid based on the information above, this pattern is not valid as this would not generate any output and would simply add to the processing time.
 
+> The order of modifiers or counts does not matter.  That means that ```a^(2)>{0,5}<```, ```a(2)^>{0,5}<```, and ```a>{0,5}<(2)^``` are all the same pattern and would generate the same output.
+
 ## Advanced Features
 
 ### Control Block

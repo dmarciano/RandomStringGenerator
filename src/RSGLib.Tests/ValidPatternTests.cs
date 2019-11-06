@@ -1225,7 +1225,7 @@ namespace RSGLib.Tests
             var generator = new Generator("0(2)>{0:X}<");
             var output = generator.GetString();
 
-            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(output.Length == 1 || output.Length == 2);
             Assert.IsTrue(regex.IsMatch(output));
         }
 

@@ -98,7 +98,7 @@ namespace SMC.Utilities.RSG
 
             var lastToken = _patternList[_patternList.Count - 1];
 
-            if (lastToken.Type == TokenType.CONTROL_BLOCK)
+            if (lastToken.Type == TokenType.CONTROL_BLOCK && null != lastToken.ControlBlock && lastToken.ControlBlock.Global)
                 throw new PatternBuilderException("Cannot add a repeat count to a global exclusion block.");
 
             lastToken.MinimumCount = minRepeats;
@@ -197,7 +197,7 @@ namespace SMC.Utilities.RSG
 
         public PatternBuilder Range(char start, char end)
         {
-            if (end > start)
+            if (start > end)
                 throw new ArgumentOutOfRangeException("The end value must be greater than, or equal to, the start value for a range token.");
 
             _patternList.Add(new Token() { Type = TokenType.RANGE, Ranges = new List<Range>() { new Range() { Start = start, End = end } } });
@@ -261,6 +261,7 @@ namespace SMC.Utilities.RSG
                     token.Type = TokenType.CONTROL_BLOCK;
                     cb = new ControlBlock()
                     {
+                        Type = ControlBlockType.FCB,
                         FunctionName = "DATETIME",
                         Function = () => DateTime.Now.ToString(format),
                         Format = format
@@ -279,6 +280,7 @@ namespace SMC.Utilities.RSG
                     token.Type = TokenType.CONTROL_BLOCK;
                     cb = new ControlBlock()
                     {
+                        Type = ControlBlockType.FCB,
                         FunctionName = "DATETIME",
                         Function = () => DateTime.Now.ToString()
                     };
@@ -326,8 +328,10 @@ namespace SMC.Utilities.RSG
                 }
                 else
                 {
+                    token.Type = TokenType.CONTROL_BLOCK;
                     cb = new ControlBlock()
                     {
+                        Type= ControlBlockType.FCB,
                         FunctionName = "GUID",
                         Function = () => Guid.NewGuid().ToString(format),
                         Format = format,
@@ -343,8 +347,10 @@ namespace SMC.Utilities.RSG
                 }
                 else
                 {
+                    token.Type = TokenType.CONTROL_BLOCK;
                     cb = new ControlBlock()
                     {
+                        Type = ControlBlockType.FCB,
                         FunctionName = "GUID",
                         Function = () => Guid.NewGuid().ToString()
                     };
@@ -394,21 +400,37 @@ namespace SMC.Utilities.RSG
 
         public PatternBuilder AddGlobalExclusions(List<char> values)
         {
-            var firstToken = _patternList[0];
-
-            if (firstToken.Type == TokenType.CONTROL_BLOCK)
-                throw new PatternBuilderException("A global exclusion block already exists in the pattern.");
-
-            _patternList.Add(new Token()
+            if (_patternList.Count > 0)
             {
-                Type = TokenType.CONTROL_BLOCK,
-                ControlBlock = new ControlBlock()
+                var firstToken = _patternList[0];
+
+                if (firstToken.Type == TokenType.CONTROL_BLOCK)
+                    throw new PatternBuilderException("A global exclusion block already exists in the pattern.");
+
+                _patternList.Insert(0,new Token()
                 {
-                    Type = ControlBlockType.ECB,
-                    Global = true,
-                    ExceptValues = values.ToArray()
-                }
-            });
+                    Type = TokenType.CONTROL_BLOCK,
+                    ControlBlock = new ControlBlock()
+                    {
+                        Type = ControlBlockType.ECB,
+                        Global = true,
+                        ExceptValues = values.ToArray()
+                    }
+                });
+            }
+            else
+            {
+                _patternList.Add(new Token()
+                {
+                    Type = TokenType.CONTROL_BLOCK,
+                    ControlBlock = new ControlBlock()
+                    {
+                        Type = ControlBlockType.ECB,
+                        Global = true,
+                        ExceptValues = values.ToArray()
+                    }
+                });
+            }
 
             return this;
         }
