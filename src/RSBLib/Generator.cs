@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SMC.Utilities.RSG.Random;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,7 +44,8 @@ namespace SMC.Utilities.RSG
 
         #region Variables
         private Tokenizer _tokenizer;
-        private List<Token> _tokenizedPattern;
+        //private List<Token> _tokenizedPattern;
+        private List<TokenizedGroup> _tokenizedPattern;
         private Dictionary<string, Func<string>> _functions = new Dictionary<string, Func<string>>();
         private IRandom _rng;
         #endregion
@@ -130,7 +132,8 @@ namespace SMC.Utilities.RSG
             if (null == builder)
                 throw new ArgumentNullException(nameof(builder), "Pattern builder cannot be null.");
 
-            _tokenizedPattern = builder.TokenizedPattern;
+            //TODO: Implement token groups for the PatternBuilder
+            //_tokenizedPattern = builder.TokenizedPattern;
             Pattern = builder.ToString();
 
             return this;
@@ -200,134 +203,143 @@ namespace SMC.Utilities.RSG
                 throw new InvalidPatternException("A valid pattern must be set before attempting to generate a random string.");
 
             var sb = new StringBuilder();
-            var repeat = 1;
+            var tokenRepeat = 1;
+            var groupRepeat = 1;
             char[] characters = new char[] { };
             char[] globalExcept = new char[] { };
-            foreach (var token in _tokenizedPattern)
+            //foreach (var token in _tokenizedPattern)
+            foreach (var group in _tokenizedPattern)
             {
-                if (token.MinimumCount == token.MaximumCount)
-                {
-                    repeat = token.MinimumCount;
-                }
+                if (group.MinimumCount == group.MaximumCount)
+                    groupRepeat = group.MinimumCount;
                 else
-                {
-                    repeat = _rng.Next(token.MinimumCount, token.MaximumCount + 1);
-                }
+                    groupRepeat = _rng.Next(group.MinimumCount, group.MaximumCount);
 
-                switch (token.Type)
+                for (var gRepeat = 0; gRepeat < groupRepeat; gRepeat++)
                 {
-                    case TokenType.LETTER:
-                        if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
-                        {
-                            characters = UPPERCASE;
-                        }
-                        else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
-                        {
-                            characters = LOWERCASE;
-                        }
+                    foreach (var token in group.Tokens)
+                    {
+                        if (token.MinimumCount == token.MaximumCount)
+                            tokenRepeat = token.MinimumCount;
                         else
-                        {
-                            characters = ALL_LETTERS;
-                        }
-                        break;
-                    case TokenType.NUMBER:
-                        if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
-                            characters = NUMBERS_EXCEPT_0;
-                        else
-                            characters = NUMBERS;
-                        break;
-                    case TokenType.NUMBER_EXCEPT_ZERO:
-                        characters = NUMBERS_EXCEPT_0;
-                        break;
-                    case TokenType.SYMBOL:
-                        characters = SYMBOLS;
-                        break;
-                    case TokenType.LETTER_NUMBER:
-                        characters = GetLettersNumbers(token);
-                        break;
-                    case TokenType.LETTER_SYMBOL:
-                        characters = GetLettersSymbols(token);
-                        break;
-                    case TokenType.NUMBER_SYMBOL:
-                        characters = GetNumbersSymbols(token);
-                        break;
-                    case TokenType.LETTER_NUMBER_SYMBOL:
-                        characters = GetLettersNumbersSymbols(token);
-                        break;
-                    case TokenType.LITERAL:
-                        break;
-                    case TokenType.OPTIONAL:
-                        HandleOptionalBlock(token, repeat, ref sb);
-                        break;
-                    case TokenType.RANGE:
-                        HandleRangeBlock(token, repeat, ref sb);
-                        break;
-                    case TokenType.CONTROL_BLOCK:
-                        if (token.ControlBlock.Global)
-                        {
-                            globalExcept = token.ControlBlock.ExceptValues;
-                        }
-                        else
-                        {
-                            HandleControlBlock(token, repeat, ref sb);
-                        }
-                        break;
-                }
+                            tokenRepeat = _rng.Next(token.MinimumCount, token.MaximumCount + 1);
 
-                if (token.Type != TokenType.LITERAL && token.Type != TokenType.CONTROL_BLOCK && token.Type != TokenType.OPTIONAL && token.Type != TokenType.RANGE)
-                {
-                    characters = characters.Except(globalExcept).ToArray();
-                    if (token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Length > 0)
-                    {
-                        characters = characters.Except(token.ControlBlock.ExceptValues).ToArray();
-                    }
-
-                    if (null == token.ControlBlock || token.ControlBlock.Type != ControlBlockType.FMT)
-                    {
-                        for (var count = 0; count < repeat; count++)
+                        switch (token.Type)
                         {
-                            sb.Append(characters[_rng.Next(characters.Length)]);
-                        }
-                    }
-                    else
-                    {
-                        var temp = new StringBuilder(repeat);
-                        for (var count = 0; count < repeat; count++)
-                        {
-                            temp.Append(characters[_rng.Next(characters.Length)]);
+                            case TokenType.LETTER:
+                                if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+                                {
+                                    characters = UPPERCASE;
+                                }
+                                else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                                {
+                                    characters = LOWERCASE;
+                                }
+                                else
+                                {
+                                    characters = ALL_LETTERS;
+                                }
+                                break;
+                            case TokenType.NUMBER:
+                                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                                    characters = NUMBERS_EXCEPT_0;
+                                else
+                                    characters = NUMBERS;
+                                break;
+                            case TokenType.NUMBER_EXCEPT_ZERO:
+                                characters = NUMBERS_EXCEPT_0;
+                                break;
+                            case TokenType.SYMBOL:
+                                characters = SYMBOLS;
+                                break;
+                            case TokenType.LETTER_NUMBER:
+                                characters = GetLettersNumbers(token);
+                                break;
+                            case TokenType.LETTER_SYMBOL:
+                                characters = GetLettersSymbols(token);
+                                break;
+                            case TokenType.NUMBER_SYMBOL:
+                                characters = GetNumbersSymbols(token);
+                                break;
+                            case TokenType.LETTER_NUMBER_SYMBOL:
+                                characters = GetLettersNumbersSymbols(token);
+                                break;
+                            case TokenType.LITERAL:
+                                break;
+                            case TokenType.OPTIONAL:
+                                HandleOptionalBlock(token, tokenRepeat, ref sb);
+                                break;
+                            case TokenType.RANGE:
+                                HandleRangeBlock(token, tokenRepeat, ref sb);
+                                break;
+                            case TokenType.CONTROL_BLOCK:
+                                if (token.ControlBlock.Global)
+                                {
+                                    globalExcept = token.ControlBlock.ExceptValues;
+                                }
+                                else
+                                {
+                                    HandleControlBlock(token, tokenRepeat, ref sb);
+                                }
+                                break;
                         }
 
-                        var str = temp.ToString();
-                        if (int.TryParse(str, out var number))
+                        if (token.Type != TokenType.LITERAL && token.Type != TokenType.CONTROL_BLOCK && token.Type != TokenType.OPTIONAL && token.Type != TokenType.RANGE)
                         {
-                            sb.Append(string.Format(token.ControlBlock.Value, number));
-                        }
-                        else
-                        {
-                            sb.Append(string.Format(token.ControlBlock.Value, str));
-                        }
-                    }
-                }
-                else if (token.Type == TokenType.LITERAL)
-                {
-                    for (var count = 0; count < repeat; count++)
-                    {
-                        if (null != token.ControlBlock && token.ControlBlock.Type == ControlBlockType.FMT)
-                        {
-                            var formatted = string.Empty;
-                            if (int.TryParse(token.Value, out var number))
+                            characters = characters.Except(globalExcept).ToArray();
+                            if (token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Length > 0)
                             {
-                                formatted = string.Format(token.ControlBlock.Value, number);
+                                characters = characters.Except(token.ControlBlock.ExceptValues).ToArray();
+                            }
+
+                            if (null == token.ControlBlock || token.ControlBlock.Type != ControlBlockType.FMT)
+                            {
+                                for (var count = 0; count < tokenRepeat; count++)
+                                {
+                                    sb.Append(characters[_rng.Next(characters.Length)]);
+                                }
                             }
                             else
                             {
-                                formatted = string.Format(token.ControlBlock.Value, token.Value);
+                                var temp = new StringBuilder(tokenRepeat);
+                                for (var count = 0; count < tokenRepeat; count++)
+                                {
+                                    temp.Append(characters[_rng.Next(characters.Length)]);
+                                }
+
+                                var str = temp.ToString();
+                                if (int.TryParse(str, out var number))
+                                {
+                                    sb.Append(string.Format(token.ControlBlock.Value, number));
+                                }
+                                else
+                                {
+                                    sb.Append(string.Format(token.ControlBlock.Value, str));
+                                }
                             }
-                            sb.Append(formatted);
                         }
-                        else
+                        else if (token.Type == TokenType.LITERAL)
                         {
-                            sb.Append(token.Value);
+                            for (var count = 0; count < tokenRepeat; count++)
+                            {
+                                if (null != token.ControlBlock && token.ControlBlock.Type == ControlBlockType.FMT)
+                                {
+                                    var formatted = string.Empty;
+                                    if (int.TryParse(token.Value, out var number))
+                                    {
+                                        formatted = string.Format(token.ControlBlock.Value, number);
+                                    }
+                                    else
+                                    {
+                                        formatted = string.Format(token.ControlBlock.Value, token.Value);
+                                    }
+                                    sb.Append(formatted);
+                                }
+                                else
+                                {
+                                    sb.Append(token.Value);
+                                }
+                            }
                         }
                     }
                 }

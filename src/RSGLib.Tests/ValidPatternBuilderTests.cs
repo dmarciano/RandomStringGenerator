@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMC.Utilities.RSG;
+using SMC.Utilities.RSG.Random;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;

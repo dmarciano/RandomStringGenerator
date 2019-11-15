@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMC.Utilities.RSG;
+using SMC.Utilities.RSG.Random;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -1249,6 +1250,57 @@ namespace RSGLib.Tests
 
             Assert.IsTrue(output.Length == 5);
             Assert.IsTrue(output.StartsWith("  "));
+        }
+        #endregion
+
+        #region Token Group
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void BasicTokenGroupTest()
+        {
+            var generator = new Generator("/a/");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void BasicTokenGroupTest2()
+        {
+            var generator = new Generator("/a[2]/");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.AreEqual(output[1], '2');
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void BasicTokenGroupRepeatTest()
+        {
+            var generator = new Generator("/a/(2)");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsLetter(output[1]));
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void BasicTokenGroupRepeatTest2()
+        {
+            var generator = new Generator("/a[2]/(2)");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 4);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.AreEqual(output[1], '2');
+            Assert.IsTrue(char.IsLetter(output[2]));
+            Assert.AreEqual(output[3], '2');
         }
         #endregion
 

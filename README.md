@@ -1,12 +1,13 @@
 # Random String Generator (RSG)
-A library from generating random strings based on a simple pattern language.
+A library from generating random strings based on the RSG language or via the provided fluent interface
 
 ## Features
 - Quick string generation (see [Benchmarks](#benchmarks))
-- Ability to specify a random number generator to use
+- Ability to specify a random number generator to use (via the ```IRandom``` interface specified in the library)
   - Library comes with two built-in classes: ```RandomGenerator``` and ```CryptoRandomGenerator```
 - Able to specify anything from single character strings to very complex patterns including letters, numbers, and symbols/punctuation
 - Able to specify list to choose an item from
+- Specify repeat blocks to more customization and a more compact pattern
 - Built-in DateTime and GUID functions
 - Ability to specify user-defined functions for generating a portion of the string (e.g. to pull information from a database and have it directly be incorporated in the output string)
 - Global and local exclusion blocks to allow exclusing a character, number, or symbol from anywhere in the output string, or just preventing a single token from generating a specific character, number, or symbol.
@@ -25,7 +26,8 @@ Therefore an RSG pattern can be as simple as a single character token or as comp
 Although it contains some advanced features (such as the user-defined functions), most users will not need to use them; but they are should the need ever arise.
 
 ## RSG Language
-Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of [Tokens](#tokens), [Modifiers](#modifiers), [Literals](#literals), [Optionals](#optionals), [Ranges](#ranges), and [Others](#others).
+Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of [Tokens](#tokens), [Modifiers](#modifiers), [Literals](#literals), [Optionals](#optionals), 
+[Ranges](#ranges), [Format Strings](#format-strings), [Repeats](#repeats), [Token Group](#token-groups), and [Control Blocks](#control-blocks).  Each of these items are discussed below.
 
 ### Tokens
 Tokens are used to specify the type of character that should be generated.  Currently, there are eight (8) different tokens that can be specified in a pattern and each is listed below with what they represent:
@@ -93,39 +95,38 @@ Ranges in the RSG language works in the same way that ranges work in Regular Exp
 symbols **\<!-$>**, and multiple ranges **\<a-z3-5>** or **\<a-z345>**.  When the output string is generated, it will pick a valid character from the specified range(s).  
 If a range should be repeated (e.g. a number between three and six, two times), the repeat count can be specified in the same manner as for a single token **\<3-6>(2)**.
 
-### Others
-There are a couple of additional characters that are used to help define the pattern:
-- **()** - Parentheses are used next to tokens (but after modifiers), or after other types of blocks, to specify a number of repeats.  For example:
-  - **a(2)** - Would output any two letters.  Some possible examples are:
-    - aa
-	- tV
-	- Px
-	- ZY
-  - **a(1,3)** - Would output one to three letters.  Some possible examples are;
-    - abc
-	- tRy
-	- RvP
-	- TUV
-	- tUP
-  - **a(0,1)** or **a(,2)** - Would output zero (0) to 2 characters.  The possible outputs would be the same as the first example, however it is also possible nothing would be outputted (i.e. the character would just be skipped).
-  - **a!(2)** - Would output any two LOWERCASE letters.
-  - **\[-](3)** - Would output three hypens sequentially.
-  - **\#Street, Avenue, Blvd\#(2)** - Would output one of the words randomly from the list, followed by another word from the list randomly selected.
-- **{}** - Braces are used to specify a control block and can have different means depending on where it is placed and its exact format.  See [Advanced Features](#advanced-features) for more information on this token.
-- **><** - Angled brackets can be used to specify a format string.  This can be any standard .NET format string but **MUST** include **{0}** somewhere in the string (e.g. **>Number as hex {0}<**) and be after a token.
+### Format Strings
+Text enclosed within angled brackets **><** represents a format string.  This can be any standard .NET format string but **MUST** include **{0}** somehwere in the string (e.g. **>Number as hex {0}<**) and be after a token.
   - **0(2)>#{0:X}<** - Would output a hexadecimal number (with a leading pound/hash sign) that has a decimal value between 0 and 99
 
-#### NOTE Although **a(0)** seems like it would be valid based on the information above, this pattern is not valid as this would not generate any output and would simply add to the processing time.
+### Repeats
+Repeats are specified using parentheses **()**.  If just a single number is inside, the precending token/block will be repeated exactly that many times.  To specify a minmum to maximum number of repeats, the min/max values
+should be separated with a comma:
+- **a(2)** - Would output any two letters.
+- **a(1,2)** - Would output either one or two letters
+- **a(1,3)** - Would output either one, two, or three letters
+- **a(0,2)** or **(,2)** - Would output either zero, one, or two letters.
+> #### NOTE Although **a(0)** seems like it would be valid based on the information above, this pattern is not valid as this would not generate any output and would simply add to the processing time.
 
 > The order of modifiers or counts does not matter.  That means that ```a^(2)>{0,5}<```, ```a(2)^>{0,5}<```, and ```a>{0,5}<(2)^``` are all the same pattern and would generate the same output.
 
-## Advanced Features
+### Token Groups
+A token group allows a section of a pattern to be repeated one or more times or to apply an [exclusion control block](#exclusion-control-block-ecb) to just a section of the code.  This feature allows more complex
+patterns to be created without having to duplicate sections of code.  A token group is delimited by a forward slash **/** as in the following pattern:
 
-### Control Block
+**/a![2]/(1,2)**
+
+The above pattern represents a single lowercase letter, followed by the literal **2**, and both of those items together repeated one to two times.  Some examples of valid output would be:
+- b2
+- c2d2
+- b2b2
+- c2
+
+## Control Blocks
 A control block, **{}** is a special token which is used for more granular control of tokens (called an "exclusion control block" or "ECB") or for specifying either built-in or user-defined functions 
 (called a "function control block" or "FCB".  Each is described below:
 
-#### Exclusion Control Block (ECB)
+### Exclusion Control Block (ECB)
 A **{}** block can be specified at the very beginning of a pattern string to specify any letters, numbers, or symbols to leave out of any token selection.  For example, if the pattern string is *a9a*, but the letters
 'l' (lowercase L) or 'O' (uppercase letter "Oh") should not be generated for either **a** token in the pattern, a control block can be specified at the beginning of the pattern string as **{-lO}a9a**.  Such a global control 
 block can only be specified once at the beginning of the pattern.  That is writing **{-l}{-O}a9a** is invalid.
@@ -134,7 +135,7 @@ block can only be specified once at the beginning of the pattern.  That is writi
 However, if 'l' should only be excluded from the first letter token and 'O' should be excluded from the second letter token, a  ECB can be specified for each token individually: **a{-l}9a{-O}**.
 > **NOTE** ECBs must *always* have a hypen ('-') immediately after the opening brace ('{') to indicate that it is a ECB and not a Function Control Block (described below).
 
-#### Function Control Block (FCB)
+### Function Control Block (FCB)
 A control block can also be used to specify functions to either generate a string from a .NET Framework method (e.g. date/time, GUID, etc.) or by a specified user function.  Currently there are two built-in functions that
 can be used:
 - **T** - Date and time string
@@ -244,16 +245,21 @@ This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNe
 
 ### ***COMING SOON***
 
-## Future Plans
-- Possible logical ORing of multiple tokens
+## TODO/Future Plans
+- Updated fluent methods to support repeat blocks
 - Additional random number generators
+- Possible logical ORing of multiple tokens
 
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.
 
 ## Versions
+**0.2.0**
+- Added [Repeat Blocks](#repeat-blocks)
+- Added Mersenne Twister random number generator
+> *Please note that this is a **PREVIEW** version and there is no guarantee that any method signature or functionality will remaing the same*
+
 **0.1.0** - Initial Release
-  - *Please note that this is a **PREVIEW** version and there is no guarantee that any method signatures or functionality will remaing the same*
 
 This project uses [SemVer](http://semver.org) for versioning.
 
@@ -262,6 +268,7 @@ This project uses [SemVer](http://semver.org) for versioning.
 
 ## Special Thanks
 - Markus Olsson for his cryptographically secure random number generator for generating numbers within a specific range [GitHub Gist](https://gist.github.com/niik/1017834).
+- Trevor Barnett for his [Mersenne Twister](https://github.com/ullet/MersenneTwister) random number generator implementation.
 
 ## License
 Copyright (c) 2019 Dominick Marciano Jr., Sci-Med Coding.  All rights reserved

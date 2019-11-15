@@ -7,18 +7,22 @@ namespace SMC.Utilities.RSG
 {
     internal class Tokenizer
     {
-        private static readonly List<char> MODIFIERS = "^!~".ToList();
+        private static readonly List<char> MODIFIERS = new List<char> { '^', '!', '~' };
 
-        internal List<Token> TokenizedPattern { get; set; }
+        internal List<TokenizedGroup> TokenizedPattern { get; set; }
 
-        private List<Token> tokenizedList;
+        private List<TokenizedGroup> tokenizedGroup;
+        private TokenizedGroup currentGroup;
         private int pos;
         private bool handled = false;
+        private bool isInGroup = false;
 
         internal bool Tokenize(string pattern)
         {
             handled = false;
-            tokenizedList = new List<Token>();
+            tokenizedGroup = new List<TokenizedGroup>();
+            currentGroup = new TokenizedGroup();
+
             for (pos = 0; pos < pattern.Length; pos++)
             {
                 if (handled) handled = false;
@@ -65,6 +69,39 @@ namespace SMC.Utilities.RSG
                         token.Type = TokenType.RANGE;
                         HandleRange(ref token, pattern);
                         break;
+                    case '/':
+                        if (!isInGroup)
+                        {
+                            // This is the start of a new group
+                            isInGroup = true;
+                        }
+                        else
+                        {
+                            // This is the end of a group
+                            // Need to check for modifiers, repeat count, and ECB
+                            if (pos != pattern.Length - 1)
+                            {
+                                if (pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1]) || pattern[pos + 1].Equals('{'))
+                                {
+                                    do
+                                    {
+                                        if (pos == pattern.Length - 1) break;
+                                        if (pattern[pos + 1].Equals('(')) { pos++; HandleCount(pattern); }
+                                        if (pos == pattern.Length - 1) break;
+                                        if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(pattern);
+                                        if (pos == pattern.Length - 1) break;
+                                        if (pattern[pos + 1].Equals('{')) { var dummy = new Token(); HandleControlBlock(ref dummy, pattern); }
+
+                                    } while (!pattern[pos + 1].Equals('(') && !MODIFIERS.Contains(pattern[pos + 1]) && !pattern[pos + 1].Equals('{'));
+                                }
+                            }
+
+                            tokenizedGroup.Add(currentGroup);
+                            currentGroup = new TokenizedGroup();
+                            isInGroup = false;
+                        }
+                        handled = true;
+                        break;
                     case '\\':
                         token.Type = TokenType.LITERAL;
                         pos++;
@@ -101,11 +138,15 @@ namespace SMC.Utilities.RSG
 
                 if (!handled)
                 {
-                    tokenizedList.Add(token);
+                    //tokenizedList.Add(token);
+                    currentGroup.Tokens.Add(token);
                 }
             }
 
-            TokenizedPattern = tokenizedList;
+            if (currentGroup.Tokens.Count > 0)
+                tokenizedGroup.Add(currentGroup);
+            //TokenizedPattern = tokenizedList;
+            TokenizedPattern = tokenizedGroup;
             return true;
         }
 
@@ -139,7 +180,8 @@ namespace SMC.Utilities.RSG
             else
             {
                 //Get the previous token in the the list.  If it is not a regular token (i.e. it is a control box) throw exception
-                tempToken = tokenizedList.Last();
+                //tempToken = tokenizedList.Last();
+                tempToken = currentGroup.Tokens.Last();
                 if (tempToken.ControlBlock != null) //&& tempToken.ControlBlock.Global == true)
                     throw new DuplicateGlobalControlBlockException($"A second exclusion control block was found starting at position {originalPosition}.");
 
@@ -193,13 +235,16 @@ namespace SMC.Utilities.RSG
             if (cb.Global)
             {
                 token.ControlBlock = cb;
-                tokenizedList.Add(token);
+                //tokenizedList.Add(token);
+                currentGroup.Tokens.Add(token);
             }
             else
             {
                 tempToken.ControlBlock = cb;
-                tokenizedList.RemoveAt(tokenizedList.Count - 1);
-                tokenizedList.Add(tempToken);
+                //tokenizedList.RemoveAt(tokenizedList.Count - 1);
+                //tokenizedList.Add(tempToken);
+                currentGroup.Tokens.RemoveAt(currentGroup.Tokens.Count - 1);
+                currentGroup.Tokens.Add(tempToken);
             }
 
             handled = true;
@@ -381,7 +426,8 @@ namespace SMC.Utilities.RSG
 
         private void HandleModifier(string pattern)
         {
-            var lastToken = tokenizedList[tokenizedList.Count - 1];
+            //var lastToken = tokenizedList[tokenizedList.Count - 1];
+            var lastToken = currentGroup.Tokens[currentGroup.Tokens.Count - 1];
             var modifier = pattern[pos];
 
             if (lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.CONTROL_BLOCK)
@@ -480,10 +526,15 @@ namespace SMC.Utilities.RSG
             var originalPosition = pos;
             var commaCount = 0;
             var sb = new StringBuilder();
+            Token lastToken = null;
 
-            var lastToken = tokenizedList[tokenizedList.Count - 1];
-            if (lastToken.Type == TokenType.CONTROL_BLOCK && lastToken.ControlBlock != null && lastToken.ControlBlock.Global)
-                throw new InvalidModifierException($"Count blocks are not valid on global control blocks");
+            if (!isInGroup)
+            {
+                //var lastToken = tokenizedList[tokenizedList.Count - 1];
+                lastToken = currentGroup.Tokens[currentGroup.Tokens.Count - 1];
+                if (lastToken.Type == TokenType.CONTROL_BLOCK && lastToken.ControlBlock != null && lastToken.ControlBlock.Global)
+                    throw new InvalidModifierException($"Count blocks are not valid on global control blocks");
+            }
 
             while (!EOS)
             {
@@ -521,13 +572,56 @@ namespace SMC.Utilities.RSG
                 }
             }
 
+            var min = 0;
+            var max = 0;
             var countString = sb.ToString();
+
             if (countString.Contains(","))
             {
                 var div = countString.Split(',');
                 if (string.IsNullOrWhiteSpace(div[0]))
                 {
-                    lastToken.MinimumCount = 0;
+                    min = 0;
+                }
+                else
+                {
+                    min = int.Parse(div[0]);
+                }
+
+                max = int.Parse(div[1]);
+
+                if (min > max)
+                    throw new InvalidPatternException($"The count token starting at position {originalPosition}, ending at {pos}, is not valid.  Maximum repeat count must be greater than minimum repeat count.");
+            }
+            else
+            {
+                var val = int.Parse(countString);
+                if (val == 0)
+                    throw new InvalidPatternException($"The count token starting at position {originalPosition}, ending at {pos}, is not valid.  Repeat count cannot be exactly 0.");
+
+                min = val;
+                max = val;
+            }
+
+            if (isInGroup)
+            {
+                currentGroup.MinimumCount = min;
+                currentGroup.MaximumCount = max;
+            }
+            else
+            {
+                lastToken.MinimumCount = min;
+                lastToken.MaximumCount = max;
+            }
+
+
+            /*
+            if (countString.Contains(","))
+            {
+                var div = countString.Split(',');
+                if (string.IsNullOrWhiteSpace(div[0]))
+                {
+                        lastToken.MinimumCount = 0;
                 }
                 else
                 {
@@ -548,6 +642,7 @@ namespace SMC.Utilities.RSG
                 lastToken.MinimumCount = int.Parse(countString);
                 lastToken.MaximumCount = int.Parse(countString);
             }
+            */
         }
 
         private void HandleLiteral(ref Token token, string pattern)
@@ -740,7 +835,8 @@ namespace SMC.Utilities.RSG
             var originalPosition = pos;
             var format = new StringBuilder();
 
-            var lastToken = tokenizedList[tokenizedList.Count - 1];
+            //var lastToken = tokenizedList[tokenizedList.Count - 1];
+            var lastToken = currentGroup.Tokens[currentGroup.MaximumCount - 1];
             if (lastToken.Type == TokenType.CONTROL_BLOCK && lastToken.ControlBlock != null && lastToken.ControlBlock.Global)
                 throw new InvalidModifierException($"Format control blocks are not valid on global control blocks");
 

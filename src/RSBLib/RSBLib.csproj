@@ -31,8 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,10 +51,12 @@
     <Compile Include="Enums\LiteralType.cs" />
     <Compile Include="Enums\ModifierType.cs" />
     <Compile Include="Random Generators\CryptoRandomGenerator.cs" />
+    <Compile Include="Random Generators\MersenneTwister.cs" />
     <Compile Include="Random Generators\RandomGenerator.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokenFile.cs" />
+    <Compile Include="TokenizedGroup.cs" />
     <Compile Include="Tokenizer.cs" />
     <Compile Include="Enums\TokenType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

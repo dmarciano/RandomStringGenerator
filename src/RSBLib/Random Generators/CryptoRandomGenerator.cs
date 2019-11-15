@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 
-namespace SMC.Utilities.RSG
+namespace SMC.Utilities.RSG.Random
 {
     //https://gist.github.com/niik/1017834
 
@@ -53,7 +53,7 @@ namespace SMC.Utilities.RSG
     /// it greatly reduces the amount of calls into unmanaged land.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class CryptoRandomGenerator : Random, IRandom, IDisposable
+    public class CryptoRandomGenerator : System.Random, IRandom, IDisposable
     {
         private RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
 
