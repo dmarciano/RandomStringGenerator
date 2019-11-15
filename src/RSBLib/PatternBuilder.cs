@@ -175,6 +175,20 @@ namespace SMC.Utilities.RSG
         }
         #endregion
 
+        #region Token Group
+        public PatternBuilder BeginGroup()
+        {
+            //TODO: Implement BeginGroup
+            return this;
+        }
+
+        public PatternBuilder EndGroup()
+        {
+            //TODO: Implement EndGroup
+            return this;
+        }
+        #endregion
+
         #region Advanced
         public PatternBuilder Optional(IEnumerable<string> values)
         {

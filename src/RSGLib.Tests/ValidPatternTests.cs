@@ -1302,6 +1302,120 @@ namespace RSGLib.Tests
             Assert.IsTrue(char.IsLetter(output[2]));
             Assert.AreEqual(output[3], '2');
         }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TwoTokenGroupsTest()
+        {
+            var generator = new Generator("/a^//a!/");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsUpper(output[0]));
+            Assert.IsTrue(char.IsLetter(output[1]));
+            Assert.IsTrue(char.IsLower(output[1]));
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithModifierRepeatTest()
+        {
+            var generator = new Generator("/a/^(2)");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsUpper(output[0]));
+            Assert.IsTrue(char.IsLetter(output[1]));
+            Assert.IsTrue(char.IsUpper(output[1]));
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithExclusionTest()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("/a/^(2){-A}");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
+                Assert.IsTrue(!excluded.Contains(output[1]));
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(char.IsUpper(output[1]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithLiteralTest()
+        {
+            var generator = new Generator("/a!/[2]");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 2);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsLower(output[0]));
+            Assert.AreEqual(output[1], '2');
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithNumberTest()
+        {
+            var generator = new Generator("/a!/9");
+
+            foreach(var output  in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsLower(output[0]));
+                Assert.IsTrue(char.IsNumber(output[1]));
+                Assert.AreNotEqual(output[1], '0');
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithMultipleTokensTest()
+        {
+            var generator = new Generator("/a!/(2)9/a^/(3)");
+
+            foreach (var output in generator.GetStrings(2))
+            {
+                Assert.IsTrue(output.Length == 6);
+
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsLower(output[0]));
+
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(char.IsLower(output[1]));
+
+                Assert.IsTrue(char.IsNumber(output[2]));
+                Assert.AreNotEqual(output[2], '0');
+
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+
+                Assert.IsTrue(char.IsLetter(output[4]));
+                Assert.IsTrue(char.IsUpper(output[4]));
+
+                Assert.IsTrue(char.IsLetter(output[5]));
+                Assert.IsTrue(char.IsUpper(output[5]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void Test()
+        {
+            var generator = new Generator("");
+            var output = generator.GetString();
+        }
         #endregion
 
         #region Advanced Patterns

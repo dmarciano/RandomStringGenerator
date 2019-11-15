@@ -8,6 +8,7 @@ namespace SMC.Utilities.RSG
     internal class Tokenizer
     {
         private static readonly List<char> MODIFIERS = new List<char> { '^', '!', '~' };
+        private static readonly List<char> TOKENS = new List<char> { 'a', '0', '9', '@', '.', '+', '%', '*', '[', '#', '<' };
 
         internal List<TokenizedGroup> TokenizedPattern { get; set; }
 
@@ -74,6 +75,11 @@ namespace SMC.Utilities.RSG
                         {
                             // This is the start of a new group
                             isInGroup = true;
+                            if (currentGroup.Tokens.Count > 0)
+                            {
+                                tokenizedGroup.Add(currentGroup);
+                                currentGroup = new TokenizedGroup();
+                            }
                         }
                         else
                         {
@@ -91,6 +97,8 @@ namespace SMC.Utilities.RSG
                                         if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(pattern);
                                         if (pos == pattern.Length - 1) break;
                                         if (pattern[pos + 1].Equals('{')) { var dummy = new Token(); HandleControlBlock(ref dummy, pattern); }
+
+                                        if (TOKENS.Contains(pattern[pos + 1])) break;
 
                                     } while (!pattern[pos + 1].Equals('(') && !MODIFIERS.Contains(pattern[pos + 1]) && !pattern[pos + 1].Equals('{'));
                                 }
