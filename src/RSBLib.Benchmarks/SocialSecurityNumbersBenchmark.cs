@@ -5,11 +5,8 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using Fare;
 using SMC.Utilities.RSG;
+using SMC.Utilities.RSG.Random;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RSBLib.Benchmarks
 {

@@ -10,10 +10,10 @@ namespace SMC.Utilities.RSG
         private static readonly List<char> MODIFIERS = new List<char> { '^', '!', '~' };
         private static readonly List<char> TOKENS = new List<char> { 'a', '0', '9', '@', '.', '+', '%', '*', '[', '#', '<' };
 
-        internal List<TokenizedGroup> TokenizedPattern { get; set; }
+        internal List<TokenGroup> TokenizedPattern { get; set; }
 
-        private List<TokenizedGroup> tokenizedGroup;
-        private TokenizedGroup currentGroup;
+        private List<TokenGroup> tokenizedGroup;
+        private TokenGroup currentGroup;
         private int pos;
         private bool handled = false;
         private bool isInGroup = false;
@@ -21,8 +21,8 @@ namespace SMC.Utilities.RSG
         internal bool Tokenize(string pattern)
         {
             handled = false;
-            tokenizedGroup = new List<TokenizedGroup>();
-            currentGroup = new TokenizedGroup();
+            tokenizedGroup = new List<TokenGroup>();
+            currentGroup = new TokenGroup();
 
             for (pos = 0; pos < pattern.Length; pos++)
             {
@@ -78,7 +78,7 @@ namespace SMC.Utilities.RSG
                             if (currentGroup.Tokens.Count > 0)
                             {
                                 tokenizedGroup.Add(currentGroup);
-                                currentGroup = new TokenizedGroup();
+                                currentGroup = new TokenGroup();
                             }
                         }
                         else
@@ -105,7 +105,7 @@ namespace SMC.Utilities.RSG
                             }
 
                             tokenizedGroup.Add(currentGroup);
-                            currentGroup = new TokenizedGroup();
+                            currentGroup = new TokenGroup();
                             isInGroup = false;
                         }
                         handled = true;
@@ -445,7 +445,7 @@ namespace SMC.Utilities.RSG
                 if (isInGroup)
                 {
                     tokenizedGroup.Add(currentGroup);
-                    currentGroup = new TokenizedGroup();
+                    currentGroup = new TokenGroup();
                     currentGroup.Tokens.Add(token);
                     handled = true;
                 }

@@ -268,7 +268,6 @@ This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNe
 ### ***COMING SOON***
 
 ## TODO/Future Plans
-- Updated fluent methods to support repeat blocks
 - Culture tags for multiple languages in a single pattern
 
 ## Contributing

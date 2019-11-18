@@ -45,7 +45,7 @@ namespace SMC.Utilities.RSG
         #region Variables
         private Tokenizer _tokenizer;
         //private List<Token> _tokenizedPattern;
-        private List<TokenizedGroup> _tokenizedPattern;
+        private List<TokenGroup> _tokenizedPattern;
         private Dictionary<string, Func<string>> _functions = new Dictionary<string, Func<string>>();
         private IRandom _rng;
         #endregion
@@ -132,8 +132,7 @@ namespace SMC.Utilities.RSG
             if (null == builder)
                 throw new ArgumentNullException(nameof(builder), "Pattern builder cannot be null.");
 
-            //TODO: Implement token groups for the PatternBuilder
-            //_tokenizedPattern = builder.TokenizedPattern;
+            _tokenizedPattern = builder.TokenizedPattern;
             Pattern = builder.ToString();
 
             return this;
@@ -390,7 +389,7 @@ namespace SMC.Utilities.RSG
             return sb.ToString();
         }
 
-        private char[] GetLettersNumbers(TokenizedGroup group, Token token)
+        private char[] GetLettersNumbers(TokenGroup group, Token token)
         {
             if (ModifierType.NONE == token.Modifier)
             {
@@ -470,7 +469,7 @@ namespace SMC.Utilities.RSG
             }
         }
 
-        private char[] GetLettersSymbols(TokenizedGroup group, Token token)
+        private char[] GetLettersSymbols(TokenGroup group, Token token)
         {
             if (ModifierType.NONE == token.Modifier)
             {
@@ -504,7 +503,7 @@ namespace SMC.Utilities.RSG
             }
         }
 
-        private char[] GetNumbersSymbols(TokenizedGroup group, Token token)
+        private char[] GetNumbersSymbols(TokenGroup group, Token token)
         {
             if (ModifierType.NONE == token.Modifier)
             {
@@ -530,7 +529,7 @@ namespace SMC.Utilities.RSG
             }
         }
 
-        private char[] GetLettersNumbersSymbols(TokenizedGroup group, Token token)
+        private char[] GetLettersNumbersSymbols(TokenGroup group, Token token)
         {
             if (ModifierType.NONE == token.Modifier)
             {
