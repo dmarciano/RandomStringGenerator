@@ -323,7 +323,13 @@ namespace SMC.Utilities.RSG
                         if (token.Type != TokenType.LITERAL && token.Type != TokenType.CONTROL_BLOCK && token.Type != TokenType.OPTIONAL && token.Type != TokenType.RANGE)
                         {
                             characters = characters.Except(globalExcept).ToArray();
-                            if (token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Length > 0)
+
+                            if(group.ControlBlock != null && !group.ControlBlock.Global && group.ControlBlock.Type == ControlBlockType.ECB && group.ControlBlock.ExceptValues.Count() > 0)
+                            {
+                                characters = characters.Except(group.ControlBlock.ExceptValues).ToArray();
+                            }
+
+                            if (token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Count()> 0)
                             {
                                 characters = characters.Except(token.ControlBlock.ExceptValues).ToArray();
                             }

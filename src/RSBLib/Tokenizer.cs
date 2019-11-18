@@ -96,20 +96,11 @@ namespace SMC.Utilities.RSG
                                         if (pos == pattern.Length - 1) break;
                                         if (MODIFIERS.Contains(pattern[pos + 1])) { pos++; HandleModifier(pattern, true); }
                                         if (pos == pattern.Length - 1) break;
-                                        if (pattern[pos + 1].Equals('{')) { var dummy = new Token(); pos++; HandleControlBlock(ref dummy, pattern); }
-
+                                        if (pattern[pos + 1].Equals('{')) {var dummy = new Token(); pos++; HandleControlBlock(ref dummy, pattern);}
+                                        if (pos == pattern.Length - 1) break;
                                         if (TOKENS.Contains(pattern[pos + 1])) break;
 
-
-                                        var b1 = !pattern[pos + 1].Equals('(');
-                                        var b2 = MODIFIERS.Contains(pattern[pos + 1]);
-                                        var b3 = !pattern[pos + 1].Equals('{');
-
-                                        var b4 = (pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1])) && !pattern[pos + 1].Equals('{');
-                                        var t = "t";
-
                                     } while ((pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1])) && !pattern[pos + 1].Equals('{'));
-                                    //while (pattern[pos + 1].Equals('(') && MODIFIERS.Contains(pattern[pos + 1]) && !pattern[pos + 1].Equals('{'));
                                 }
                             }
 
@@ -257,11 +248,18 @@ namespace SMC.Utilities.RSG
             }
             else
             {
-                tempToken.ControlBlock = cb;
-                //tokenizedList.RemoveAt(tokenizedList.Count - 1);
-                //tokenizedList.Add(tempToken);
-                currentGroup.Tokens.RemoveAt(currentGroup.Tokens.Count - 1);
-                currentGroup.Tokens.Add(tempToken);
+                if (TokenType.DUMMY == token.Type)
+                {
+                    currentGroup.ControlBlock = cb;
+                }
+                else
+                {
+                    tempToken.ControlBlock = cb;
+                    //tokenizedList.RemoveAt(tokenizedList.Count - 1);
+                    //tokenizedList.Add(tempToken);
+                    currentGroup.Tokens.RemoveAt(currentGroup.Tokens.Count - 1);
+                    currentGroup.Tokens.Add(tempToken);
+                }
             }
 
             handled = true;
@@ -439,6 +437,19 @@ namespace SMC.Utilities.RSG
             }
 
             token.ControlBlock = cb;
+
+            if (TokenType.DUMMY == token.Type)
+            {
+                token.Type = TokenType.CONTROL_BLOCK;
+
+                if (isInGroup)
+                {
+                    tokenizedGroup.Add(currentGroup);
+                    currentGroup = new TokenizedGroup();
+                    currentGroup.Tokens.Add(token);
+                    handled = true;
+                }
+            }
         }
 
         private void HandleModifier(string pattern, bool applyToGroup = false)
@@ -448,19 +459,12 @@ namespace SMC.Utilities.RSG
             Token lastToken = null;
 
             var modifier = pattern[pos];
-            ModifierType modifiers;
 
             if (!applyToGroup)
             {
                 lastToken = currentGroup.Tokens[currentGroup.Tokens.Count - 1];
                 if (lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.CONTROL_BLOCK)
                     throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.  Symbol and Control Block tokens cannot have any modifiers.");
-
-                modifiers = lastToken.Modifier;
-            }
-            else
-            {
-                modifiers = currentGroup.Modifier;
             }
 
             switch (modifier)

@@ -71,6 +71,19 @@ namespace SMC.Utilities.RSG
 
     [ExcludeFromCodeCoverage]
     [Serializable]
+    public class InvalidCultureException : Exception
+    {
+        public InvalidCultureException() { }
+
+        public InvalidCultureException(string message) : base(message) { }
+
+        public InvalidCultureException(string message, Exception innerException) : base(message, innerException) { }
+
+        public InvalidCultureException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
+
+    [ExcludeFromCodeCoverage]
+    [Serializable]
     public class PatternBuilderException : Exception
     {
         public PatternBuilderException() { }

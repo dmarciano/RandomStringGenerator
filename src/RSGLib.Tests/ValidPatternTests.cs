@@ -1402,13 +1402,13 @@ namespace RSGLib.Tests
         public void TokenGroupExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/a/{-ABCDEFGHIJKLM");
+            var generator = new Generator("/a/{-ABCDEFGHIJKLM}");
 
             foreach (var output in generator.GetStrings(1000))
             {
                 Assert.IsTrue(output.Length == 1);
                 Assert.IsTrue(char.IsLetter(output[0]));
-                Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(!excluded.Contains(output[0]), $"Found character '{output[0]}' which should have been excluded.");
             }
         }
 
@@ -1417,7 +1417,7 @@ namespace RSGLib.Tests
         public void TokenGroupExclusionTest2()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("a!/a/{-ABCDEFGHIJKLM");
+            var generator = new Generator("a!/a/{-ABCDEFGHIJKLM}");
 
             foreach (var output in generator.GetStrings(1000))
             {
@@ -1434,7 +1434,7 @@ namespace RSGLib.Tests
         public void TokenGroupExclusionTest3()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/aa/{-ABCDEFGHIJKLM");
+            var generator = new Generator("/aa/{-ABCDEFGHIJKLM}");
 
             foreach (var output in generator.GetStrings(1000))
             {
@@ -1451,7 +1451,7 @@ namespace RSGLib.Tests
         public void TokenGroupConflictingExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/aa{-N}a/{-ABCDEFGHIJKLM");
+            var generator = new Generator("/aa{-N}a/{-ABCDEFGHIJKLM}");
 
             foreach (var output in generator.GetStrings(10000))
             {
@@ -1473,7 +1473,7 @@ namespace RSGLib.Tests
         public void TokenGroupModifierExclusionTest1()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/a/^{-ABCDEFGHIJKLM");
+            var generator = new Generator("/a/^{-ABCDEFGHIJKLM}");
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -1489,7 +1489,7 @@ namespace RSGLib.Tests
         public void TokenGroupModifierExclusionTest2()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("a!/a/^{-ABCDEFGHIJKLM");
+            var generator = new Generator("a!/a/^{-ABCDEFGHIJKLM}");
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -1507,7 +1507,7 @@ namespace RSGLib.Tests
         public void TokenGroupModifierExclusionTest3()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/aa/^{-ABCDEFGHIJKLM");
+            var generator = new Generator("/aa/^{-ABCDEFGHIJKLM}");
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -1687,14 +1687,40 @@ namespace RSGLib.Tests
             }
         }
 
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithFCBAfterTest()
+        {
+            var generator = new Generator("/a/{T}");
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length > 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(DateTime.TryParse(output.Substring(1), out _));
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithFCBInsideTest()
+        {
+            var generator = new Generator("/a{T}/");
+            var output = generator.ToString();
+
+            Assert.IsTrue(output.Length > 1);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(DateTime.TryParse(output.Substring(1), out _));
+        }
+
         //[TestMethod]
         //[TestCategory("Token Group")]
         //public void Test()
         //{
-        //    var generator = new Generator("");
-        //    var output = generator.GetString();
+        //    var c = CultureInfo.GetCultureInfo("dje");
+        //    var t = "t";
+        //    //var generator = new Generator("");
+        //    //var output = generator.GetString();
 
-        //    Assert.IsTrue();
+        //    //Assert.IsTrue();
         //}
         #endregion
 

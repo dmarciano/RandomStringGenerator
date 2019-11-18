@@ -4,6 +4,7 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using Fare;
 using SMC.Utilities.RSG;
+using SMC.Utilities.RSG.Random;
 using System;
 
 namespace RSBLib.Benchmarks
