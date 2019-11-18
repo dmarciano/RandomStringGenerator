@@ -94,13 +94,22 @@ namespace SMC.Utilities.RSG
                                         if (pos == pattern.Length - 1) break;
                                         if (pattern[pos + 1].Equals('(')) { pos++; HandleCount(pattern); }
                                         if (pos == pattern.Length - 1) break;
-                                        if (MODIFIERS.Contains(pattern[pos + 1])) HandleModifier(pattern);
+                                        if (MODIFIERS.Contains(pattern[pos + 1])) { pos++; HandleModifier(pattern, true); }
                                         if (pos == pattern.Length - 1) break;
-                                        if (pattern[pos + 1].Equals('{')) { var dummy = new Token(); HandleControlBlock(ref dummy, pattern); }
+                                        if (pattern[pos + 1].Equals('{')) { var dummy = new Token(); pos++; HandleControlBlock(ref dummy, pattern); }
 
                                         if (TOKENS.Contains(pattern[pos + 1])) break;
 
-                                    } while (!pattern[pos + 1].Equals('(') && !MODIFIERS.Contains(pattern[pos + 1]) && !pattern[pos + 1].Equals('{'));
+
+                                        var b1 = !pattern[pos + 1].Equals('(');
+                                        var b2 = MODIFIERS.Contains(pattern[pos + 1]);
+                                        var b3 = !pattern[pos + 1].Equals('{');
+
+                                        var b4 = (pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1])) && !pattern[pos + 1].Equals('{');
+                                        var t = "t";
+
+                                    } while ((pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1])) && !pattern[pos + 1].Equals('{'));
+                                    //while (pattern[pos + 1].Equals('(') && MODIFIERS.Contains(pattern[pos + 1]) && !pattern[pos + 1].Equals('{'));
                                 }
                             }
 
@@ -432,46 +441,89 @@ namespace SMC.Utilities.RSG
             token.ControlBlock = cb;
         }
 
-        private void HandleModifier(string pattern)
+        private void HandleModifier(string pattern, bool applyToGroup = false)
         {
             //var lastToken = tokenizedList[tokenizedList.Count - 1];
-            var lastToken = currentGroup.Tokens[currentGroup.Tokens.Count - 1];
-            var modifier = pattern[pos];
 
-            if (lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.CONTROL_BLOCK)
-                throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.  Symbol and Control Block tokens cannot have any modifiers.");
+            Token lastToken = null;
+
+            var modifier = pattern[pos];
+            ModifierType modifiers;
+
+            if (!applyToGroup)
+            {
+                lastToken = currentGroup.Tokens[currentGroup.Tokens.Count - 1];
+                if (lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.CONTROL_BLOCK)
+                    throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.  Symbol and Control Block tokens cannot have any modifiers.");
+
+                modifiers = lastToken.Modifier;
+            }
+            else
+            {
+                modifiers = currentGroup.Modifier;
+            }
 
             switch (modifier)
             {
                 case '^':
-                    if (lastToken.Type == TokenType.NUMBER || lastToken.Type == TokenType.NUMBER_EXCEPT_ZERO || lastToken.Type == TokenType.NUMBER_SYMBOL)
-                        throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
 
-                    if (lastToken.Modifier.HasFlag(ModifierType.UPPERCASE))
-                        throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+                    if (!applyToGroup)
+                    {
+                        if (lastToken.Type == TokenType.NUMBER || lastToken.Type == TokenType.NUMBER_EXCEPT_ZERO || lastToken.Type == TokenType.NUMBER_SYMBOL)
+                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
 
-                    lastToken.Modifier = lastToken.Modifier | ModifierType.UPPERCASE;
+                        if (lastToken.Modifier.HasFlag(ModifierType.UPPERCASE))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+                        lastToken.Modifier = lastToken.Modifier | ModifierType.UPPERCASE;
+                    }
+                    else
+                    {
+                        if (currentGroup.Modifier.HasFlag(ModifierType.UPPERCASE))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+                        currentGroup.Modifier = currentGroup.Modifier | ModifierType.UPPERCASE;
+                    }
                     break;
                 case '!':
-                    if (lastToken.Type == TokenType.NUMBER || lastToken.Type == TokenType.NUMBER_EXCEPT_ZERO || lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.NUMBER_SYMBOL)
-                        throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+                    if (!applyToGroup)
+                    {
+                        if (lastToken.Type == TokenType.NUMBER || lastToken.Type == TokenType.NUMBER_EXCEPT_ZERO || lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.NUMBER_SYMBOL)
+                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
 
-                    if (lastToken.Modifier.HasFlag(ModifierType.LOWERCASE))
-                        throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+                        if (lastToken.Modifier.HasFlag(ModifierType.LOWERCASE))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
 
-                    lastToken.Modifier = lastToken.Modifier | ModifierType.LOWERCASE;
+                        lastToken.Modifier = lastToken.Modifier | ModifierType.LOWERCASE;
+                    }
+                    else
+                    {
+                        if (currentGroup.Modifier.HasFlag(ModifierType.LOWERCASE))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+                        currentGroup.Modifier = currentGroup.Modifier | ModifierType.LOWERCASE;
+                    }
                     break;
                 case '~':
-                    if (lastToken.Type == TokenType.LETTER || lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.LETTER_SYMBOL)
-                        throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
+                    if (!applyToGroup)
+                    {
+                        if (lastToken.Type == TokenType.LETTER || lastToken.Type == TokenType.SYMBOL || lastToken.Type == TokenType.LETTER_SYMBOL)
+                            throw new InvalidModifierException($"The token modifier '{modifier}' at position {pos} is not valid for the preceeding token.");
 
-                    if (lastToken.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
-                        throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+                        if (lastToken.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
 
-                    lastToken.Modifier = lastToken.Modifier | ModifierType.EXCLUDE_ZERO;
+                        lastToken.Modifier = lastToken.Modifier | ModifierType.EXCLUDE_ZERO;
+                    }
+                    else
+                    {
+                        if (currentGroup.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                            throw new DuplicateModifierException($"A duplicate modifier '{modifier}' is present at position {pos}.");
+
+                        currentGroup.Modifier = currentGroup.Modifier | ModifierType.EXCLUDE_ZERO;
+                    }
                     break;
             }
-
 
             //pos++;
             //var modifier = pattern[pos];

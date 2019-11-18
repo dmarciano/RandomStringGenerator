@@ -8,6 +8,10 @@ namespace SMC.Utilities.RSG
     public enum TokenType
     {
         /// <summary>
+        /// This token type is used by a null token needs to be passed with ref.  This is not a valid token type.
+        /// </summary>
+        DUMMY,
+        /// <summary>
         /// The token is for a letter only.
         /// </summary>
         [Description("a")]

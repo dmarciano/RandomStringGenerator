@@ -197,6 +197,8 @@ namespace SMC.Utilities.RSG
                 yield return CreateRandomString();
         }
 
+
+        //TODO: Handle token/group modifier precedence
         private string CreateRandomString()
         {
             if (null == _tokenizedPattern || _tokenizedPattern.Count < 1)
@@ -208,6 +210,7 @@ namespace SMC.Utilities.RSG
             char[] characters = new char[] { };
             char[] globalExcept = new char[] { };
             //foreach (var token in _tokenizedPattern)
+
             foreach (var group in _tokenizedPattern)
             {
                 if (group.MinimumCount == group.MaximumCount)
@@ -227,24 +230,57 @@ namespace SMC.Utilities.RSG
                         switch (token.Type)
                         {
                             case TokenType.LETTER:
-                                if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+                                if (ModifierType.NONE == token.Modifier)
+                                {
+                                    // Token has no modifier
+                                    // Check group modifier
+                                    if (group.Modifier.HasFlag(ModifierType.UPPERCASE))
+                                    {
+                                        // Group modifier is uppercase
+                                        characters = UPPERCASE;
+                                    }
+                                    else if (group.Modifier.HasFlag(ModifierType.LOWERCASE))
+                                    {
+                                        // Group modifier is lowercase
+                                        characters = LOWERCASE;
+                                    }
+                                    else
+                                    {
+                                        // No token or group modifier
+                                        characters = ALL_LETTERS;
+                                    }
+                                }
+                                else if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
                                 {
                                     characters = UPPERCASE;
                                 }
-                                else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                                else
                                 {
                                     characters = LOWERCASE;
                                 }
-                                else
-                                {
-                                    characters = ALL_LETTERS;
-                                }
                                 break;
                             case TokenType.NUMBER:
-                                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                                if (ModifierType.NONE == token.Modifier)
+                                {
+                                    // Token has no  modifier
+                                    // Check group modifier
+                                    if (group.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                                    {
+                                        characters = NUMBERS_EXCEPT_0;
+                                    }
+                                    else
+                                    {
+                                        characters = NUMBERS;
+                                    }
+                                }
+                                else if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                                {
                                     characters = NUMBERS_EXCEPT_0;
+                                }
                                 else
+                                {
                                     characters = NUMBERS;
+                                }
                                 break;
                             case TokenType.NUMBER_EXCEPT_ZERO:
                                 characters = NUMBERS_EXCEPT_0;
@@ -253,16 +289,16 @@ namespace SMC.Utilities.RSG
                                 characters = SYMBOLS;
                                 break;
                             case TokenType.LETTER_NUMBER:
-                                characters = GetLettersNumbers(token);
+                                characters = GetLettersNumbers(group, token);
                                 break;
                             case TokenType.LETTER_SYMBOL:
-                                characters = GetLettersSymbols(token);
+                                characters = GetLettersSymbols(group, token);
                                 break;
                             case TokenType.NUMBER_SYMBOL:
-                                characters = GetNumbersSymbols(token);
+                                characters = GetNumbersSymbols(group, token);
                                 break;
                             case TokenType.LETTER_NUMBER_SYMBOL:
-                                characters = GetLettersNumbersSymbols(token);
+                                characters = GetLettersNumbersSymbols(group, token);
                                 break;
                             case TokenType.LITERAL:
                                 break;
@@ -348,104 +384,218 @@ namespace SMC.Utilities.RSG
             return sb.ToString();
         }
 
-        private char[] GetLettersNumbers(Token token)
+        private char[] GetLettersNumbers(TokenizedGroup group, Token token)
         {
-            if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+            if (ModifierType.NONE == token.Modifier)
             {
-                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                if (group.Modifier.HasFlag(ModifierType.UPPERCASE))
                 {
-                    return UPPER_LETTERS_NUMBERS_EXCEPT_0;
+                    if (group.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return UPPER_LETTERS_NUMBERS_EXCEPT_0;
+                    }
+                    else
+                    {
+                        return UPPER_LETTERS_NUMBERS;
+                    }
                 }
+
+                else if (group.Modifier.HasFlag(ModifierType.LOWERCASE))
+                {
+                    if (group.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return LOWER_LETTERS_NUMBERS_EXCEPT_0;
+                    }
+                    else
+                    {
+                        return LOWER_LETTERS_NUMBERS;
+                    }
+                }
+
                 else
                 {
-                    return UPPER_LETTERS_NUMBERS;
-                }
-            }
-            else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
-            {
-                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
-                {
-                    return LOWER_LETTERS_NUMBERS_EXCEPT_0;
-                }
-                else
-                {
-                    return LOWER_LETTERS_NUMBERS;
+                    if (group.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return LETTERS_NUMBERS_EXCEPT_0;
+                    }
+                    else
+                    {
+                        return LETTERS_NUMBERS;
+                    }
                 }
             }
             else
             {
-                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
                 {
-                    return LETTERS_NUMBERS_EXCEPT_0;
+                    if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return UPPER_LETTERS_NUMBERS_EXCEPT_0;
+                    }
+                    else
+                    {
+                        return UPPER_LETTERS_NUMBERS;
+                    }
                 }
+
+                else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                {
+                    if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return LOWER_LETTERS_NUMBERS_EXCEPT_0;
+                    }
+                    else
+                    {
+                        return LOWER_LETTERS_NUMBERS;
+                    }
+                }
+
                 else
                 {
-                    return LETTERS_NUMBERS;
+                    if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return LETTERS_NUMBERS_EXCEPT_0;
+                    }
+                    else
+                    {
+                        return LETTERS_NUMBERS;
+                    }
                 }
             }
         }
 
-        private char[] GetLettersSymbols(Token token)
+        private char[] GetLettersSymbols(TokenizedGroup group, Token token)
         {
-            if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+            if (ModifierType.NONE == token.Modifier)
             {
-                return UPPER_LETTERS_SYMBOLS;
-            }
-            else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
-            {
-                return LOWER_LETTERS_SYMBOLS;
+                if (group.Modifier.HasFlag(ModifierType.UPPERCASE))
+                {
+                    return UPPER_LETTERS_SYMBOLS;
+                }
+                else if (group.Modifier.HasFlag(ModifierType.LOWERCASE))
+                {
+                    return LOWER_LETTERS_SYMBOLS;
+                }
+                else
+                {
+                    return LETTERS_SYMBOLS;
+                }
             }
             else
             {
-                return LETTERS_SYMBOLS;
+                if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+                {
+                    return UPPER_LETTERS_SYMBOLS;
+                }
+                else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                {
+                    return LOWER_LETTERS_SYMBOLS;
+                }
+                else
+                {
+                    return LETTERS_SYMBOLS;
+                }
             }
         }
 
-        private char[] GetNumbersSymbols(Token token)
+        private char[] GetNumbersSymbols(TokenizedGroup group, Token token)
         {
-            if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+            if (ModifierType.NONE == token.Modifier)
             {
-                return NUMBERS_EXCEPT_0_SYMBOLS;
+                if (group.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                {
+                    return NUMBERS_EXCEPT_0_SYMBOLS;
+                }
+                else
+                {
+                    return NUMBERS_SYMBOLS;
+                }
             }
             else
             {
-                return NUMBERS_SYMBOLS;
+                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                {
+                    return NUMBERS_EXCEPT_0_SYMBOLS;
+                }
+                else
+                {
+                    return NUMBERS_SYMBOLS;
+                }
             }
         }
 
-        private char[] GetLettersNumbersSymbols(Token token)
+        private char[] GetLettersNumbersSymbols(TokenizedGroup group, Token token)
         {
-            if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
+            if (ModifierType.NONE == token.Modifier)
             {
-                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                if (group.Modifier.HasFlag(ModifierType.UPPERCASE))
                 {
-                    return UPPER_NUMBERS_EXCEPT_0_SYMBOLS;
+                    if (group.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return UPPER_NUMBERS_EXCEPT_0_SYMBOLS;
+                    }
+                    else
+                    {
+                        return UPPER_NUMBERS_SYMBOLS;
+                    }
+                }
+                else if (group.Modifier.HasFlag(ModifierType.LOWERCASE))
+                {
+                    if (group.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return LOWER_NUMBERS_EXCEPT_0_SYMBOLS;
+                    }
+                    else
+                    {
+                        return LOWER_NUMBERS_SYMBOLS;
+                    }
                 }
                 else
                 {
-                    return UPPER_NUMBERS_SYMBOLS;
-                }
-            }
-            else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
-            {
-                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
-                {
-                    return LOWER_NUMBERS_EXCEPT_0_SYMBOLS;
-                }
-                else
-                {
-                    return LOWER_NUMBERS_SYMBOLS;
+                    if (group.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return ALL_LETTERS_NUMBERS_EXCEPT_0_SYMBOLS;
+                    }
+                    else
+                    {
+                        return ALL_LETTERS_NUMBERS_SYMBOLS;
+                    }
                 }
             }
             else
             {
-                if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                if (token.Modifier.HasFlag(ModifierType.UPPERCASE))
                 {
-                    return ALL_LETTERS_NUMBERS_EXCEPT_0_SYMBOLS;
+                    if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return UPPER_NUMBERS_EXCEPT_0_SYMBOLS;
+                    }
+                    else
+                    {
+                        return UPPER_NUMBERS_SYMBOLS;
+                    }
+                }
+                else if (token.Modifier.HasFlag(ModifierType.LOWERCASE))
+                {
+                    if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return LOWER_NUMBERS_EXCEPT_0_SYMBOLS;
+                    }
+                    else
+                    {
+                        return LOWER_NUMBERS_SYMBOLS;
+                    }
                 }
                 else
                 {
-                    return ALL_LETTERS_NUMBERS_SYMBOLS;
+                    if (token.Modifier.HasFlag(ModifierType.EXCLUDE_ZERO))
+                    {
+                        return ALL_LETTERS_NUMBERS_EXCEPT_0_SYMBOLS;
+                    }
+                    else
+                    {
+                        return ALL_LETTERS_NUMBERS_SYMBOLS;
+                    }
                 }
             }
         }

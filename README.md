@@ -122,6 +122,28 @@ The above pattern represents a single lowercase letter, followed by the literal 
 - b2b2
 - c2
 
+#### Modifier/Exclusion Conflicts
+Because modifiers can be applied to individual tokens, as well as groups, in some patterns these may conflict.  For example:
+
+**/aa!a/^**
+
+The above pattern states:
+- Begin group
+ - Any single character
+ - Any single, lowercase, character
+ - Any single character
+- End group
+- Apply uppercase character modifier to this group
+
+This conflicts with the second character token's modifier, which states that the second token should only be lowercase letters.  In situation such as this, the individual token modifier takes precedent over the
+group modifier as it is more specific.  So the above pattern would generate a string that would be an uppercase letter, followed by a lowercase letter, followed up an uppercase letter (e.g. ```AbC``` or ```XyZ```).
+
+For exclusions blocks, a group exclusion block with apply to all the tokens, however additional exclusions can be applied to individual tokens.  For example:
+
+**/aa{-N}a/{-ABCDEFGHIJKLM}**
+
+The above pattern will exclude the characters A-M from appearing in any of the token positions, however, the middle character token *also* excludes the character N.
+
 ## Control Blocks
 A control block, **{}** is a special token which is used for more granular control of tokens (called an "exclusion control block" or "ECB") or for specifying either built-in or user-defined functions 
 (called a "function control block" or "FCB".  Each is described below:
@@ -247,8 +269,7 @@ This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNe
 
 ## TODO/Future Plans
 - Updated fluent methods to support repeat blocks
-- Additional random number generators
-- Possible logical ORing of multiple tokens
+- Culture tags for multiple languages in a single pattern
 
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.
@@ -257,6 +278,7 @@ Contributing to this project is welcome.  However, we ask that you please follow
 **0.2.0**
 - Added [Repeat Blocks](#repeat-blocks)
 - Added Mersenne Twister random number generator
+- Can specify uppercase, lowercase, number, and symbol array for different language/cultures
 > *Please note that this is a **PREVIEW** version and there is no guarantee that any method signature or functionality will remaing the same*
 
 **0.1.0** - Initial Release

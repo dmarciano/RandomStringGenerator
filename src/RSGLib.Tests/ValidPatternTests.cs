@@ -442,7 +442,7 @@ namespace RSGLib.Tests
         {
             var generator = new Generator(".^~");
 
-            foreach(var output in generator.GetStrings(1000))
+            foreach (var output in generator.GetStrings(1000))
             {
                 Assert.IsTrue(output.Length == 1);
                 Assert.IsTrue(char.IsLetter(output[0]) || char.IsNumber(output[0]));
@@ -527,7 +527,7 @@ namespace RSGLib.Tests
         public void OrderTest()
         {
             var generator = new Generator("a^(2)>{0,5}<");
-            foreach(var output in generator.GetStrings(1000))
+            foreach (var output in generator.GetStrings(1000))
             {
                 Assert.IsTrue(output.Length == 5);
                 Assert.IsTrue(char.IsLetter(output[3]));
@@ -1305,6 +1305,24 @@ namespace RSGLib.Tests
 
         [TestMethod]
         [TestCategory("Token Group")]
+        public void BasicTokenGroupRepeatTest3()
+        {
+            var generator = new Generator("/a9/(2)");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 4);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsNumber(output[1]));
+                Assert.AreNotEqual(output[1], '0');
+                Assert.IsTrue(char.IsLetter(output[2]));
+                Assert.IsTrue(char.IsNumber(output[3]));
+                Assert.AreNotEqual(output[3], '0');
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
         public void TwoTokenGroupsTest()
         {
             var generator = new Generator("/a^//a!/");
@@ -1315,6 +1333,192 @@ namespace RSGLib.Tests
             Assert.IsTrue(char.IsUpper(output[0]));
             Assert.IsTrue(char.IsLetter(output[1]));
             Assert.IsTrue(char.IsLower(output[1]));
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithModifierTest()
+        {
+            var generator = new Generator("/a/^");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithConflictingModifiersTest()
+        {
+            var generator = new Generator("/aa!a/^");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 3);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(char.IsLower(output[1]));
+                Assert.IsTrue(char.IsLetter(output[2]));
+                Assert.IsTrue(char.IsUpper(output[2]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithMultipleModifiersTest()
+        {
+            var generator = new Generator("/../^~");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue((char.IsLetter(output[0]) && char.IsUpper(output[0])) || (char.IsNumber(output[0]) && !output[0].Equals('0')));
+                Assert.IsTrue((char.IsLetter(output[1]) && char.IsUpper(output[1])) || (char.IsNumber(output[1]) && !output[1].Equals('0')));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithModifierTest2()
+        {
+            var generator = new Generator("/aa/^");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(char.IsUpper(output[1]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupExclusionTest()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("/a/{-ABCDEFGHIJKLM");
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(!excluded.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupExclusionTest2()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("a!/a/{-ABCDEFGHIJKLM");
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsLower(output[0]));
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(!excluded.Contains(output[1]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupExclusionTest3()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("/aa/{-ABCDEFGHIJKLM");
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(!excluded.Contains(output[1]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupConflictingExclusionTest()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("/aa{-N}a/{-ABCDEFGHIJKLM");
+
+            foreach (var output in generator.GetStrings(10000))
+            {
+                Assert.IsTrue(output.Length == 3);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(!excluded.Contains(output[0]));
+
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(!excluded.Contains(output[1]));
+                Assert.AreNotEqual(output[1], 'N');
+
+                Assert.IsTrue(char.IsLetter(output[2]));
+                Assert.IsTrue(!excluded.Contains(output[2]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupModifierExclusionTest1()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("/a/^{-ABCDEFGHIJKLM");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
+                Assert.IsTrue(!excluded.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupModifierExclusionTest2()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("a!/a/^{-ABCDEFGHIJKLM");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsLower(output[0]));
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(char.IsUpper(output[1]));
+                Assert.IsTrue(!excluded.Contains(output[1]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupModifierExclusionTest3()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("/aa/^{-ABCDEFGHIJKLM");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
+                Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(char.IsUpper(output[1]));
+                Assert.IsTrue(!excluded.Contains(output[1]));
+            }
         }
 
         [TestMethod]
@@ -1333,10 +1537,28 @@ namespace RSGLib.Tests
 
         [TestMethod]
         [TestCategory("Token Group")]
-        public void TokenGroupWithExclusionTest()
+        public void TokenGroupWithModifierRepeatTest2()
+        {
+            var generator = new Generator("/aa/^(2)");
+            var output = generator.GetString();
+
+            Assert.IsTrue(output.Length == 4);
+            Assert.IsTrue(char.IsLetter(output[0]));
+            Assert.IsTrue(char.IsUpper(output[0]));
+            Assert.IsTrue(char.IsLetter(output[1]));
+            Assert.IsTrue(char.IsUpper(output[1]));
+            Assert.IsTrue(char.IsLetter(output[2]));
+            Assert.IsTrue(char.IsUpper(output[2]));
+            Assert.IsTrue(char.IsLetter(output[3]));
+            Assert.IsTrue(char.IsUpper(output[3]));
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithModifierCountExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/a/^(2){-A}");
+            var generator = new Generator("/a/^(2){-ABCDEFGHIJKLM}");
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -1347,6 +1569,32 @@ namespace RSGLib.Tests
                 Assert.IsTrue(!excluded.Contains(output[1]));
                 Assert.IsTrue(char.IsLetter(output[1]));
                 Assert.IsTrue(char.IsUpper(output[1]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Token Group")]
+        public void TokenGroupWithModifierCountExclusionTest2()
+        {
+            var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
+            var generator = new Generator("/aa/^(2){-ABCDEFGHIJKLM}");
+
+            foreach (var output in generator.GetStrings(500))
+            {
+                Assert.IsTrue(output.Length == 4);
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsUpper(output[0]));
+                Assert.IsTrue(!excluded.Contains(output[0]));
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(char.IsUpper(output[1]));
+                Assert.IsTrue(!excluded.Contains(output[1]));
+                Assert.IsTrue(char.IsLetter(output[2]));
+                Assert.IsTrue(char.IsUpper(output[2]));
+                Assert.IsTrue(!excluded.Contains(output[2]));
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+                Assert.IsTrue(!excluded.Contains(output[3]));
+
             }
         }
 
@@ -1369,7 +1617,7 @@ namespace RSGLib.Tests
         {
             var generator = new Generator("/a!/9");
 
-            foreach(var output  in generator.GetStrings(500))
+            foreach (var output in generator.GetStrings(500))
             {
                 Assert.IsTrue(output.Length == 2);
                 Assert.IsTrue(char.IsLetter(output[0]));
@@ -1411,11 +1659,43 @@ namespace RSGLib.Tests
 
         [TestMethod]
         [TestCategory("Token Group")]
-        public void Test()
+        public void TokenGroupWithMultipleTokensTest2()
         {
-            var generator = new Generator("");
-            var output = generator.GetString();
+            var generator = new Generator("a!(2)9/a^/(3)");
+
+            foreach (var output in generator.GetStrings(2))
+            {
+                Assert.IsTrue(output.Length == 6);
+
+                Assert.IsTrue(char.IsLetter(output[0]));
+                Assert.IsTrue(char.IsLower(output[0]));
+
+                Assert.IsTrue(char.IsLetter(output[1]));
+                Assert.IsTrue(char.IsLower(output[1]));
+
+                Assert.IsTrue(char.IsNumber(output[2]));
+                Assert.AreNotEqual(output[2], '0');
+
+                Assert.IsTrue(char.IsLetter(output[3]));
+                Assert.IsTrue(char.IsUpper(output[3]));
+
+                Assert.IsTrue(char.IsLetter(output[4]));
+                Assert.IsTrue(char.IsUpper(output[4]));
+
+                Assert.IsTrue(char.IsLetter(output[5]));
+                Assert.IsTrue(char.IsUpper(output[5]));
+            }
         }
+
+        //[TestMethod]
+        //[TestCategory("Token Group")]
+        //public void Test()
+        //{
+        //    var generator = new Generator("");
+        //    var output = generator.GetString();
+
+        //    Assert.IsTrue();
+        //}
         #endregion
 
         #region Advanced Patterns
@@ -2338,6 +2618,5 @@ namespace RSGLib.Tests
             return "55";
         }
         #endregion
-
     }
 }
