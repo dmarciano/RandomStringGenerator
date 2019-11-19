@@ -160,9 +160,6 @@ The above pattern will exclude the characters A-M from appearing in any of the t
 A new feature (introduced in v0.2.0) is the ability to provide a ```Generator``` instance with a list of characters for various languages/cultures and then use a language token to specify what language a specific token, 
 group, or entire pattern should use.  The allows the same pattern to be used in various cultures with the only requirement being that the culture tag is changed.
 
-> NOTE By default, if a language/culture token is included in the pattern string, but the culture has not be specified in the ```Generator``` instance, when a call is made to create the output string it will use
-```en-US``` as a fallback language.  If the generator should instead throw an exception when it encounters and unknown lanaguage/culture, set ```Generator.ThrowExceptionOnUnknowLanguage``` to true.
-
 A language/culture can be specified by surround the language/culture name with **&** tokens.  For example, **aa&sv&a** will generate a single ```en-US``` letter, then a single letter from the Swedish alphabet, 
 followed by another ```en-US``` letter.  This can be further refined by using the region identifier like so: **aa&sv-FI&a**.  This second pattern is the same as the first, however it states that for the second character
 to use the Finland version of the Swedish alphabet.  If the Finland specific version of the alphabet has not be specified, it will fall back to just the general Swedish alphabet.  If this is not specified either, 
