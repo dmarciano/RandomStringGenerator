@@ -13,6 +13,6 @@ namespace SMC.Utilities.RSG
         internal List<string> Values { get; set; }
         internal List<Range> Ranges { get; set; }
         internal ControlBlock ControlBlock { get; set; }
-        internal string CultureName { get; set; } = "en-US";
+        internal string CultureName { get; set; }
     }
 }

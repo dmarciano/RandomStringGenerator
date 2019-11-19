@@ -60,6 +60,8 @@ namespace SMC.Utilities.RSG
         /// If <c>true</c> an exception will be thrown when an unknown language/culture is encountered; otherwise <c>en-US</c> will be used as a fallback language.
         /// </summary>
         public bool ThrowExceptionOnUnknowLanguage { get; set; }
+
+        public Dictionary<string, CultureInfo> Cultures { get; set; } = new Dictionary<string, CultureInfo>() { { "DEFAULT", CultureInfo.DEFAULT } };
         #endregion
 
         #region Constructors
@@ -154,6 +156,150 @@ namespace SMC.Utilities.RSG
         {
             _functions.Add(name, function);
         }
+
+        /// <summary>
+        /// Add a culture with the specific characters.
+        /// </summary>
+        /// <param name="name">The BCP-47 language/culture name.</param>
+        /// <param name="letters">The characters of the language/culture.</param>
+        /// <param name="overwrite">If <c>true</c> and a culture with the <paramref name="name"/> already exists, it will be updated/overwritten, otherwise an <see cref="ArgumentException"/> will be thrown.</param>
+        /// <remarks>The <paramref name="letters"/> will be used for uppercase AND lowercase letters and the uppercase/lowercase modifiers will be ignored.</remarks>
+        /// <remarks>Any numbers will used the default <c>en-US</c> culture numbers and symbols will be the standard built-in symbols.</remarks>
+        /// <exception cref="InvalidCultureException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public void AddCulture(string name, IEnumerable<char> letters, bool overwrite = false)
+        {
+            AddCulture(name, letters, null, null, null);
+        }
+
+        /// <summary>
+        /// Add a culture with the specific characters.
+        /// </summary>
+        /// <param name="name">The BCP-47 language/culture name.</param>
+        /// <param name="uppercase">The uppercase characters of the language/culture.</param>
+        /// <param name="lowercase">The lowercase characters of the language/culture</param>
+        /// <param name="overwrite">If <c>true</c> and a culture with the <paramref name="name"/> already exists, it will be updated/overwritten, otherwise an <see cref="ArgumentException"/> will be thrown.</param>
+        /// <remarks>Any numbers will used the default <c>en-US</c> culture numbers and symbols will be the standard built-in symbols.</remarks>
+        /// <exception cref="InvalidCultureException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public void AddCulture(string name, IEnumerable<char> uppercase, IEnumerable<char> lowercase, bool overwrite = false)
+        {
+            AddCulture(name, uppercase, lowercase, null, null);
+        }
+
+        /// <summary>
+        /// Add a culture with the specific characters.
+        /// </summary>
+        /// <param name="name">The BCP-47 language/culture name.</param>
+        /// <param name="uppercase">The uppercase characters of the language/culture.</param>
+        /// <param name="lowercase">The lowercase characters of the language/culture</param>
+        /// <param name="numbers">The characters representing number of the language/culture.</param>
+        /// <param name="overwrite">If <c>true</c> and a culture with the <paramref name="name"/> already exists, it will be updated/overwritten, otherwise an <see cref="ArgumentException"/> will be thrown.</param>
+        /// <remarks>Any symbols will be the standard built-in symbols.</remarks>
+        /// <exception cref="InvalidCultureException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public void AddCulture(string name, IEnumerable<char> uppercase, IEnumerable<char> lowercase, IEnumerable<char> numbers, bool overwrite = false)
+        {
+            AddCulture(name, uppercase, lowercase, numbers, null);
+        }
+
+        /// <summary>
+        /// Add a culture with the specific characters.
+        /// </summary>
+        /// <param name="name">The BCP-47 language/culture name.</param>
+        /// <param name="uppercase">The uppercase characters of the language/culture.</param>
+        /// <param name="lowercase">The lowercase characters of the language/culture</param>
+        /// <param name="numbers">The characters representing number of the language/culture.</param>
+        /// <param name="symbols">The characters representing symbols of the language/culture.</param>
+        /// <param name="overwrite">If <c>true</c> and a culture with the <paramref name="name"/> already exists, it will be updated/overwritten, otherwise an <see cref="ArgumentException"/> will be thrown.</param>
+        /// <exception cref="InvalidCultureException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public void AddCulture(string name, IEnumerable<char> uppercase, IEnumerable<char> lowercase, IEnumerable<char> numbers, IEnumerable<char> symbols, bool overwrite = false)
+        {
+            name = name.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("A language/culture name must be provided.", nameof(name));
+
+            if (null == uppercase || null == lowercase)
+                throw new ArgumentException("Letters must be specified for any new culture added.");
+
+            if (Cultures.ContainsKey(name))
+            {
+                if (!overwrite)
+                {
+                    throw new ArgumentException($"A culture with the name {name} has already been specified.");
+                }
+                else
+                {
+                    Cultures.Remove(name);
+                }
+            }
+
+            var ci = new CultureInfo() { Name = name, UppercaseLetters = uppercase };
+            if(null == lowercase)
+            {
+                ci.LowercaseLetters = null;
+                ci.UppercaseLowercaseSpecified = false;
+            }
+
+            if(null == numbers)
+            {
+                ci.Numbers = CultureInfo.DEFAULT.Numbers;
+                ci.NumbersSpecified = false;
+            }
+
+            if(null == symbols)
+            {
+                ci.Symbols = CultureInfo.DEFAULT.Symbols;
+                ci.SymbolsSpecified = false;
+            }
+
+            Cultures.Add(name, ci);
+        }
+
+        /// <summary>
+        /// Remove a culture using its name.
+        /// </summary>
+        /// <param name="name">The name of the language/culture to remove.</param>
+        /// <returns><c>true</c> if the culture name is successfully found and removed; otherwise <c>false</c>.  This method returns <c>false</c> if the <paramref name="name"/> is not found.</returns>
+        /// <exception cref="ArgumentException"></exception>
+        public bool RemoveCulture(string name)
+        {
+            name = name.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("A language/culture name must be provided.", nameof(name));
+
+            return Cultures.Remove(name);
+        }
+
+        /// <summary>
+        /// Attemptes to remove and return culture using the culture name.
+        /// </summary>
+        /// <param name="name">The culture name to remove and return.</param>
+        /// <param name="culture">When this method returns, contains the culture removed from the <see cref="Generator"/>, or <c>null</c> if the culture name does not exists.</param>
+        /// <returns><c>true</c> if the culture was successfully removed; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentException"></exception>
+        public bool TryRemoveCulture(string name, out CultureInfo culture)
+        {
+            name = name.Trim();
+
+            if(string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("A language/culture name must be provided.", nameof(name));
+
+            if (!Cultures.ContainsKey(name))
+            {
+                culture = null;
+                return false;
+            }
+
+
+            //TODO: Make sure the out value is still valid after removal
+            culture = Cultures[name];
+            return Cultures.Remove(name);
+        }
+
 
         /// <summary>
         /// Creates a random string based on the specified pattern.
@@ -326,12 +472,12 @@ namespace SMC.Utilities.RSG
                         {
                             characters = characters.Except(globalExcept).ToArray();
 
-                            if(group.ControlBlock != null && !group.ControlBlock.Global && group.ControlBlock.Type == ControlBlockType.ECB && group.ControlBlock.ExceptValues.Count() > 0)
+                            if (group.ControlBlock != null && !group.ControlBlock.Global && group.ControlBlock.Type == ControlBlockType.ECB && group.ControlBlock.ExceptValues.Count() > 0)
                             {
                                 characters = characters.Except(group.ControlBlock.ExceptValues).ToArray();
                             }
 
-                            if (token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Count()> 0)
+                            if (token.ControlBlock != null && !token.ControlBlock.Global && token.ControlBlock.Type == ControlBlockType.ECB && token.ControlBlock.ExceptValues.Count() > 0)
                             {
                                 characters = characters.Except(token.ControlBlock.ExceptValues).ToArray();
                             }

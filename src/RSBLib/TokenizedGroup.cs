@@ -9,6 +9,6 @@ namespace SMC.Utilities.RSG
         internal int MinimumCount { get; set; } = 1;
         internal int MaximumCount { get; set; } = 1;
         internal ControlBlock ControlBlock { get; set; }
-        internal string CultureName { get; set; } = "en-US";
+        internal string CultureName { get; set; }
     }
 }

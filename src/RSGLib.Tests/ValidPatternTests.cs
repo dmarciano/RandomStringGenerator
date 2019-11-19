@@ -2991,16 +2991,10 @@ namespace RSGLib.Tests
         //[TestMethod]
         //public void Test()
         //{
-        //    CultureInfo[] cultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
-        //    var cu = cultures.FirstOrDefault(c => c.Name.Equals("en", StringComparison.OrdinalIgnoreCase));
-        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("en-Us", StringComparison.OrdinalIgnoreCase));
-        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("aR-lY", StringComparison.OrdinalIgnoreCase));
-        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("bm-LaTn-Ml", StringComparison.OrdinalIgnoreCase));
-        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("bm", StringComparison.OrdinalIgnoreCase));
-        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("abcde", StringComparison.OrdinalIgnoreCase));
-        //    var t = "t";
+        //    var g = new Generator();
+        //    g.TryRemoveCulture("dd", out var cc);
 
-        //    var b = new PatternBuilder().Is
+        //    cc.
         //}
     }
 }
