@@ -767,9 +767,6 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void BasicTokenGroupRepeatTest2()
         {
-            var generator = new Generator("/a[2]/(2)");
-            var output = generator.GetString();
-
             var builder = new PatternBuilder().BeginGroup(2).Letter().Literal("2").EndGroup();
             var output = new Generator().UseBuilder(builder).GetString();
 
@@ -784,10 +781,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void BasicTokenGroupRepeatTest3()
         {
-            var generator = new Generator("/a9/(2)");
-
             var builder = new PatternBuilder().BeginGroup(2).Letter().NumberExceptZero().EndGroup();
-            var output = new Generator().UseBuilder(builder).GetString();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -805,9 +800,6 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TwoTokenGroupsTest()
         {
-            var generator = new Generator("/a^//a!/");
-            var output = generator.GetString();
-
             var builder = new PatternBuilder().BeginGroup().Letter().UppercaseOnly().EndGroup().BeginGroup().Letter().LowercaseOnly().EndGroup();
             var output = new Generator().UseBuilder(builder).GetString();
 
@@ -822,7 +814,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithModifierTest()
         {
-            var generator = new Generator("/a/^");
+            var builder = new PatternBuilder().BeginGroup().Letter().UppercaseOnly().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -836,7 +829,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithConflictingModifiersTest()
         {
-            var generator = new Generator("/aa!a/^");
+            var builder = new PatternBuilder().BeginGroup(ModifierType.UPPERCASE).Letter().Letter().LowercaseOnly().Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -854,7 +848,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithMultipleModifiersTest()
         {
-            var generator = new Generator("/../^~");
+            var builder = new PatternBuilder().BeginGroup(ModifierType.UPPERCASE | ModifierType.EXCLUDE_ZERO).LetterOrNumber().LetterOrNumber().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -868,7 +863,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithModifierTest2()
         {
-            var generator = new Generator("/aa/^");
+            var builder = new PatternBuilder().BeginGroup(ModifierType.UPPERCASE).Letter().Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -885,7 +881,8 @@ namespace RSGLib.Tests
         public void TokenGroupExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/a/{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().BeginGroup(excluded).Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(1000))
             {
@@ -900,7 +897,8 @@ namespace RSGLib.Tests
         public void TokenGroupExclusionTest2()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("a!/a/{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().Letter().LowercaseOnly().BeginGroup(excluded).Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(1000))
             {
@@ -917,7 +915,8 @@ namespace RSGLib.Tests
         public void TokenGroupExclusionTest3()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/aa/{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().BeginGroup(excluded).Letter().Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(1000))
             {
@@ -934,7 +933,8 @@ namespace RSGLib.Tests
         public void TokenGroupConflictingExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/aa{-N}a/{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().BeginGroup(excluded).Letter().Letter().Exclude('N').Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(10000))
             {
@@ -956,7 +956,8 @@ namespace RSGLib.Tests
         public void TokenGroupModifierExclusionTest1()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/a/^{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().BeginGroup(ModifierType.UPPERCASE, excluded).Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -972,7 +973,8 @@ namespace RSGLib.Tests
         public void TokenGroupModifierExclusionTest2()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("a!/a/^{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().Letter().LowercaseOnly().BeginGroup(ModifierType.UPPERCASE, excluded).Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -990,7 +992,8 @@ namespace RSGLib.Tests
         public void TokenGroupModifierExclusionTest3()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/aa/^{-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().BeginGroup(ModifierType.UPPERCASE, excluded).Letter().Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -1008,8 +1011,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithModifierRepeatTest()
         {
-            var generator = new Generator("/a/^(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().BeginGroup(2, ModifierType.UPPERCASE).Letter().EndGroup();
+            var output = new Generator().UseBuilder(builder).GetString();  
 
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -1022,8 +1025,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithModifierRepeatTest2()
         {
-            var generator = new Generator("/aa/^(2)");
-            var output = generator.GetString();
+            var builder = new PatternBuilder().BeginGroup(2, ModifierType.UPPERCASE).Letter().Letter().EndGroup();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length == 4);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -1041,7 +1044,8 @@ namespace RSGLib.Tests
         public void TokenGroupWithModifierCountExclusionTest()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/a/^(2){-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().BeginGroup(2, ModifierType.UPPERCASE, excluded).Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -1060,7 +1064,8 @@ namespace RSGLib.Tests
         public void TokenGroupWithModifierCountExclusionTest2()
         {
             var excluded = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' };
-            var generator = new Generator("/aa/^(2){-ABCDEFGHIJKLM}");
+            var builder = new PatternBuilder().BeginGroup(2, ModifierType.UPPERCASE, excluded).Letter().Letter().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -1085,9 +1090,9 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithLiteralTest()
         {
-            var generator = new Generator("/a!/[2]");
-            var output = generator.GetString();
-
+            var builder = new PatternBuilder().BeginGroup().Letter().LowercaseOnly().EndGroup().Literal("2");
+            var output = new Generator().UseBuilder(builder).GetString();
+            
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(char.IsLetter(output[0]));
             Assert.IsTrue(char.IsLower(output[0]));
@@ -1098,7 +1103,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithNumberTest()
         {
-            var generator = new Generator("/a!/9");
+            var builder = new PatternBuilder().BeginGroup().Letter().LowercaseOnly().EndGroup().NumberExceptZero();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(500))
             {
@@ -1114,7 +1120,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithMultipleTokensTest()
         {
-            var generator = new Generator("/a!/(2)9/a^/(3)");
+            var builder = new PatternBuilder().BeginGroup(2).Letter().LowercaseOnly().EndGroup().NumberExceptZero().BeginGroup(3).Letter().UppercaseOnly().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(2))
             {
@@ -1144,7 +1151,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithMultipleTokensTest2()
         {
-            var generator = new Generator("a!(2)9/a^/(3)");
+            var builder = new PatternBuilder().Letter().LowercaseOnly().Repeat(2).NumberExceptZero().BeginGroup(3).Letter().UppercaseOnly().EndGroup();
+            var generator = new Generator().UseBuilder(builder);
 
             foreach (var output in generator.GetStrings(2))
             {
@@ -1174,8 +1182,8 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithFCBAfterTest()
         {
-            var generator = new Generator("/a/{T}");
-            var output = generator.ToString();
+            var builder = new PatternBuilder().BeginGroup().Letter().EndGroup().AddDateTime();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length > 1);
             Assert.IsTrue(char.IsLetter(output[0]));
@@ -1186,25 +1194,13 @@ namespace RSGLib.Tests
         [TestCategory("Token Group")]
         public void TokenGroupWithFCBInsideTest()
         {
-            var generator = new Generator("/a{T}/");
-            var output = generator.ToString();
+            var builder = new PatternBuilder().BeginGroup().Letter().AddDateTime().EndGroup();
+            var output = new Generator().UseBuilder(builder).GetString();
 
             Assert.IsTrue(output.Length > 1);
             Assert.IsTrue(char.IsLetter(output[0]));
             Assert.IsTrue(DateTime.TryParse(output.Substring(1), out _));
         }
-
-        //[TestMethod]
-        //[TestCategory("Token Group")]
-        //public void Test()
-        //{
-        //    var c = CultureInfo.GetCultureInfo("dje");
-        //    var t = "t";
-        //    //var generator = new Generator("");
-        //    //var output = generator.GetString();
-
-        //    //Assert.IsTrue();
-        //}
         #endregion
 
         #region Advanced Patterns

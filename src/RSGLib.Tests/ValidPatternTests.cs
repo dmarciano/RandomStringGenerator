@@ -1710,18 +1710,6 @@ namespace RSGLib.Tests
             Assert.IsTrue(char.IsLetter(output[0]));
             Assert.IsTrue(DateTime.TryParse(output.Substring(1), out _));
         }
-
-        //[TestMethod]
-        //[TestCategory("Token Group")]
-        //public void Test()
-        //{
-        //    var c = CultureInfo.GetCultureInfo("dje");
-        //    var t = "t";
-        //    //var generator = new Generator("");
-        //    //var output = generator.GetString();
-
-        //    //Assert.IsTrue();
-        //}
         #endregion
 
         #region Advanced Patterns

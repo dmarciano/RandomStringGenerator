@@ -8,8 +8,6 @@ namespace SMC.Utilities.RSG
     {
         #region Variables
         private List<TokenGroup> _patternList;
-        private bool inInitialGroup = true;
-        private bool inCreatedGroup = false;
         #endregion
 
         #region Properties
@@ -97,23 +95,16 @@ namespace SMC.Utilities.RSG
 
         public PatternBuilder Repeat(int minRepeats, int maxRepeats)
         {
-            if (inInitialGroup || inCreatedGroup)
-            {
-                if (0 == _patternList.Count)
-                    throw new PatternBuilderException("No tokens have been added to the builder yet.  Add a least one valid token before attempting to specify repeats.");
+            if (0 == _patternList.Count)
+                throw new PatternBuilderException("No tokens have been added to the builder yet.  Add a least one valid token before attempting to specify repeats.");
 
-                var lastToken = _patternList[_patternList.Count - 1].Tokens.Last();
+            var lastToken = _patternList[_patternList.Count - 1].Tokens.Last();
 
-                if (lastToken.Type == TokenType.CONTROL_BLOCK && null != lastToken.ControlBlock && lastToken.ControlBlock.Global)
-                    throw new PatternBuilderException("Cannot add a repeat count to a global exclusion block.");
+            if (lastToken.Type == TokenType.CONTROL_BLOCK && null != lastToken.ControlBlock && lastToken.ControlBlock.Global)
+                throw new PatternBuilderException("Cannot add a repeat count to a global exclusion block.");
 
-                lastToken.MinimumCount = minRepeats;
-                lastToken.MaximumCount = maxRepeats;
-            }
-            else
-            {
-
-            }
+            lastToken.MinimumCount = minRepeats;
+            lastToken.MaximumCount = maxRepeats;
             return this;
         }
         #endregion
@@ -236,6 +227,11 @@ namespace SMC.Utilities.RSG
             return BeginGroup(1, 1, modifiers, exclude);
         }
 
+        public PatternBuilder BeginGroup(int repeats, ModifierType modifiers, IEnumerable<char> exclude)
+        {
+            return BeginGroup(repeats, repeats, modifiers, exclude);
+        }
+
         public PatternBuilder BeginGroup(int minRepeats, int maxRepeats, ModifierType modifiers, IEnumerable<char> exclude)
         {
             if (_patternList.Last().Tokens.Count > 0)
@@ -254,7 +250,6 @@ namespace SMC.Utilities.RSG
                 if (null != exclude && exclude.Count() > 0)
                     tg.ControlBlock = new ControlBlock() { Type = ControlBlockType.ECB, ExceptValues = exclude.ToArray() };
             }
-
             return this;
         }
 
@@ -378,7 +373,7 @@ namespace SMC.Utilities.RSG
             }
 
             token.ControlBlock = cb;
-            //_patternList.Add(token);
+            _patternList.Last().Tokens.Add(token);
             return this;
         }
 
@@ -448,7 +443,7 @@ namespace SMC.Utilities.RSG
             }
 
             token.ControlBlock = cb;
-            //_patternList.Add(token);
+            _patternList.Last().Tokens.Add(token);
             return this;
         }
 
@@ -490,10 +485,9 @@ namespace SMC.Utilities.RSG
 
         public PatternBuilder AddGlobalExclusions(List<char> values)
         {
-            if (_patternList.Count > 0)
+            if(_patternList[0].Tokens.Count > 0)
             {
                 var firstToken = _patternList[0].Tokens.First();
-
                 if (firstToken.Type == TokenType.CONTROL_BLOCK)
                     throw new PatternBuilderException("A global exclusion block already exists in the pattern.");
 
@@ -537,7 +531,7 @@ namespace SMC.Utilities.RSG
 
         public PatternBuilder Exclude(List<char> values)
         {
-            var lastToken = _patternList[_patternList.Count - 1];
+            var lastToken = _patternList.Last().Tokens.Last();
 
             if (lastToken.ControlBlock != null)
                 throw new PatternBuilderException("Only one exclusion control block can be specified for a token.");
