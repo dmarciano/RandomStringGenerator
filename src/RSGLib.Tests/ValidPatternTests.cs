@@ -3,6 +3,7 @@ using SMC.Utilities.RSG;
 using SMC.Utilities.RSG.Random;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace RSGLib.Tests
@@ -10,6 +11,24 @@ namespace RSGLib.Tests
     [TestClass]
     public class ValidPatternTests
     {
+        #region Language Statics
+        private static readonly List<char> uppercase_English = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToList();
+        private static readonly List<char> lowercase_English = "abcdefghijklmnopqrstuvwxyz".ToList();
+        private static readonly List<char> numbers_English = "0123456789".ToList();
+
+        private static readonly List<char> uppercase_Swedish = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".ToList();
+        private static readonly List<char> lowercase_Swedish = "abcdefghijklmnopqrstuvwxyzåäö".ToList();
+
+        private const char UpperACircle = 'Å';
+        private const char UpperADoubleDot = 'Ä';
+        private const char UpperODoubleDot = 'Ö';
+        private const char LowerACircle = 'å';
+        private const char LowerADoubleDot = 'ä';
+        private const char LowerODoubleDot = 'ö';
+
+        private static readonly List<char> swedish_characters = "ÅÄÖåäö".ToList();
+        #endregion
+
         #region Constructors
         [TestMethod]
         [TestCategory("Constructor")]
@@ -2366,6 +2385,342 @@ namespace RSGLib.Tests
         }
         #endregion
 
+        #region Culture
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void CultureTest()
+        {
+            var acircleupperseen = false;
+            var adoubledotupperseen = false;
+            var odoubledotupperseen = false;
+            var acirclelowerseen = false;
+            var adoubledotlowerseen = false;
+            var odoubledotlowerseen = false;
+            var allSeen = false;
+
+            var generator = new Generator("a&sv&");
+            generator.AddCulture("sv", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                switch (output[0])
+                {
+                    case UpperACircle:
+                        acircleupperseen = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen = true;
+                        break;
+                }
+
+                if (acircleupperseen && adoubledotupperseen && odoubledotupperseen && acirclelowerseen && adoubledotlowerseen && odoubledotlowerseen)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void CultureTest2()
+        {
+            var acircleupperseen = false;
+            var adoubledotupperseen = false;
+            var odoubledotupperseen = false;
+            var acirclelowerseen = false;
+            var adoubledotlowerseen = false;
+            var odoubledotlowerseen = false;
+            var allSeen = false;
+
+            var generator = new Generator("a&sv-Se&");
+            generator.AddCulture("sv-sE", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                switch (output[0])
+                {
+                    case UpperACircle:
+                        acircleupperseen = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen = true;
+                        break;
+                }
+
+                if (acircleupperseen && adoubledotupperseen && odoubledotupperseen && acirclelowerseen && adoubledotlowerseen && odoubledotlowerseen)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void CultureGroupTest()
+        {
+            var acircleupperseen1 = false;
+            var adoubledotupperseen1 = false;
+            var odoubledotupperseen1 = false;
+            var acirclelowerseen1 = false;
+            var adoubledotlowerseen1 = false;
+            var odoubledotlowerseen1 = false;
+
+            var acircleupperseen2 = false;
+            var adoubledotupperseen2 = false;
+            var odoubledotupperseen2 = false;
+            var acirclelowerseen2 = false;
+            var adoubledotlowerseen2 = false;
+            var odoubledotlowerseen2 = false;
+            var allSeen = false;
+
+            var generator = new Generator("/aa/&sv-se&a");
+            generator.AddCulture("sv-sE", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 2);
+                switch (output[0])
+                {
+                    case UpperACircle:
+                        acircleupperseen1 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen1 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen1 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen1 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen1 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen1 = true;
+                        break;
+                }
+
+                switch (output[1])
+                {
+                    case UpperACircle:
+                        acircleupperseen2 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen2 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen2 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen2 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen2 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen2 = true;
+                        break;
+                }
+
+                if (acircleupperseen1 && adoubledotupperseen1 && odoubledotupperseen1 && acirclelowerseen1 && adoubledotlowerseen1 && odoubledotlowerseen1
+                    && acircleupperseen2 && adoubledotupperseen2 && odoubledotupperseen2 && acirclelowerseen2 && adoubledotlowerseen2 && odoubledotlowerseen2)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void CultureGroupTest2()
+        {
+            var acircleupperseen1 = false;
+            var adoubledotupperseen1 = false;
+            var odoubledotupperseen1 = false;
+            var acirclelowerseen1 = false;
+            var adoubledotlowerseen1 = false;
+            var odoubledotlowerseen1 = false;
+
+            var acircleupperseen2 = false;
+            var adoubledotupperseen2 = false;
+            var odoubledotupperseen2 = false;
+            var acirclelowerseen2 = false;
+            var adoubledotlowerseen2 = false;
+            var odoubledotlowerseen2 = false;
+            var allSeen = false;
+
+            var generator = new Generator("a/aa/&sv-se&");
+            generator.AddCulture("sv-sE", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 3);
+                Assert.IsFalse(swedish_characters.Contains(output[0]));
+
+                switch (output[1])
+                {
+                    case UpperACircle:
+                        acircleupperseen1 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen1 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen1 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen1 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen1 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen1 = true;
+                        break;
+                }
+
+                switch (output[2])
+                {
+                    case UpperACircle:
+                        acircleupperseen2 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen2 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen2 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen2 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen2 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen2 = true;
+                        break;
+                }
+
+                if (acircleupperseen1 && adoubledotupperseen1 && odoubledotupperseen1 && acirclelowerseen1 && adoubledotlowerseen1 && odoubledotlowerseen1
+                    && acircleupperseen2 && adoubledotupperseen2 && odoubledotupperseen2 && acirclelowerseen2 && adoubledotlowerseen2 && odoubledotlowerseen2)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void FallbackCultureTest()
+        {
+            var acircleupperseen = false;
+            var adoubledotupperseen = false;
+            var odoubledotupperseen = false;
+            var acirclelowerseen = false;
+            var adoubledotlowerseen = false;
+            var odoubledotlowerseen = false;
+            var allSeen = false;
+
+            var generator = new Generator("a&sv-FI&");
+            generator.AddCulture("sv", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                switch (output[0])
+                {
+                    case UpperACircle:
+                        acircleupperseen = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen = true;
+                        break;
+                }
+
+                if (acircleupperseen && adoubledotupperseen && odoubledotupperseen && acirclelowerseen && adoubledotlowerseen && odoubledotlowerseen)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void FallbackCultureTest2()
+        {
+            var generator = new Generator("a&sv&");
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsFalse(swedish_characters.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        [ExpectedException(typeof(UnknownCultureException))]
+        public void FallbackCultureTest3()
+        {
+            var generator = new Generator("a&sv&") { ThrowExceptionOnUnknowLanguage = true };
+        }
+        #endregion
+
         #region Real-World Formats
         [TestMethod]
         [TestCategory("Real-World Patterns")]
@@ -2632,5 +2987,20 @@ namespace RSGLib.Tests
             return "55";
         }
         #endregion
+
+        //[TestMethod]
+        //public void Test()
+        //{
+        //    CultureInfo[] cultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
+        //    var cu = cultures.FirstOrDefault(c => c.Name.Equals("en", StringComparison.OrdinalIgnoreCase));
+        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("en-Us", StringComparison.OrdinalIgnoreCase));
+        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("aR-lY", StringComparison.OrdinalIgnoreCase));
+        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("bm-LaTn-Ml", StringComparison.OrdinalIgnoreCase));
+        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("bm", StringComparison.OrdinalIgnoreCase));
+        //    cu = cultures.FirstOrDefault(c => c.Name.Equals("abcde", StringComparison.OrdinalIgnoreCase));
+        //    var t = "t";
+
+        //    var b = new PatternBuilder().Is
+        //}
     }
 }

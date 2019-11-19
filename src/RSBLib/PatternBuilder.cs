@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SMC.Utilities.RSG
 {
-    public class PatternBuilder
+    public class PatternBuilder : CultureHelper
     {
         #region Variables
         private List<TokenGroup> _patternList;

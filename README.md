@@ -26,10 +26,22 @@ Therefore an RSG pattern can be as simple as a single character token or as comp
 Although it contains some advanced features (such as the user-defined functions), most users will not need to use them; but they are should the need ever arise.
 
 ## RSG Language
-Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of [Tokens](#tokens), [Modifiers](#modifiers), [Literals](#literals), [Optionals](#optionals), 
-[Ranges](#ranges), [Format Strings](#format-strings), [Repeats](#repeats), [Token Group](#token-groups), and [Control Blocks](#control-blocks).  Each of these items are discussed below.
+Generating a string using the RSG library is done by specifying a pattern for the string.  This pattern is made up of various types of tokens.  The types of tokens include:
+- [Basic Tokens](#basic-tokens)
+- [Modifiers](#modifiers)
+- [Literals](#literals)
+- [Optionals](#optionals)
+- [Ranges](#ranges)
+- [Format Strings](#format-strings)
+- [Repeats](#repeats)
+- [Token Group](#token-groups)
+- [Languages/Cultures](#languagescultures)
+- [Control Blocks](#control-blocks)
 
-### Tokens
+To jump to a specific token type, click the corresponding link above.  If you are new to using RSG, it is recommend that you read the document in order as the various tokes are listed from the most common 
+(i.e. basic) to least commonly used ones (i.e. advanced).
+
+### Basic Tokens
 Tokens are used to specify the type of character that should be generated.  Currently, there are eight (8) different tokens that can be specified in a pattern and each is listed below with what they represent:
 - **a** - Any letter
 - **0** - Any number 0 - 9
@@ -144,11 +156,23 @@ For exclusions blocks, a group exclusion block with apply to all the tokens, how
 
 The above pattern will exclude the characters A-M from appearing in any of the token positions, however, the middle character token *also* excludes the character N.
 
-## Control Blocks
+### Languages/Cultures
+A new feature (introduced in v0.2.0) is the ability to provide a ```Generator``` instance with a list of characters for various languages/cultures and then use a language token to specify what language a specific token, 
+group, or entire pattern should use.  The allows the same pattern to be used in various cultures with the only requirement being that the culture tag is changed.
+
+> NOTE By default, if a language/culture token is included in the pattern string, but the culture has not be specified in the ```Generator``` instance, when a call is made to create the output string it will use
+```en-US``` as a fallback language.  If the generator should instead throw an exception when it encounters and unknown lanaguage/culture, set ```Generator.ThrowExceptionOnUnknowLanguage``` to true.
+
+A language/culture can be specified by surround the language/culture name with **&** tokens.  For example, **aa&sv&a** will generate a single ```en-US``` letter, then a single letter from the Swedish alphabet, 
+followed by another ```en-US``` letter.  This can be further refined by using the region identifier like so: **aa&sv-FI&a**.  This second pattern is the same as the first, however it states that for the second character
+to use the Finland version of the Swedish alphabet.  If the Finland specific version of the alphabet has not be specified, it will fall back to just the general Swedish alphabet.  If this is not specified either, 
+then ```en-US``` will be used as a fallback *or* an exception will be thrown, depedning on the value of ```Generator.ThrowExceptionOnUnknownLanguage```.
+
+### Control Blocks
 A control block, **{}** is a special token which is used for more granular control of tokens (called an "exclusion control block" or "ECB") or for specifying either built-in or user-defined functions 
 (called a "function control block" or "FCB".  Each is described below:
 
-### Exclusion Control Block (ECB)
+#### Exclusion Control Block (ECB)
 A **{}** block can be specified at the very beginning of a pattern string to specify any letters, numbers, or symbols to leave out of any token selection.  For example, if the pattern string is *a9a*, but the letters
 'l' (lowercase L) or 'O' (uppercase letter "Oh") should not be generated for either **a** token in the pattern, a control block can be specified at the beginning of the pattern string as **{-lO}a9a**.  Such a global control 
 block can only be specified once at the beginning of the pattern.  That is writing **{-l}{-O}a9a** is invalid.
@@ -157,7 +181,7 @@ block can only be specified once at the beginning of the pattern.  That is writi
 However, if 'l' should only be excluded from the first letter token and 'O' should be excluded from the second letter token, a  ECB can be specified for each token individually: **a{-l}9a{-O}**.
 > **NOTE** ECBs must *always* have a hypen ('-') immediately after the opening brace ('{') to indicate that it is a ECB and not a Function Control Block (described below).
 
-### Function Control Block (FCB)
+#### Function Control Block (FCB)
 A control block can also be used to specify functions to either generate a string from a .NET Framework method (e.g. date/time, GUID, etc.) or by a specified user function.  Currently there are two built-in functions that
 can be used:
 - **T** - Date and time string

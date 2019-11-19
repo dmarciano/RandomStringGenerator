@@ -52,9 +52,14 @@ namespace SMC.Utilities.RSG
 
         #region Properties
         /// <summary>
-        /// The current set pattern used for random string generation.
+        /// The currently set pattern used for random string generation.
         /// </summary>
         public string Pattern { get; private set; }
+
+        /// <summary>
+        /// If <c>true</c> an exception will be thrown when an unknown language/culture is encountered; otherwise <c>en-US</c> will be used as a fallback language.
+        /// </summary>
+        public bool ThrowExceptionOnUnknowLanguage { get; set; }
         #endregion
 
         #region Constructors
@@ -196,8 +201,6 @@ namespace SMC.Utilities.RSG
                 yield return CreateRandomString();
         }
 
-
-        //TODO: Handle token/group modifier precedence
         private string CreateRandomString()
         {
             if (null == _tokenizedPattern || _tokenizedPattern.Count < 1)

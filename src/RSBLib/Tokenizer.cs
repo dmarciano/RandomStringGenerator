@@ -5,10 +5,10 @@ using System.Text;
 
 namespace SMC.Utilities.RSG
 {
-    internal class Tokenizer
+    internal class Tokenizer : CultureHelper
     {
         private static readonly List<char> MODIFIERS = new List<char> { '^', '!', '~' };
-        private static readonly List<char> TOKENS = new List<char> { 'a', '0', '9', '@', '.', '+', '%', '*', '[', '#', '<' };
+        private static readonly List<char> TOKENS = new List<char> { 'a', '0', '9', '@', '.', '+', '%', '*', '[', '#', '<', '&' };
 
         internal List<TokenGroup> TokenizedPattern { get; set; }
 
@@ -23,7 +23,7 @@ namespace SMC.Utilities.RSG
             handled = false;
             tokenizedGroup = new List<TokenGroup>();
             currentGroup = new TokenGroup();
-
+            
             for (pos = 0; pos < pattern.Length; pos++)
             {
                 if (handled) handled = false;
@@ -87,7 +87,7 @@ namespace SMC.Utilities.RSG
                             // Need to check for modifiers, repeat count, and ECB
                             if (pos != pattern.Length - 1)
                             {
-                                if (pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1]) || pattern[pos + 1].Equals('{'))
+                                if (pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1]) || pattern[pos + 1].Equals('{') || pattern[pos +1].Equals('&'))
                                 {
                                     do
                                     {
@@ -96,11 +96,13 @@ namespace SMC.Utilities.RSG
                                         if (pos == pattern.Length - 1) break;
                                         if (MODIFIERS.Contains(pattern[pos + 1])) { pos++; HandleModifier(pattern, true); }
                                         if (pos == pattern.Length - 1) break;
+                                        if(pattern[pos +1].Equals('&')) { pos++; HandleCulture(pattern); }
+                                        if (pos == pattern.Length - 1) break;
                                         if (pattern[pos + 1].Equals('{')) {var dummy = new Token(); pos++; HandleControlBlock(ref dummy, pattern);}
                                         if (pos == pattern.Length - 1) break;
                                         if (TOKENS.Contains(pattern[pos + 1])) break;
 
-                                    } while ((pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1])) && !pattern[pos + 1].Equals('{'));
+                                    } while ((pattern[pos + 1].Equals('(') || MODIFIERS.Contains(pattern[pos + 1])) && !pattern[pos + 1].Equals('{') && !pattern[pos + 1].Equals('&'));
                                 }
                             }
 
@@ -108,6 +110,10 @@ namespace SMC.Utilities.RSG
                             currentGroup = new TokenGroup();
                             isInGroup = false;
                         }
+                        handled = true;
+                        break;
+                    case '&':
+                        HandleCulture(pattern);
                         handled = true;
                         break;
                     case '\\':
@@ -597,7 +603,7 @@ namespace SMC.Utilities.RSG
                 //var lastToken = tokenizedList[tokenizedList.Count - 1];
                 lastToken = currentGroup.Tokens[currentGroup.Tokens.Count - 1];
                 if (lastToken.Type == TokenType.CONTROL_BLOCK && lastToken.ControlBlock != null && lastToken.ControlBlock.Global)
-                    throw new InvalidModifierException($"Count blocks are not valid on global control blocks");
+                    throw new InvalidModifierException("Count blocks are not valid on global control blocks.");
             }
 
             while (!EOS)
@@ -891,6 +897,46 @@ namespace SMC.Utilities.RSG
                         break;
                 }
             }
+        }
+
+        private void HandleCulture(string pattern)
+        {
+            var EOS = false;
+            var originalPosition = pos;
+            var sb = new StringBuilder();
+            Token lastToken = null;
+
+            if (!isInGroup)
+            {
+                lastToken = currentGroup.Tokens[currentGroup.Tokens.Count - 1];
+                if (lastToken.Type == TokenType.CONTROL_BLOCK && lastToken.ControlBlock.Global)
+                    throw new InvalidCultureException("Language/Culture tokens are not valid on global control blocks.");
+            }
+
+            while (!EOS)
+            {
+                pos++;
+                if (pos >= pattern.Length)
+                    throw new InvalidPatternException($"No closing language/culture token found for the opening language/culture token at position {originalPosition}.");
+
+                if (pattern[pos].Equals('&'))
+                {
+                    EOS = true;
+                }
+                else
+                {
+                    sb.Append(pattern[pos]);
+                }
+            }
+
+            var cultureName = sb.ToString().Trim();
+            if (!IsCultureValid(cultureName))
+                throw new InvalidCultureException($"The culture name '{cultureName}', found at position {originalPosition} is not a valid culture name.");
+
+            if (isInGroup)
+                currentGroup.CultureName = cultureName;
+            else
+                lastToken.CultureName = cultureName;
         }
 
         private void HandleFormatControlBlock(string pattern)

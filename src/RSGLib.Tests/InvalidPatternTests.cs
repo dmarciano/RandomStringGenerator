@@ -273,6 +273,8 @@ namespace RSGLib.Tests
         //Invalid range
         //Unknown UDF
         //Option block
+        //Invalid culture
+        //Culture block not closed
 
 
         [TestMethod]
@@ -301,6 +303,24 @@ namespace RSGLib.Tests
         {
             var generator = new Generator("{My}(2)");
             var output = generator.ToString();
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid Culture")]
+        [ExpectedException(typeof(InvalidCultureException))]
+        public void InvalidCultureNameTest()
+        {
+            var generator = new Generator("a&abcdef&");
+        }
+
+        [TestMethod]
+        [TestCategory("Invalid Culture")]
+        [ExpectedException(typeof(InvalidCultureException))]
+        public void AddInvalidCultureNameTest()
+        {
+            var generator = new Generator("a&sv&");
+            //TODO: Uncomment the following line
+            //generator.AddCulture("sv", new List<char> { 'A', 'B' });
         }
     }
 }
