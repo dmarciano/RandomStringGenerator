@@ -1,5 +1,4 @@
-﻿using BenchmarkDotNet;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
@@ -12,12 +11,12 @@ namespace RSBLib.Benchmarks
 {
     [Config(typeof(Config))]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    public class SocialSecurityNumbersBenchmark
+    public class PasswordBenchmark
     {
-        Generator generator;
-        Generator cryptoGenerator;
-        Generator mersenneGenerator;
-        Xeger xeger;
+         Generator generator;
+         Generator mersenneGenerator;
+         Generator cryptoGenerator;
+         Xeger xeger;
 
         private class Config : ManualConfig
         {
@@ -29,9 +28,9 @@ namespace RSBLib.Benchmarks
             }
         }
 
-        public SocialSecurityNumbersBenchmark()
+        public PasswordBenchmark()
         {
-            var pattern = "0(3)[-]0(2)[-]0(4)";
+            var pattern = "a*(11,15)";
             var ticks = Environment.TickCount;
 
             generator = new Generator(pattern, new RandomGenerator(ticks));
@@ -39,19 +38,19 @@ namespace RSBLib.Benchmarks
             cryptoGenerator = new Generator(pattern, new CryptoRandomGenerator());
 
             var random = new Random(Environment.TickCount);
-            xeger = new Xeger("^\\d{3}-\\d{2}-\\d{4}$", random);
+            xeger = new Xeger("^[a-zA-Z0-9][!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]{11,15}", random);
         }
 
         [Benchmark]
-        public string RSG_SSN_RNG() => generator.GetString();
+        public string RSG_PASSWORD_RNG() => generator.GetString();
 
         [Benchmark]
-        public string RSG_SSN_MER() => mersenneGenerator.GetString();
+        public string RSG_PASSWORD_MER() => mersenneGenerator.GetString();
 
         [Benchmark]
-        public string RSG_SSN_CRNG() => cryptoGenerator.GetString();
+        public string RSG_PASSWORD_CRNG() => cryptoGenerator.GetString();
 
         [Benchmark]
-        public string XEGER_SSN() => xeger.Generate();
+        public string XEGER_PASSWORD() => xeger.Generate();
     }
 }

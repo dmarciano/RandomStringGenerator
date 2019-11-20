@@ -284,9 +284,7 @@ Below are invalid patterns with a description of *why* it is invalid:
 - **a(2,3,4)** - Invalid format/too many commas
 
 ## Benchmarks
-This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNet) library for all benchmark testing.  Below is some benchmarks that were executed to test the speed of the RSG library:
-
-### ***COMING SOON***
+To view all the benchmarking data, please see out [BENCHMARKS](./benchmarking/BENCHMARKS.md) document.
 
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.

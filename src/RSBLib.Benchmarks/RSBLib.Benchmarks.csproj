@@ -219,6 +219,8 @@
     <Compile Include="FunctionsBenchmark.cs" />
     <Compile Include="SelectionFromGroupBenchmark.cs" />
     <Compile Include="CreateAddressBenchmark.cs" />
+    <Compile Include="CultureBenchmark.cs" />
+    <Compile Include="PasswordBenchmark.cs" />
     <Compile Include="SocialSecurityNumbersBenchmark.cs" />
   </ItemGroup>
   <ItemGroup>
