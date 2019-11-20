@@ -21,10 +21,10 @@ namespace SMC.Utilities.RSG
         };
 
         public string Name { get; set; }
-        public IEnumerable<char> UppercaseLetters { get; set; }
-        public IEnumerable<char> LowercaseLetters { get; set; }
-        public IEnumerable<char> Numbers { get; set; }
-        public IEnumerable<char> Symbols { get; set; }
+        public char[] UppercaseLetters { get; set; }
+        public char[] LowercaseLetters { get; set; }
+        public char[] Numbers { get; set; }
+        public char[] Symbols { get; set; }
 
         internal bool UppercaseLowercaseSpecified = false;
         internal bool NumbersSpecified = false;

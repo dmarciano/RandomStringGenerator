@@ -96,7 +96,7 @@ namespace SMC.Utilities.RSG
                                         if (pos == pattern.Length - 1) break;
                                         if (MODIFIERS.Contains(pattern[pos + 1])) { pos++; HandleModifier(pattern, true); }
                                         if (pos == pattern.Length - 1) break;
-                                        if(pattern[pos +1].Equals('&')) { pos++; HandleCulture(pattern); }
+                                        if(pattern[pos +1].Equals('&')) { pos++; HandleCulture(pattern, true); }
                                         if (pos == pattern.Length - 1) break;
                                         if (pattern[pos + 1].Equals('{')) {var dummy = new Token(); pos++; HandleControlBlock(ref dummy, pattern);}
                                         if (pos == pattern.Length - 1) break;
@@ -899,14 +899,14 @@ namespace SMC.Utilities.RSG
             }
         }
 
-        private void HandleCulture(string pattern)
+        private void HandleCulture(string pattern, bool applyToGroup = false)
         {
             var EOS = false;
             var originalPosition = pos;
             var sb = new StringBuilder();
             Token lastToken = null;
 
-            if (!isInGroup)
+            if (!applyToGroup)
             {
                 lastToken = currentGroup.Tokens[currentGroup.Tokens.Count - 1];
                 if (lastToken.Type == TokenType.CONTROL_BLOCK && lastToken.ControlBlock.Global)
@@ -929,11 +929,11 @@ namespace SMC.Utilities.RSG
                 }
             }
 
-            var cultureName = sb.ToString().Trim();
+            var cultureName = sb.ToString().Trim().ToLower();
             if (!IsCultureValid(cultureName))
                 throw new InvalidCultureException($"The culture name '{cultureName}', found at position {originalPosition} is not a valid culture name.");
 
-            if (isInGroup)
+            if (applyToGroup)
                 currentGroup.CultureName = cultureName;
             else
                 lastToken.CultureName = cultureName;

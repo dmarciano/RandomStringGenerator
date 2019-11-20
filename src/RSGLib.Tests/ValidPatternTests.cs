@@ -2510,7 +2510,9 @@ namespace RSGLib.Tests
 
             foreach (var output in generator.GetStrings(1000))
             {
-                Assert.IsTrue(output.Length == 2);
+                Assert.IsTrue(output.Length == 3);
+                Assert.IsFalse(swedish_characters.Contains(output[2]));
+
                 switch (output[0])
                 {
                     case UpperACircle:
@@ -2650,45 +2652,77 @@ namespace RSGLib.Tests
 
         [TestMethod]
         [TestCategory("Culture")]
-        public void FallbackCultureTest()
+        public void GroupTokenConflictTest()
         {
-            var acircleupperseen = false;
-            var adoubledotupperseen = false;
-            var odoubledotupperseen = false;
-            var acirclelowerseen = false;
-            var adoubledotlowerseen = false;
-            var odoubledotlowerseen = false;
+            var acircleupperseen1 = false;
+            var adoubledotupperseen1 = false;
+            var odoubledotupperseen1 = false;
+            var acirclelowerseen1 = false;
+            var adoubledotlowerseen1 = false;
+            var odoubledotlowerseen1 = false;
+
+            var acircleupperseen2 = false;
+            var adoubledotupperseen2 = false;
+            var odoubledotupperseen2 = false;
+            var acirclelowerseen2 = false;
+            var adoubledotlowerseen2 = false;
+            var odoubledotlowerseen2 = false;
             var allSeen = false;
 
-            var generator = new Generator("a&sv-FI&");
+            var generator = new Generator("/aa&en-US&a/&sv&");
             generator.AddCulture("sv", uppercase_Swedish, lowercase_Swedish);
 
-            foreach (var output in generator.GetStrings(1000))
+            foreach (var output in generator.GetStrings(10000))
             {
-                Assert.IsTrue(output.Length == 1);
+                Assert.IsTrue(output.Length == 3);
+                Assert.IsFalse(swedish_characters.Contains(output[1]));
+
                 switch (output[0])
                 {
                     case UpperACircle:
-                        acircleupperseen = true;
+                        acircleupperseen1 = true;
                         break;
                     case UpperADoubleDot:
-                        adoubledotupperseen = true;
+                        adoubledotupperseen1 = true;
                         break;
                     case UpperODoubleDot:
-                        odoubledotupperseen = true;
+                        odoubledotupperseen1 = true;
                         break;
                     case LowerACircle:
-                        acirclelowerseen = true;
+                        acirclelowerseen1 = true;
                         break;
                     case LowerADoubleDot:
-                        adoubledotlowerseen = true;
+                        adoubledotlowerseen1 = true;
                         break;
                     case LowerODoubleDot:
-                        odoubledotlowerseen = true;
+                        odoubledotlowerseen1 = true;
                         break;
                 }
 
-                if (acircleupperseen && adoubledotupperseen && odoubledotupperseen && acirclelowerseen && adoubledotlowerseen && odoubledotlowerseen)
+                switch (output[2])
+                {
+                    case UpperACircle:
+                        acircleupperseen2 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen2 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen2 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen2 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen2 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen2 = true;
+                        break;
+                }
+
+                if (acircleupperseen1 && adoubledotupperseen1 && odoubledotupperseen1 && acirclelowerseen1 && adoubledotlowerseen1 && odoubledotlowerseen1
+                    && acircleupperseen2 && adoubledotupperseen2 && odoubledotupperseen2 && acirclelowerseen2 && adoubledotlowerseen2 && odoubledotlowerseen2)
                 {
                     allSeen = true;
                     break;
@@ -2696,12 +2730,11 @@ namespace RSGLib.Tests
             }
 
             Assert.IsTrue(allSeen);
-
         }
 
         [TestMethod]
         [TestCategory("Culture")]
-        public void FallbackCultureTest2()
+        public void FallbackCultureTest()
         {
             var generator = new Generator("a&sv&");
 
@@ -2715,9 +2748,10 @@ namespace RSGLib.Tests
         [TestMethod]
         [TestCategory("Culture")]
         [ExpectedException(typeof(UnknownCultureException))]
-        public void FallbackCultureTest3()
+        public void FallbackCultureTest2()
         {
             var generator = new Generator("a&sv&") { ThrowExceptionOnUnknowLanguage = true };
+            var output = generator.GetString();
         }
         #endregion
 
