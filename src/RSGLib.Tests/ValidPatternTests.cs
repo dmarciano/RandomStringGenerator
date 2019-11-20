@@ -12,10 +12,6 @@ namespace RSGLib.Tests
     public class ValidPatternTests
     {
         #region Language Statics
-        private static readonly List<char> uppercase_English = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToList();
-        private static readonly List<char> lowercase_English = "abcdefghijklmnopqrstuvwxyz".ToList();
-        private static readonly List<char> numbers_English = "0123456789".ToList();
-
         private static readonly List<char> uppercase_Swedish = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".ToList();
         private static readonly List<char> lowercase_Swedish = "abcdefghijklmnopqrstuvwxyzåäö".ToList();
 
@@ -3021,14 +3017,5 @@ namespace RSGLib.Tests
             return "55";
         }
         #endregion
-
-        //[TestMethod]
-        //public void Test()
-        //{
-        //    var g = new Generator();
-        //    g.TryRemoveCulture("dd", out var cc);
-
-        //    cc.
-        //}
     }
 }

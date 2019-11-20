@@ -3,6 +3,7 @@ using SMC.Utilities.RSG;
 using SMC.Utilities.RSG.Random;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace RSGLib.Tests
@@ -10,6 +11,20 @@ namespace RSGLib.Tests
     [TestClass]
     public class ValidPatternBuilderTests
     {
+        #region Language Statics
+        private static readonly List<char> uppercase_Swedish = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".ToList();
+        private static readonly List<char> lowercase_Swedish = "abcdefghijklmnopqrstuvwxyzåäö".ToList();
+
+        private const char UpperACircle = 'Å';
+        private const char UpperADoubleDot = 'Ä';
+        private const char UpperODoubleDot = 'Ö';
+        private const char LowerACircle = 'å';
+        private const char LowerADoubleDot = 'ä';
+        private const char LowerODoubleDot = 'ö';
+
+        private static readonly List<char> swedish_characters = "ÅÄÖåäö".ToList();
+        #endregion
+
         #region Constructors
         [TestMethod]
         [TestCategory("Constructor")]
@@ -1913,6 +1928,383 @@ namespace RSGLib.Tests
 
             Assert.IsTrue(output.Length == 4);
             Assert.IsTrue(output.Equals("5555"));
+        }
+        #endregion
+
+        #region Culture
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void CultureTest()
+        {
+            var acircleupperseen = false;
+            var adoubledotupperseen = false;
+            var odoubledotupperseen = false;
+            var acirclelowerseen = false;
+            var adoubledotlowerseen = false;
+            var odoubledotlowerseen = false;
+            var allSeen = false;
+
+            var builder = new PatternBuilder().Letter().SetCulture("sv");
+            var generator = new Generator().UseBuilder(builder);
+            generator.AddCulture("sv", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                switch (output[0])
+                {
+                    case UpperACircle:
+                        acircleupperseen = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen = true;
+                        break;
+                }
+
+                if (acircleupperseen && adoubledotupperseen && odoubledotupperseen && acirclelowerseen && adoubledotlowerseen && odoubledotlowerseen)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void CultureTest2()
+        {
+            var acircleupperseen = false;
+            var adoubledotupperseen = false;
+            var odoubledotupperseen = false;
+            var acirclelowerseen = false;
+            var adoubledotlowerseen = false;
+            var odoubledotlowerseen = false;
+            var allSeen = false;
+
+            var builder = new PatternBuilder().Letter().SetCulture("sv-Se");
+            var generator = new Generator().UseBuilder(builder);
+            generator.AddCulture("sv-sE", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                switch (output[0])
+                {
+                    case UpperACircle:
+                        acircleupperseen = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen = true;
+                        break;
+                }
+
+                if (acircleupperseen && adoubledotupperseen && odoubledotupperseen && acirclelowerseen && adoubledotlowerseen && odoubledotlowerseen)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void CultureGroupTest()
+        {
+            var acircleupperseen1 = false;
+            var adoubledotupperseen1 = false;
+            var odoubledotupperseen1 = false;
+            var acirclelowerseen1 = false;
+            var adoubledotlowerseen1 = false;
+            var odoubledotlowerseen1 = false;
+
+            var acircleupperseen2 = false;
+            var adoubledotupperseen2 = false;
+            var odoubledotupperseen2 = false;
+            var acirclelowerseen2 = false;
+            var adoubledotlowerseen2 = false;
+            var odoubledotlowerseen2 = false;
+            var allSeen = false;
+
+            var builder = new PatternBuilder().BeginGroup().Letter().Letter().EndGroup("sv-se").Letter();
+            var generator = new Generator().UseBuilder(builder);
+            generator.AddCulture("sv-sE", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 3);
+                Assert.IsFalse(swedish_characters.Contains(output[2]));
+
+                switch (output[0])
+                {
+                    case UpperACircle:
+                        acircleupperseen1 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen1 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen1 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen1 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen1 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen1 = true;
+                        break;
+                }
+
+                switch (output[1])
+                {
+                    case UpperACircle:
+                        acircleupperseen2 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen2 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen2 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen2 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen2 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen2 = true;
+                        break;
+                }
+
+                if (acircleupperseen1 && adoubledotupperseen1 && odoubledotupperseen1 && acirclelowerseen1 && adoubledotlowerseen1 && odoubledotlowerseen1
+                    && acircleupperseen2 && adoubledotupperseen2 && odoubledotupperseen2 && acirclelowerseen2 && adoubledotlowerseen2 && odoubledotlowerseen2)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void CultureGroupTest2()
+        {
+            var acircleupperseen1 = false;
+            var adoubledotupperseen1 = false;
+            var odoubledotupperseen1 = false;
+            var acirclelowerseen1 = false;
+            var adoubledotlowerseen1 = false;
+            var odoubledotlowerseen1 = false;
+
+            var acircleupperseen2 = false;
+            var adoubledotupperseen2 = false;
+            var odoubledotupperseen2 = false;
+            var acirclelowerseen2 = false;
+            var adoubledotlowerseen2 = false;
+            var odoubledotlowerseen2 = false;
+            var allSeen = false;
+
+            var builder = new PatternBuilder().Letter().BeginGroup().Letter().Letter().EndGroup("sv-se");
+            var generator = new Generator().UseBuilder(builder);
+            generator.AddCulture("sv-sE", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 3);
+                Assert.IsFalse(swedish_characters.Contains(output[0]));
+
+                switch (output[1])
+                {
+                    case UpperACircle:
+                        acircleupperseen1 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen1 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen1 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen1 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen1 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen1 = true;
+                        break;
+                }
+
+                switch (output[2])
+                {
+                    case UpperACircle:
+                        acircleupperseen2 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen2 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen2 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen2 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen2 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen2 = true;
+                        break;
+                }
+
+                if (acircleupperseen1 && adoubledotupperseen1 && odoubledotupperseen1 && acirclelowerseen1 && adoubledotlowerseen1 && odoubledotlowerseen1
+                    && acircleupperseen2 && adoubledotupperseen2 && odoubledotupperseen2 && acirclelowerseen2 && adoubledotlowerseen2 && odoubledotlowerseen2)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void GroupTokenConflictTest()
+        {
+            var acircleupperseen1 = false;
+            var adoubledotupperseen1 = false;
+            var odoubledotupperseen1 = false;
+            var acirclelowerseen1 = false;
+            var adoubledotlowerseen1 = false;
+            var odoubledotlowerseen1 = false;
+
+            var acircleupperseen2 = false;
+            var adoubledotupperseen2 = false;
+            var odoubledotupperseen2 = false;
+            var acirclelowerseen2 = false;
+            var adoubledotlowerseen2 = false;
+            var odoubledotlowerseen2 = false;
+            var allSeen = false;
+
+            var builder = new PatternBuilder().BeginGroup().Letter().Letter().SetCulture("en-US").Letter().EndGroup("sv");
+            var generator = new Generator().UseBuilder(builder);
+            generator.AddCulture("sv", uppercase_Swedish, lowercase_Swedish);
+
+            foreach (var output in generator.GetStrings(10000))
+            {
+                Assert.IsTrue(output.Length == 3);
+                Assert.IsFalse(swedish_characters.Contains(output[1]));
+
+                switch (output[0])
+                {
+                    case UpperACircle:
+                        acircleupperseen1 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen1 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen1 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen1 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen1 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen1 = true;
+                        break;
+                }
+
+                switch (output[2])
+                {
+                    case UpperACircle:
+                        acircleupperseen2 = true;
+                        break;
+                    case UpperADoubleDot:
+                        adoubledotupperseen2 = true;
+                        break;
+                    case UpperODoubleDot:
+                        odoubledotupperseen2 = true;
+                        break;
+                    case LowerACircle:
+                        acirclelowerseen2 = true;
+                        break;
+                    case LowerADoubleDot:
+                        adoubledotlowerseen2 = true;
+                        break;
+                    case LowerODoubleDot:
+                        odoubledotlowerseen2 = true;
+                        break;
+                }
+
+                if (acircleupperseen1 && adoubledotupperseen1 && odoubledotupperseen1 && acirclelowerseen1 && adoubledotlowerseen1 && odoubledotlowerseen1
+                    && acircleupperseen2 && adoubledotupperseen2 && odoubledotupperseen2 && acirclelowerseen2 && adoubledotlowerseen2 && odoubledotlowerseen2)
+                {
+                    allSeen = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(allSeen);
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        public void FallbackCultureTest()
+        {
+            var builder = new PatternBuilder().Letter().SetCulture("sv");
+            var generator = new Generator().UseBuilder(builder);
+
+            foreach (var output in generator.GetStrings(1000))
+            {
+                Assert.IsTrue(output.Length == 1);
+                Assert.IsFalse(swedish_characters.Contains(output[0]));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Culture")]
+        [ExpectedException(typeof(UnknownCultureException))]
+        public void FallbackCultureTest2()
+        {
+            var builder = new PatternBuilder().Letter().SetCulture("sv");
+            var generator = new Generator() { ThrowExceptionOnUnknowLanguage = true }.UseBuilder(builder);
+            var output = generator.GetString();
         }
         #endregion
 

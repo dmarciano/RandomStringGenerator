@@ -288,14 +288,11 @@ This project uses the [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNe
 
 ### ***COMING SOON***
 
-## TODO/Future Plans
-- Culture tags for multiple languages in a single pattern
-
 ## Contributing
 Contributing to this project is welcome.  However, we ask that you please follow our [contributing guidelines](./CONTRIBUTING.md) to help ensure consistency.
 
 ## Versions
-**0.2.0** (in development)
+**0.2.0**
 - Added [Repeat Blocks](#repeat-blocks)
 - Added Mersenne Twister random number generator
 - Can specify uppercase, lowercase, number, and symbol array for different language/cultures

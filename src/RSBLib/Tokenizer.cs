@@ -931,7 +931,7 @@ namespace SMC.Utilities.RSG
 
             var cultureName = sb.ToString().Trim().ToLower();
             if (!IsCultureValid(cultureName))
-                throw new InvalidCultureException($"The culture name '{cultureName}', found at position {originalPosition} is not a valid culture name.");
+                throw new InvalidCultureException($"The culture name '{cultureName}', found at position {originalPosition}, is not a valid culture name.");
 
             if (applyToGroup)
                 currentGroup.CultureName = cultureName;

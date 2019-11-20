@@ -258,6 +258,37 @@ namespace SMC.Utilities.RSG
             _patternList.Add(new TokenGroup() { });
             return this;
         }
+
+        public PatternBuilder EndGroup(string cultureName)
+        {
+            cultureName = cultureName.Trim().ToLower();
+            if (!IsCultureValid(cultureName))
+                throw new InvalidCultureException($"The culture name '{cultureName}' is not a valid culture name.");
+
+            _patternList.Last().CultureName = cultureName;
+
+            return EndGroup();
+        }
+        #endregion
+
+        #region Culture
+        public PatternBuilder SetCulture(string cultureName)
+        {
+            if (0 == _patternList.Count)
+                throw new PatternBuilderException("No tokens have been added to the builder yet.  Add a least one valid token before attempting to specify a culture.");
+
+            cultureName = cultureName.Trim().ToLower();
+            if (!IsCultureValid(cultureName))
+                throw new InvalidCultureException($"The culture name '{cultureName}' is not a valid culture name.");
+
+            var lastToken = _patternList.Last().Tokens.Last();
+            if (lastToken.Type == TokenType.CONTROL_BLOCK)
+                throw new PatternBuilderException("Cannot specify a culture for a global exclusion block.");
+
+            lastToken.CultureName = cultureName;
+
+            return this;
+        }
         #endregion
 
         #region Advanced
